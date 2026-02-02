@@ -96,6 +96,47 @@ Structured JSON analysis containing:
 }
 ```
 
+### Compass Funnel App (`funnel/`)
+
+Interactive quiz funnel built with vanilla HTML/CSS/JS.
+
+**Architecture:**
+```
+funnel/
+├── index.html      # Entry point, loads app.js
+├── styles.css      # Purple theme, CSS variables, mobile-first
+├── app.js          # Modular architecture:
+│                   #   - CONFIG: App settings, debug flag
+│                   #   - log: Debug-gated logging
+│                   #   - Security: XSS protection
+│                   #   - State: localStorage persistence
+│                   #   - Router: Multi-screen navigation
+│                   #   - Components: Reusable UI pieces
+│                   #   - Screens: Screen renderers
+│                   #   - Events: Delegated event handling
+│                   #   - App: Main initialization
+└── assets/         # Generated cartoon character images
+```
+
+**Key Patterns:**
+- Content from `liven-funnel-analysis.json` (single source of truth)
+- State persists in localStorage under `compass_funnel_state`
+- Event delegation on `#app` container
+- `Security.escapeHtml()` for all user/JSON content
+- `CONFIG.debug = false` to disable console logs in production
+
+**Adding New Screens:**
+1. Add screen renderer in `Screens` object
+2. Add case in `App.render()` switch statement
+3. Add any new components to `Components` object
+4. Screen data comes from JSON via `Router.getScreen(id)`
+
+**Running Locally:**
+```bash
+python3 -m http.server 8080
+# Open http://localhost:8080/funnel/
+```
+
 ## Development Patterns
 
 ### Screenshot Naming Convention
@@ -193,5 +234,6 @@ When working with this codebase:
 ## Related Documentation
 
 - `README.md`: Project overview and quick start
+- `CHANGELOG.md`: Version history and recent changes
 - `ARCHITECTURE.md`: Detailed technical architecture
 - `CLAUDE.md`: Project-specific instructions

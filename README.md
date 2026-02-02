@@ -15,6 +15,7 @@ This project provides tools and workflows for:
 ```
 ClaudeCode/
 ├── README.md                    # This file - project overview
+├── CHANGELOG.md                 # Version history and changes
 ├── CONTEXT.md                   # Context for AI models working with this codebase
 ├── ARCHITECTURE.md              # Detailed architecture and structure documentation
 ├── CLAUDE.md                    # Project-specific instructions for Claude AI
@@ -22,6 +23,14 @@ ClaudeCode/
 │
 ├── liven-funnel-analysis.json   # Structured analysis of Liven quiz funnel
 ├── liven-funnel-flow.html       # Visual HTML representation of funnel flow
+│
+├── funnel/                      # Compass Funnel App (interactive quiz)
+│   ├── index.html              # Entry point
+│   ├── styles.css              # Purple theme, mobile-first
+│   ├── app.js                  # Multi-screen router & state management
+│   └── assets/                 # Generated character images
+│       ├── male.png
+│       └── female.png
 │
 ├── finestro-funnel-screenshots/ # Funnel capture automation tools
 │   ├── capture.js              # Main Puppeteer script for capturing funnels
@@ -57,6 +66,22 @@ ClaudeCode/
    ```
 
 ### Usage
+
+#### Running the Compass Funnel App
+
+```bash
+# Start local server from project root
+python3 -m http.server 8080
+
+# Open in browser
+open http://localhost:8080/funnel/
+```
+
+Features:
+- Interactive landing page with gender selection
+- State persists in localStorage
+- Mobile-responsive design
+- Multi-screen architecture (more screens coming)
 
 #### Capturing a Funnel
 
