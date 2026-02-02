@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liven Quiz Funnel Flow Analysis</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        .flow-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            color: #4CAF50;
+            font-size: 1.5em;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .screen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .screen-card {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screen-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .screen-number {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+        .screen-type {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .screen-title {
+            font-weight: 600;
+            margin: 8px 0;
+            color: #333;
+        }
+        .screen-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .options-list {
+            margin-top: 8px;
+            padding-left: 20px;
+            font-size: 0.85em;
+            color: #777;
+        }
+        .arrow {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 24px;
+            margin: 8px 0;
+        }
+        .conversion-tactics {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 12px 16px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .conversion-tactics h4 {
+            color: #e65100;
+            margin-bottom: 8px;
+        }
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        .pricing-table th, .pricing-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .pricing-table th {
+            background: #4CAF50;
+            color: white;
+        }
+        .pricing-table .popular {
+            background: #e8f5e9;
+        }
+        .badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 16px;
+            background: #e8f5e9;
+            border-radius: 8px;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .flow-section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            .screen-card {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Liven Quiz Funnel Flow</h1>
+        <p class="subtitle">Complete funnel analysis with 26 quiz questions + pre/post screens | URL: quiz.theliven.com/en</p>
+
+        <!-- LANDING SECTION -->
+        <div class="flow-section">
+            <h2 class="section-title">1. Landing & Pre-Quiz (3 screens)</h2>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">1</span>
+                    <span class="screen-type">Landing</span>
+                    <div class="screen-title">A PERSONALIZED WELL-BEING MANAGEMENT PLAN</div>
+                    <div class="screen-description">Gender selection with image cards (Male/Female). Subheadline: "3-MINUTE QUIZ"</div>
+                    <div class="options-list">
+                        <li>Male (image card)</li>
+                        <li>Female (image card)</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">2</span>
+                    <span class="screen-type">Pre-Quiz</span>
+                    <div class="screen-title">What's your age?</div>
+                    <div class="screen-description">Age range selection to personalize plan</div>
+                    <div class="options-list">
+                        <li>18-24</li>
+                        <li>25-34</li>
+                        <li>35-44</li>
+                        <li>45-54</li>
+                        <li>55-64</li>
+                        <li>65+</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">3</span>
+                    <span class="screen-type">Social Proof</span>
+                    <div class="screen-title">Over 2,500,000 people have chosen Liven</div>
+                    <div class="screen-description">World map with user avatars showing global community</div>
+                </div>
+            </div>
+            <div class="conversion-tactics">
+                <h4>Conversion Tactics Used:</h4>
+                Social Proof (2.5M users), Visual Trust (user avatars on map)
+            </div>
+        </div>
+
+        <!-- QUIZ QUESTIONS SECTION -->
+        <div class="flow-section">
+            <h2 class="section-title">2. Quiz Questions (26 questions)</h2>
+            <p style="margin-bottom: 16px; color: #666;">Progress indicator: "X / 26" format with green progress bar</p>
+
+            <h3 style="margin: 16px 0 12px; color: #555;">Questions 1-6: Energy & Focus Assessment</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">Q1</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">How often do you feel tired or lack energy, even after rest?</div>
+                    <div class="options-list">
+                        <li>Often (checkmark icon)</li>
+                        <li>Sometimes (question icon)</li>
+                        <li>Rarely (prohibited icon)</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q2</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">Do you often leave things to the last minute?</div>
+                    <div class="options-list">
+                        <li>Often</li>
+                        <li>Sometimes</li>
+                        <li>Never</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q3</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">How easily distracted are you?</div>
+                    <div class="options-list">
+                        <li>Easily distracted</li>
+                        <li>Occasionally lose focus</li>
+                        <li>Rarely lose focus</li>
+                        <li>Very focused</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q4</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">How often do you feel worried or overwhelmed?</div>
+                    <div class="options-list">
+                        <li>Often</li>
+                        <li>Sometimes</li>
+                        <li>Rarely</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q5</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">How often do you experience mood swings?</div>
+                    <div class="options-list">
+                        <li>Often</li>
+                        <li>Sometimes</li>
+                        <li>Rarely</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q6</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">Have you felt in harmony with yourself and your circle in recent months?</div>
+                    <div class="options-list">
+                        <li>Yes</li>
+                        <li>Moderately</li>
+                        <li>No</li>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Questions 7-10: Likert Scale Statements</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">Q7</span>
+                    <span class="screen-type">Likert Scale</span>
+                    <div class="screen-title">"It's difficult for me to express emotions"</div>
+                    <div class="screen-description">5-point scale: Strongly disagree to Strongly agree (thumb icons)</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q8</span>
+                    <span class="screen-type">Likert Scale</span>
+                    <div class="screen-title">"I often feel overwhelmed by the amount of tasks I have to do"</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q9</span>
+                    <span class="screen-type">Likert Scale</span>
+                    <div class="screen-title">"I often find it challenging to make a decision"</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q10</span>
+                    <span class="screen-type">Likert Scale</span>
+                    <div class="screen-title">"I often struggle to pursue my ambitions due to fear of messing up and failing"</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Questions 11-15: Self-Perception</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">Q11</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">Have you ever struggled with accepting compliments because you didn't believe they are true?</div>
+                    <div class="options-list">
+                        <li>Almost always</li>
+                        <li>Depends</li>
+                        <li>Not at all</li>
+                        <li>I'm not sure</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q12</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">"I tend to feel insecure while talking to others"</div>
+                    <div class="options-list">
+                        <li>Yes</li>
+                        <li>No</li>
+                        <li>I'm not sure</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q13</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">"I tend to overthink my partner's behavior"</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q14</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">Do you often prioritize others' needs and sacrifice your own ones?</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q15</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">When was the last time you felt driven and motivated?</div>
+                    <div class="options-list">
+                        <li>A few weeks ago</li>
+                        <li>Less than a year ago</li>
+                        <li>More than a year ago</li>
+                        <li>Never in my life</li>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Questions 16-23: Multiple Choice & Goals</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">Q16</span>
+                    <span class="screen-type">Multiple Choice</span>
+                    <div class="screen-title">Are there aspects of your well-being you'd like to address?</div>
+                    <div class="screen-description">"Choose all that apply"</div>
+                    <div class="options-list">
+                        <li>Low energy</li>
+                        <li>Worry</li>
+                        <li>Emotional exhaustion</li>
+                        <li>Overthinking</li>
+                        <li>Irritability</li>
+                        <li>I'm totally fine</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q17</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">What do you usually do first thing in the morning?</div>
+                    <div class="options-list">
+                        <li>Picking up my phone</li>
+                        <li>Making coffee</li>
+                        <li>Brushing teeth & Taking Shower</li>
+                        <li>Other</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q18</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">How much time do you dedicate to physical activity each week?</div>
+                    <div class="options-list">
+                        <li>0-2 hours</li>
+                        <li>3-5 hours</li>
+                        <li>6-8 hours</li>
+                        <li>More than 8 hours</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q19</span>
+                    <span class="screen-type">Multiple Choice</span>
+                    <div class="screen-title">Do you have any habits that you'd like to quit?</div>
+                    <div class="options-list">
+                        <li>Being late/running out of time</li>
+                        <li>Self-doubt</li>
+                        <li>Social media</li>
+                        <li>Sugar cravings or junk food</li>
+                        <li>Losing sleep</li>
+                        <li>Nail-biting</li>
+                        <li>Binge-watching</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q20</span>
+                    <span class="screen-type">Multiple Choice</span>
+                    <div class="screen-title">Is there anything you want to improve about your sleep?</div>
+                    <div class="options-list">
+                        <li>Waking up tired</li>
+                        <li>Waking up during the night</li>
+                        <li>Reduced sleep quality</li>
+                        <li>Difficulty falling asleep</li>
+                        <li>Waking up earlier than intended</li>
+                        <li>I sleep well</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q21</span>
+                    <span class="screen-type">Multiple Choice</span>
+                    <div class="screen-title">Have any of the following caused you to struggle more than before?</div>
+                    <div class="options-list">
+                        <li>Family or relationship</li>
+                        <li>External circumstances</li>
+                        <li>My appearance</li>
+                        <li>Sleep issues</li>
+                        <li>Job-related stress</li>
+                        <li>Other</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q22</span>
+                    <span class="screen-type">Multiple Choice</span>
+                    <div class="screen-title">In order to live a happier life, what do you think you need to improve?</div>
+                    <div class="options-list">
+                        <li>My state of calm</li>
+                        <li>My focus levels</li>
+                        <li>My willpower</li>
+                        <li>My energy levels</li>
+                        <li>My inner strength</li>
+                        <li>Other</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q23</span>
+                    <span class="screen-type">Multiple Choice</span>
+                    <div class="screen-title">Which of the following would you like to start working on with your plan?</div>
+                    <div class="options-list">
+                        <li>Stop doubting myself</li>
+                        <li>Build emotional resilience</li>
+                        <li>Set and achieve goals</li>
+                        <li>Stop overthinking</li>
+                        <li>Improve my ability to trust others</li>
+                        <li>Improve my daily routine</li>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Questions 24-26: Final Questions</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">Q24</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">How much do you know about Behavioral Techniques?</div>
+                    <div class="options-list">
+                        <li>Nothing at all</li>
+                        <li>Not that much</li>
+                        <li>A lot</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q25</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">Did you hear about Liven from a specialist?</div>
+                    <div class="options-list">
+                        <li>Yes</li>
+                        <li>No</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">Q26</span>
+                    <span class="screen-type">Single Choice</span>
+                    <div class="screen-title">Set your daily goal</div>
+                    <div class="screen-description">Pick the amount of time you want to spend on self-development daily</div>
+                    <div class="options-list">
+                        <li>5 min/day</li>
+                        <li>10 min/day</li>
+                        <li>15 min/day</li>
+                        <li>20 min/day</li>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTERSTITIALS -->
+        <div class="flow-section">
+            <h2 class="section-title">3. Trust-Building Interstitials</h2>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-type">Trust Building</span>
+                    <div class="screen-title">Liven was developed using scientific practices</div>
+                    <div class="screen-description">Shows logos: Harvard University, University of Oxford, University of Cambridge</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Expert Review</span>
+                    <div class="screen-title">Your plan will be reviewed by our science team</div>
+                    <div class="screen-description">CBT model diagram (Thoughts-Feelings-Behavior) + Expert badge: Tara Passaretti, Licensed Mental Health Counselor</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Social Proof</span>
+                    <div class="screen-title">Join over 2,500,000 people</div>
+                    <div class="screen-description">World map with user avatars showing global community reach</div>
+                </div>
+            </div>
+            <div class="conversion-tactics">
+                <h4>Conversion Tactics Used:</h4>
+                Authority (university logos), Expert Credibility (therapist credentials), Social Proof (2.5M+ users)
+            </div>
+        </div>
+
+        <!-- LEAD CAPTURE -->
+        <div class="flow-section">
+            <h2 class="section-title">4. Lead Capture & Profile Creation</h2>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-number">1</span>
+                    <span class="screen-type">Email Gate</span>
+                    <div class="screen-title">Enter your email to see your personal Profile Summary</div>
+                    <div class="screen-description">Email input field + privacy note about data protection</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">2</span>
+                    <span class="screen-type">Email Opt-in</span>
+                    <div class="screen-title">Do you want to receive emails with well-being tips and our product updates?</div>
+                    <div class="options-list">
+                        <li>Sure, I'm in! (primary)</li>
+                        <li>I don't want to receive tips or updates (secondary)</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">3</span>
+                    <span class="screen-type">Name Capture</span>
+                    <div class="screen-title">What's your first name?</div>
+                    <div class="screen-description">Text input: "Enter your name to get your plan"</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">4</span>
+                    <span class="screen-type">Profile Summary</span>
+                    <div class="screen-title">Summary of your Well-being Profile</div>
+                    <div class="screen-description">Shows "Negative effects level" gauge (Low to High), Main difficulty, Challenging period, Trigger, Energy level</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-number">5</span>
+                    <span class="screen-type">Goal Timeline</span>
+                    <div class="screen-title">A plan designed to support your wellbeing journey</div>
+                    <div class="screen-description">Shows expected improvement chart (February → April 2026) with progression bars</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOADING WITH MODALS -->
+        <div class="flow-section">
+            <h2 class="section-title">5. Plan Creation Loading (with Commitment Modals)</h2>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-type">Loading</span>
+                    <div class="screen-title">Creating your personalized Well-being Management plan</div>
+                    <div class="screen-description">Progress checklist: Goals ✓, Growth areas ✓, Content ✓</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Commitment Modal 1</span>
+                    <div class="screen-title">"Are you inclined to finish what you start?"</div>
+                    <div class="options-list">
+                        <li>No</li>
+                        <li>Yes</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Commitment Modal 2</span>
+                    <div class="screen-title">"Are you familiar with journaling for self-reflection?"</div>
+                    <div class="options-list">
+                        <li>No</li>
+                        <li>Yes</li>
+                    </div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Commitment Modal 3</span>
+                    <div class="screen-title">"Do you want to learn how to build strong habits?"</div>
+                    <div class="options-list">
+                        <li>No</li>
+                        <li>Yes</li>
+                    </div>
+                </div>
+            </div>
+            <div class="conversion-tactics">
+                <h4>Conversion Tactics Used:</h4>
+                Micro-commitments (Yes/No questions reinforce user's commitment to change), Testimonials during loading (Trustpilot reviews)
+            </div>
+        </div>
+
+        <!-- PRE-PAYWALL -->
+        <div class="flow-section">
+            <h2 class="section-title">6. Pre-Paywall Value Proposition</h2>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-type">Plan Ready</span>
+                    <div class="screen-title">[Name], Your personal Well-being Management Plan is ready!</div>
+                    <div class="screen-description">Before/After comparison showing "Your Well-being level" improvement chart from Week 1 to Week 4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYWALL -->
+        <div class="flow-section">
+            <h2 class="section-title">7. Paywall</h2>
+
+            <h3 style="margin: 16px 0 12px; color: #555;">Urgency Elements</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-type">Timer</span>
+                    <div class="screen-title">Countdown Timer</div>
+                    <div class="screen-description">Format: MM:SS (starts at ~10:00), "Discount is reserved for:"</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Promo Code</span>
+                    <div class="screen-title">Your promo code applied!</div>
+                    <div class="screen-description">Personalized code: "[Name]_[Month][Year]" e.g., "Test User_Feb2026"</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Pricing Tiers</h3>
+            <table class="pricing-table">
+                <tr>
+                    <th>Plan</th>
+                    <th>Original Price</th>
+                    <th>Discounted Price</th>
+                    <th>Per Day</th>
+                    <th>Savings</th>
+                </tr>
+                <tr>
+                    <td>7-DAY PLAN</td>
+                    <td><s>€49.99</s></td>
+                    <td>€10.50</td>
+                    <td>€1.50/day</td>
+                    <td>79% OFF</td>
+                </tr>
+                <tr class="popular">
+                    <td>1-MONTH PLAN <span class="badge">MOST POPULAR</span></td>
+                    <td><s>€49.99</s></td>
+                    <td>€19.99</td>
+                    <td>€0.66/day</td>
+                    <td>60% OFF</td>
+                </tr>
+                <tr>
+                    <td>3-MONTH PLAN</td>
+                    <td><s>€99.99</s></td>
+                    <td>€34.99</td>
+                    <td>€0.38/day</td>
+                    <td>65% OFF</td>
+                </tr>
+            </table>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Statistics & Social Proof</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">83%</div>
+                    <div class="stat-label">of users improve their well-being after just 6 weeks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">77%</div>
+                    <div class="stat-label">of users started with similar levels of energy levels as you</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">45%</div>
+                    <div class="stat-label">of users suffer from the same issues as you</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Trust Elements</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <span class="screen-type">Payment Security</span>
+                    <div class="screen-title">Pay Safe & Secure</div>
+                    <div class="screen-description">Payment icons: PayPal, Apple Pay, Visa, Mastercard, Maestro, Discover, Amex</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Award</span>
+                    <div class="screen-title">Liven is the 2025 Best Mobile App Award winner!</div>
+                </div>
+                <div class="screen-card">
+                    <span class="screen-type">Guarantee</span>
+                    <div class="screen-title">30-day money-back guarantee</div>
+                    <div class="screen-description">"Our plan is backed by a money-back guarantee. If you reach out within 30 days of purchase, we'll give you a full refund."</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">FAQ Section</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <div class="screen-title">What if I don't have enough willpower to stick to the plan?</div>
+                </div>
+                <div class="screen-card">
+                    <div class="screen-title">What if I have too many distractions in my life?</div>
+                </div>
+                <div class="screen-card">
+                    <div class="screen-title">What if I feel overwhelmed about starting this plan?</div>
+                </div>
+                <div class="screen-card">
+                    <div class="screen-title">What if I've tried tools before and they haven't worked for me?</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Testimonials</h3>
+            <div class="screen-grid">
+                <div class="screen-card">
+                    <div style="color: #ff9800;">★★★★★</div>
+                    <div class="screen-title">"It has really changed my life"</div>
+                    <div class="screen-description">— Brian Ross</div>
+                </div>
+                <div class="screen-card">
+                    <div style="color: #ff9800;">★★★★★</div>
+                    <div class="screen-title">"Liven is a great self-help tool..."</div>
+                    <div class="screen-description">— Selactive</div>
+                </div>
+                <div class="screen-card">
+                    <div style="color: #ff9800;">★★★★★</div>
+                    <div class="screen-title">"Eye-opening information..."</div>
+                    <div class="screen-description">— Patrick Naughton</div>
+                </div>
+            </div>
+
+            <div class="conversion-tactics">
+                <h4>All Conversion Tactics on Paywall:</h4>
+                <ul style="margin-left: 20px; margin-top: 8px;">
+                    <li><strong>Urgency/Scarcity:</strong> Countdown timer, personalized promo code</li>
+                    <li><strong>Price Anchoring:</strong> Strikethrough original prices (60-79% savings)</li>
+                    <li><strong>Value Framing:</strong> Price per day breakdown (€0.38-€1.50/day)</li>
+                    <li><strong>Social Validation:</strong> Statistics (83%, 77%, 45%), testimonials</li>
+                    <li><strong>Risk Reversal:</strong> 30-day money-back guarantee</li>
+                    <li><strong>Authority:</strong> 2025 Best Mobile App Award</li>
+                    <li><strong>Trust Signals:</strong> Payment security icons</li>
+                </ul>
+            </div>
+
+            <h3 style="margin: 24px 0 12px; color: #555;">Company Information</h3>
+            <p style="color: #666; font-size: 0.9em;">
+                Chesmint Limited, Flat/Office 102, Lekorpouzier 12a, Limassol, 3075, Cyprus<br>
+                Links: Terms of Use | Privacy Policy | Subscription Policy
+            </p>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="flow-section">
+            <h2 class="section-title">Funnel Summary</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">26</div>
+                    <div class="stat-label">Quiz Questions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">~50</div>
+                    <div class="stat-label">Total Screens</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Pricing Tiers</div>
+                </div>
+            </div>
+            <div class="conversion-tactics" style="background: #e3f2fd; border-color: #2196f3;">
+                <h4 style="color: #1565c0;">Key Conversion Strategies:</h4>
+                <ol style="margin-left: 20px; margin-top: 8px;">
+                    <li><strong>Sunk Cost Fallacy:</strong> 26-question quiz creates time investment</li>
+                    <li><strong>Personalization:</strong> Name capture, personalized promo codes, profile summary</li>
+                    <li><strong>Progressive Disclosure:</strong> Multiple gates (email, name) before paywall</li>
+                    <li><strong>Micro-Commitments:</strong> Yes/No modals during loading</li>
+                    <li><strong>Social Proof:</strong> 2.5M users, testimonials, statistics</li>
+                    <li><strong>Authority:</strong> University logos, expert credentials, awards</li>
+                    <li><strong>Urgency:</strong> Countdown timer, limited-time discount</li>
+                    <li><strong>Risk Reversal:</strong> 30-day money-back guarantee</li>
+                </ol>
+            </div>
+        </div>
+
+        <footer style="text-align: center; padding: 40px 20px; color: #999;">
+            <p>Funnel Analysis Generated: February 2026</p>
+            <p>URL: https://quiz.theliven.com/en</p>
+        </footer>
+    </div>
+</body>
+</html>
