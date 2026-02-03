@@ -36,3 +36,21 @@ Keep questions brief. One message with 2-3 targeted questions beats multiple bac
 - Default priority: normal, effort: medium (ask only if unclear)
 - Max 3 files in context - most relevant only
 - Bullet points over paragraphs
+
+## GitHub Integration
+
+After drafting the issue, ask: **"Want me to create this in GitHub?"**
+
+If yes:
+1. Check if `GITHUB_TOKEN` env var exists
+2. Get repo info from `git remote -v`
+3. Create issue via GitHub API:
+   ```bash
+   curl -s -X POST https://api.github.com/repos/{owner}/{repo}/issues \
+     -H "Authorization: Bearer $GITHUB_TOKEN" \
+     -H "Accept: application/vnd.github+json" \
+     -d '{"title": "...", "body": "..."}'
+   ```
+4. Return the issue URL to user
+
+If no token configured, inform user to set `GITHUB_TOKEN` in their shell profile.
