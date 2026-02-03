@@ -8,9 +8,14 @@
 // ========================================
 const CONFIG = {
     brandName: 'Compass',
-    funnelDataPath: '../liven-funnel-analysis.json',
+    // Try multiple paths for JSON loading (relative to funnel/ or project root)
+    funnelDataPaths: [
+        '../liven-funnel-analysis.json',
+        '/liven-funnel-analysis.json',
+        'liven-funnel-analysis.json'
+    ],
     storageKey: 'compass_funnel_state',
-    debug: true, // Set to false in production
+    debug: false, // Set to true for development debugging
     subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN'
 };
 
@@ -41,6 +46,115 @@ const Security = {
 };
 
 // ========================================
+// Icon Library (Lucide-inspired SVGs)
+// ========================================
+const Icons = {
+    /**
+     * SVG icon definitions mapped to JSON icon names
+     * All icons use 24x24 viewBox with stroke-based rendering
+     */
+    icons: {
+        // People/Users icon - for "Single"
+        people: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>`,
+
+        // Heart icon - for "In a relationship"
+        heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>`,
+
+        // Rings icon - for "Engaged" (using circle/ring representation)
+        rings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="12" r="5"/>
+            <circle cx="15" cy="12" r="5"/>
+        </svg>`,
+
+        // Link icon - for "Married"
+        link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>`,
+
+        // Handshake icon - for "Civil partnership"
+        handshake: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m11 17 2 2a1 1 0 1 0 3-3"/>
+            <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/>
+            <path d="m21 3 1 11h-2"/>
+            <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/>
+            <path d="M3 4h8"/>
+        </svg>`,
+
+        // Additional icons for other question types
+        broken_heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            <path d="m12 13-1-1 2-2-3-3 2-2"/>
+        </svg>`,
+
+        puzzle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/>
+        </svg>`,
+
+        thumbs_up: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10v12"/>
+            <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>
+        </svg>`,
+
+        thumbs_down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 14V2"/>
+            <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/>
+        </svg>`,
+
+        smile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" x2="9.01" y1="9" y2="9"/>
+            <line x1="15" x2="15.01" y1="9" y2="9"/>
+        </svg>`,
+
+        lightning: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>`,
+
+        hand_stop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+        </svg>`,
+
+        checkmark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+        </svg>`,
+
+        question: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <path d="M12 17h.01"/>
+        </svg>`,
+
+        prohibited: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m4.9 4.9 14.2 14.2"/>
+        </svg>`
+    },
+
+    /**
+     * Get SVG icon by name
+     * @param {string} name - Icon name from JSON
+     * @returns {string} SVG markup or fallback circle
+     */
+    get(name) {
+        return this.icons[name] || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="8"/>
+        </svg>`;
+    }
+};
+
+// ========================================
 // State Management
 // ========================================
 const State = {
@@ -50,6 +164,7 @@ const State = {
     data: {
         currentScreen: 'landing',
         answers: {},
+        history: [],      // Navigation history for back button
         startedAt: null
     },
 
@@ -78,6 +193,7 @@ const State = {
         this.data = {
             currentScreen: 'landing',
             answers: {},
+            history: [],
             startedAt: new Date().toISOString()
         };
         this.save();
@@ -123,6 +239,27 @@ const State = {
      */
     getAnswer(screenId) {
         return this.data.answers[screenId]?.value || null;
+    },
+
+    /**
+     * Push current screen to navigation history
+     * @param {string} screenId - Screen to add to history
+     */
+    pushHistory(screenId) {
+        this.data.history.push(screenId);
+        this.save();
+        log.info(`[State] Pushed to history: ${screenId}`, this.data.history);
+    },
+
+    /**
+     * Pop and return the last screen from navigation history
+     * @returns {string|null} Previous screen ID or null if empty
+     */
+    popHistory() {
+        const previous = this.data.history.pop() || null;
+        this.save();
+        log.info(`[State] Popped from history: ${previous}`, this.data.history);
+        return previous;
     }
 };
 
@@ -256,6 +393,35 @@ const Components = {
     },
 
     /**
+     * Render answer card for single/multiple choice questions
+     * @param {Object} option - Option object with label and icon
+     * @param {string} screenId - Current screen ID for data attribute
+     * @returns {string} HTML string
+     */
+    answerCard(option, screenId) {
+        const safeLabel = Security.escapeHtml(option.label);
+        const iconSvg = option.icon ? Icons.get(option.icon) : '';
+        const isSelected = State.getAnswer(screenId) === option.label;
+
+        return `
+            <div class="answer-card ${isSelected ? 'selected' : ''}"
+                 data-screen="${Security.escapeHtml(screenId)}"
+                 data-answer="${safeLabel}"
+                 role="button"
+                 tabindex="0"
+                 aria-label="Select ${safeLabel}">
+                ${iconSvg ? `<div class="answer-card__icon">${iconSvg}</div>` : ''}
+                <span class="answer-card__label">${safeLabel}</span>
+                <div class="answer-card__arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
      * Render legal disclaimer
      * @param {string} text - Legal text from JSON
      * @returns {string} HTML string
@@ -264,7 +430,7 @@ const Components = {
         // Sanitize the input text first
         let safeText = Security.escapeHtml(text);
         
-        // Define policy links (can be updated when real URLs are available)
+        // TODO: Replace placeholder URLs with actual policy page URLs when available
         const policyLinks = {
             'Terms of Use and Service': '#terms',
             'Privacy Policy': '#privacy',
@@ -320,6 +486,46 @@ const Screens = {
     },
 
     /**
+     * Render single choice question screen
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    singleChoice(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline);
+        const questionNumber = screenData.questionNumber || 1;
+
+        // Determine previous screen for back button
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        // Render answer cards from options
+        const answerCardsHtml = screenData.options
+            .map(option => Components.answerCard(option, screenData.id))
+            .join('');
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                ${Components.progressBar(questionNumber)}
+
+                <main class="content content--left">
+                    <h1 class="headline headline--question">${safeHeadline}</h1>
+
+                    <div class="answer-cards">
+                        ${answerCardsHtml}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
      * Render placeholder for screens not yet implemented
      * @param {Object} screenData - Screen data from JSON
      * @returns {string} HTML string
@@ -364,6 +570,16 @@ const Events = {
      * @param {Event} e - Click event
      */
     handleClick(e) {
+        // Back button click (check FIRST - highest priority)
+        const backButton = e.target.closest('.back-button');
+        if (backButton) {
+            log.info('[Events] Back button handler triggered');
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleBackNavigation();
+            return;
+        }
+
         // Gender card click
         const genderCard = e.target.closest('.gender-card');
         if (genderCard) {
@@ -371,8 +587,15 @@ const Events = {
             return;
         }
 
-        // Navigation button click
-        const navButton = e.target.closest('[data-navigate]');
+        // Answer card click (single choice questions)
+        const answerCard = e.target.closest('.answer-card');
+        if (answerCard) {
+            this.handleAnswerSelect(answerCard);
+            return;
+        }
+
+        // Other navigation button click (NOT back button)
+        const navButton = e.target.closest('[data-navigate]:not(.back-button)');
         if (navButton) {
             const targetScreen = navButton.dataset.navigate;
             Router.navigate(targetScreen);
@@ -386,10 +609,20 @@ const Events = {
      */
     handleKeydown(e) {
         if (e.key === 'Enter' || e.key === ' ') {
+            // Gender card keyboard activation
             const genderCard = e.target.closest('.gender-card');
             if (genderCard) {
                 e.preventDefault();
                 this.handleGenderSelect(genderCard);
+                return;
+            }
+
+            // Answer card keyboard activation
+            const answerCard = e.target.closest('.answer-card');
+            if (answerCard) {
+                e.preventDefault();
+                this.handleAnswerSelect(answerCard);
+                return;
             }
         }
     },
@@ -400,19 +633,76 @@ const Events = {
      */
     handleGenderSelect(card) {
         const gender = card.dataset.gender;
-        
+
         // 1. Log user action
         log.info(`[User Action] Selected gender: ${gender}`);
-        
+        log.info('[Debug] Router.screens count:', Router.screens.length);
+
         // 2. Store in state (localStorage)
         State.recordAnswer('landing', gender);
-        
-        // 3. Navigate to next screen
+
+        // 3. Push current screen to history before navigating
+        State.pushHistory('landing');
+
+        // 4. Navigate to next screen
         const nextScreen = Router.getNextScreen('landing');
+        log.info('[Debug] Next screen ID:', nextScreen);
+
+        if (nextScreen) {
+            const nextScreenData = Router.getScreen(nextScreen);
+            if (nextScreenData) {
+                Router.navigate(nextScreen);
+            } else {
+                log.error(`[Router] Screen '${nextScreen}' not found in Router.screens`);
+                App.showError(`Screen '${nextScreen}' not found. Please refresh and try again.`);
+            }
+        } else {
+            log.warn('[Router] No next screen defined for landing');
+        }
+    },
+
+    /**
+     * Handle answer card selection (single choice questions)
+     * @param {HTMLElement} card - The clicked answer card element
+     */
+    handleAnswerSelect(card) {
+        const screenId = card.dataset.screen;
+        const answer = card.dataset.answer;
+
+        // 1. Log user action
+        log.info(`[User Action] Selected answer on ${screenId}: ${answer}`);
+
+        // 2. Record answer in state
+        State.recordAnswer(screenId, answer);
+
+        // 3. Push current screen to history
+        State.pushHistory(screenId);
+
+        // 4. Navigate to next screen
+        const nextScreen = Router.getNextScreen(screenId);
         if (nextScreen) {
             Router.navigate(nextScreen);
         } else {
-            log.warn('[Router] No next screen defined for landing');
+            log.warn(`[Router] No next screen defined for ${screenId}`);
+        }
+    },
+
+    /**
+     * Handle back button navigation using history
+     */
+    handleBackNavigation() {
+        log.info('[Events] Back button clicked, history:', [...State.data.history]);
+
+        // Pop from history to get previous screen
+        const previousScreen = State.popHistory();
+
+        if (previousScreen) {
+            log.info(`[User Action] Back navigation to: ${previousScreen}`);
+            Router.navigate(previousScreen);
+        } else {
+            // Fallback to landing if history is empty
+            log.info('[User Action] Back navigation (fallback) to: landing');
+            Router.navigate('landing');
         }
     }
 };
@@ -421,6 +711,27 @@ const Events = {
 // Main Application
 // ========================================
 const App = {
+    /**
+     * Show inline error message to user (non-blocking alternative to alert)
+     * @param {string} message - Error message to display
+     */
+    showError(message) {
+        const appEl = document.getElementById('app');
+        const errorHtml = `
+            <div class="error-toast" role="alert">
+                <span>${Security.escapeHtml(message)}</span>
+                <button class="error-toast__close" onclick="this.parentElement.remove()" aria-label="Dismiss">×</button>
+            </div>
+        `;
+        appEl.insertAdjacentHTML('beforeend', errorHtml);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            const toast = appEl.querySelector('.error-toast');
+            if (toast) toast.remove();
+        }, 5000);
+    },
+
     /**
      * Initialize the application
      */
@@ -444,21 +755,32 @@ const App = {
 
     /**
      * Load funnel data from JSON file
+     * Tries multiple paths to handle different server configurations
      */
     async loadFunnelData() {
-        try {
-            const response = await fetch(CONFIG.funnelDataPath);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
-            const data = await response.json();
-            Router.screens = data.screens || [];
-            
-            log.info(`[App] Loaded ${Router.screens.length} screens from JSON`);
-        } catch (error) {
-            log.error('[App] Failed to load funnel data:', error);
-            // Use fallback data
-            Router.screens = this.getFallbackData();
+        // Try each path until one works
+        for (const path of CONFIG.funnelDataPaths) {
+            try {
+                log.info(`[App] Trying to load JSON from: ${path}`);
+                const response = await fetch(path);
+                if (!response.ok) {
+                    log.warn(`[App] Path ${path} returned ${response.status}`);
+                    continue;
+                }
+
+                const data = await response.json();
+                Router.screens = data.screens || [];
+
+                log.info(`[App] Successfully loaded ${Router.screens.length} screens from ${path}`);
+                return; // Success - exit the function
+            } catch (error) {
+                log.warn(`[App] Failed to load from ${path}:`, error.message);
+            }
         }
+
+        // All paths failed - use fallback
+        log.error('[App] All JSON paths failed, using fallback data');
+        Router.screens = this.getFallbackData();
     },
 
     /**
@@ -466,16 +788,33 @@ const App = {
      * @returns {Array} Fallback screens array
      */
     getFallbackData() {
-        return [{
-            id: 'landing',
-            type: 'gender_selection',
-            screenType: 'landing',
-            headline: 'A PERSONALIZED WELL-BEING MANAGEMENT PLAN',
-            subheadline: '3-MINUTE QUIZ',
-            options: ['Male', 'Female'],
-            nextScreenLogic: 'question_1',
-            legalText: "By clicking 'Male' or 'Female' you agree with the Terms of Use and Service, Privacy Policy, Subscription Policy and Cookie Policy"
-        }];
+        log.warn('[App] Using fallback data - JSON failed to load');
+        return [
+            {
+                id: 'landing',
+                type: 'gender_selection',
+                screenType: 'landing',
+                headline: 'A PERSONALIZED WELL-BEING MANAGEMENT PLAN',
+                subheadline: '3-MINUTE QUIZ',
+                options: ['Male', 'Female'],
+                nextScreenLogic: 'question_1',
+                legalText: "By clicking 'Male' or 'Female' you agree with the Terms of Use and Service, Privacy Policy, Subscription Policy and Cookie Policy"
+            },
+            {
+                id: 'question_1',
+                type: 'single_choice',
+                questionNumber: 1,
+                headline: 'What is your current relationship status?',
+                options: [
+                    { label: 'Single', icon: 'people' },
+                    { label: 'In a relationship', icon: 'heart' },
+                    { label: 'Engaged', icon: 'rings' },
+                    { label: 'Married', icon: 'link' },
+                    { label: 'Civil partnership', icon: 'handshake' }
+                ],
+                nextScreenLogic: 'question_2'
+            }
+        ];
     },
 
     /**
@@ -497,6 +836,9 @@ const App = {
             case 'landing':
             case 'gender_selection':
                 html = Screens.landing(screenData);
+                break;
+            case 'single_choice':
+                html = Screens.singleChoice(screenData);
                 break;
             default:
                 html = Screens.placeholder(screenData);

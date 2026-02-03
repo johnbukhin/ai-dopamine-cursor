@@ -340,24 +340,191 @@ body {
 }
 
 /* ========================================
+   Question Navigation
+   ======================================== */
+.question-nav {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+/* ========================================
+   Question Screen Content
+   ======================================== */
+.content--left {
+    text-align: left;
+    align-items: flex-start;
+}
+
+.headline--question {
+    text-transform: none;
+    font-size: var(--font-size-lg);
+    letter-spacing: 0;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* ========================================
+   Answer Cards
+   ======================================== */
+.answer-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+}
+
+.answer-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                border-color var(--transition-fast);
+}
+
+.answer-card:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-card);
+    border-color: var(--color-primary-light);
+}
+
+.answer-card:active {
+    transform: translateX(2px);
+}
+
+.answer-card.selected {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+
+.answer-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+.answer-card__icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.answer-card__label {
+    flex: 1;
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.answer-card__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast),
+                transform var(--transition-fast);
+}
+
+.answer-card__arrow svg {
+    width: 20px;
+    height: 20px;
+}
+
+.answer-card:hover .answer-card__arrow {
+    color: var(--color-primary);
+    transform: translateX(2px);
+}
+
+/* ========================================
    Responsive Adjustments
    ======================================== */
 @media (min-width: 480px) {
     .screen {
         padding: var(--spacing-lg);
     }
-    
+
     .headline {
         font-size: var(--font-size-2xl);
     }
-    
+
+    .headline--question {
+        font-size: var(--font-size-xl);
+    }
+
     .gender-cards {
         gap: var(--spacing-lg);
+    }
+
+    .answer-cards {
+        gap: var(--spacing-md);
+    }
+
+    .answer-card {
+        padding: var(--spacing-md) var(--spacing-lg);
     }
 }
 
 @media (min-width: 768px) {
     .screen {
         padding: var(--spacing-xl);
+    }
+}
+
+/* ========================================
+   Error Toast (non-blocking error display)
+   ======================================== */
+.error-toast {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: #dc2626;
+    color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: var(--font-size-sm);
+    max-width: calc(100vw - var(--spacing-xl));
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+.error-toast__close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity var(--transition-fast);
+}
+
+.error-toast__close:hover {
+    opacity: 1;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
 }
