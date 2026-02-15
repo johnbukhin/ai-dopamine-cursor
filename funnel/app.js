@@ -139,7 +139,54 @@ const Icons = {
         prohibited: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <path d="m4.9 4.9 14.2 14.2"/>
+        </svg>`,
+
+        // ========================================
+        // Likert Scale Icons (custom styled)
+        // ========================================
+        
+        // Thumbs down with X - "Strongly disagree" (position 1)
+        thumbs_down_x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 14V2"/>
+            <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/>
+            <path d="m3 3 4 4" stroke="#ef4444" stroke-width="2.5"/>
+            <path d="m7 3-4 4" stroke="#ef4444" stroke-width="2.5"/>
+        </svg>`,
+
+        // Thumbs up with stars - "Strongly agree" (position 5)
+        thumbs_up_star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10v12"/>
+            <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>
+            <path d="M19 2l1 2 2 .5-1.5 1.5.5 2-2-1-2 1 .5-2L16 4.5l2-.5 1-2z" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"/>
         </svg>`
+    },
+
+    /**
+     * Emoji mapping for icon_checkbox_list questions
+     * Maps JSON icon names to Unicode emoji characters
+     */
+    emojis: {
+        // Wellbeing emotions (q26)
+        stressed_emoji: '😰',
+        mood_emoji: '🎭',
+        worry_emoji: '😟',
+        sad_emoji: '😢',
+        battery_emoji: '🔋',
+        mirror_emoji: '🪞',
+        thumbs_up_emoji: '👍',
+        
+        // Improvement areas (q28)
+        meditation_emoji: '🧘',
+        target_emoji: '🎯',
+        flame_emoji: '🔥',
+        lightning_emoji: '⚡',
+        bicep_emoji: '💪',
+        
+        // Goals (q31)
+        couple_emoji: '👫',
+        confident_emoji: '😎',
+        heart_emoji: '❤️',
+        trophy_emoji: '🏆'
     },
 
     /**
@@ -151,6 +198,15 @@ const Icons = {
         return this.icons[name] || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="8"/>
         </svg>`;
+    },
+
+    /**
+     * Get emoji character by name
+     * @param {string} name - Emoji icon name from JSON (e.g., "stressed_emoji")
+     * @returns {string} Emoji character or fallback
+     */
+    getEmoji(name) {
+        return this.emojis[name] || '•';
     }
 };
 
@@ -239,6 +295,59 @@ const State = {
      */
     getAnswer(screenId) {
         return this.data.answers[screenId]?.value || null;
+    },
+
+    /**
+     * Toggle a value in a multiple choice answer array
+     * @param {string} screenId - Screen identifier
+     * @param {string} value - Value to toggle
+     * @returns {Array} Updated array of selected values
+     */
+    toggleAnswer(screenId, value) {
+        // Get current answers as array, or initialize empty
+        let current = this.getAnswer(screenId);
+        if (!Array.isArray(current)) {
+            current = [];
+        }
+
+        // Toggle the value
+        const index = current.indexOf(value);
+        if (index === -1) {
+            current.push(value);
+        } else {
+            current.splice(index, 1);
+        }
+
+        // Save and return
+        this.recordAnswer(screenId, current);
+        return current;
+    },
+
+    /**
+     * Check if a screen has any answers selected
+     * @param {string} screenId - Screen identifier
+     * @returns {boolean} True if at least one answer is selected
+     */
+    hasAnswers(screenId) {
+        const answer = this.getAnswer(screenId);
+        if (Array.isArray(answer)) {
+            return answer.length > 0;
+        }
+        return answer !== null && answer !== undefined && answer !== '';
+    },
+
+    /**
+     * Check if a specific value is selected for a screen
+     * @param {string} screenId - Screen identifier
+     * @param {string} value - Value to check
+     * @returns {boolean} True if value is selected
+     */
+    isSelected(screenId, value) {
+        const answer = this.getAnswer(screenId);
+        if (Array.isArray(answer)) {
+            return answer.includes(value);
+        }
+        return answer === value;
     },
 
     /**
@@ -393,30 +502,180 @@ const Components = {
     },
 
     /**
-     * Render answer card for single/multiple choice questions
-     * @param {Object} option - Option object with label and icon
+     * Render answer card for single choice questions
+     * Supports both icon_list (with icons) and text_list (text only, full width)
+     * @param {Object} option - Option object with label and optional icon
      * @param {string} screenId - Current screen ID for data attribute
      * @returns {string} HTML string
      */
     answerCard(option, screenId) {
         const safeLabel = Security.escapeHtml(option.label);
-        const iconSvg = option.icon ? Icons.get(option.icon) : '';
-        const isSelected = State.getAnswer(screenId) === option.label;
+        const hasIcon = !!option.icon;
+        const iconSvg = hasIcon ? Icons.get(option.icon) : '';
+        const isSelected = State.isSelected(screenId, option.label);
+        
+        // Add modifier class when no icon (text_list style)
+        const modifierClass = hasIcon ? '' : 'answer-card--text-only';
 
         return `
-            <div class="answer-card ${isSelected ? 'selected' : ''}"
+            <div class="answer-card ${modifierClass} ${isSelected ? 'selected' : ''}"
                  data-screen="${Security.escapeHtml(screenId)}"
                  data-answer="${safeLabel}"
                  role="button"
                  tabindex="0"
                  aria-label="Select ${safeLabel}">
-                ${iconSvg ? `<div class="answer-card__icon">${iconSvg}</div>` : ''}
+                ${hasIcon ? `<div class="answer-card__icon">${iconSvg}</div>` : ''}
                 <span class="answer-card__label">${safeLabel}</span>
                 <div class="answer-card__arrow">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 18l6-6-6-6"/>
                     </svg>
                 </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render checkbox answer for multiple choice questions (checkbox_list style)
+     * @param {Object} option - Option object with label
+     * @param {string} screenId - Current screen ID
+     * @returns {string} HTML string
+     */
+    checkboxAnswer(option, screenId) {
+        const safeLabel = Security.escapeHtml(option.label);
+        const isSelected = State.isSelected(screenId, option.label);
+
+        return `
+            <label class="checkbox-answer ${isSelected ? 'checkbox-answer--selected' : ''}"
+                   data-screen="${Security.escapeHtml(screenId)}"
+                   data-answer="${safeLabel}">
+                <div class="checkbox-answer__checkbox">
+                    ${isSelected ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M20 6 9 17l-5-5"/>
+                    </svg>` : ''}
+                </div>
+                <span class="checkbox-answer__label">${safeLabel}</span>
+            </label>
+        `;
+    },
+
+    /**
+     * Render checkbox answer with emoji icon (icon_checkbox_list style)
+     * @param {Object} option - Option object with label and icon
+     * @param {string} screenId - Current screen ID
+     * @returns {string} HTML string
+     */
+    iconCheckboxAnswer(option, screenId) {
+        const safeLabel = Security.escapeHtml(option.label);
+        const emoji = option.icon ? Icons.getEmoji(option.icon) : '';
+        const isSelected = State.isSelected(screenId, option.label);
+
+        return `
+            <label class="checkbox-answer checkbox-answer--icon ${isSelected ? 'checkbox-answer--selected' : ''}"
+                   data-screen="${Security.escapeHtml(screenId)}"
+                   data-answer="${safeLabel}">
+                <div class="checkbox-answer__checkbox">
+                    ${isSelected ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M20 6 9 17l-5-5"/>
+                    </svg>` : ''}
+                </div>
+                ${emoji ? `<span class="checkbox-answer__emoji">${emoji}</span>` : ''}
+                <span class="checkbox-answer__label">${safeLabel}</span>
+            </label>
+        `;
+    },
+
+    /**
+     * Render text input field for "Type your answer" option
+     * Auto-selects as a checkbox when user types
+     * @param {string} screenId - Current screen ID
+     * @param {string} placeholder - Placeholder text
+     * @returns {string} HTML string
+     */
+    textInputField(screenId, placeholder = 'Type your answer here...') {
+        const currentValue = State.getAnswer(screenId);
+        const textValue = Array.isArray(currentValue) 
+            ? currentValue.find(v => v.startsWith('__custom:'))?.replace('__custom:', '') || ''
+            : '';
+        const isSelected = textValue.length > 0;
+
+        return `
+            <div class="text-input-field ${isSelected ? 'text-input-field--active' : ''}"
+                 data-screen="${Security.escapeHtml(screenId)}">
+                <div class="text-input-field__checkbox">
+                    ${isSelected ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M20 6 9 17l-5-5"/>
+                    </svg>` : ''}
+                </div>
+                <input type="text" 
+                       class="text-input-field__input"
+                       placeholder="${Security.escapeHtml(placeholder)}"
+                       value="${Security.escapeHtml(textValue)}"
+                       data-screen="${Security.escapeHtml(screenId)}">
+            </div>
+        `;
+    },
+
+    /**
+     * Render continue button for multiple choice screens
+     * @param {boolean} disabled - Whether button should be disabled
+     * @param {string} screenId - Current screen ID for navigation
+     * @returns {string} HTML string
+     */
+    continueButton(disabled, screenId) {
+        return `
+            <button class="continue-button ${disabled ? 'continue-button--disabled' : ''}"
+                    data-screen="${Security.escapeHtml(screenId)}"
+                    ${disabled ? 'disabled' : ''}>
+                Continue
+            </button>
+        `;
+    },
+
+    /**
+     * Render single likert scale option
+     * @param {Object} option - Option object with value, label, and icon
+     * @param {string} screenId - Current screen ID
+     * @param {boolean} isFirst - True if first option (show label below)
+     * @param {boolean} isLast - True if last option (show label below)
+     * @returns {string} HTML string
+     */
+    likertOption(option, screenId, isFirst = false, isLast = false) {
+        const isSelected = State.isSelected(screenId, option.value);
+        const iconSvg = option.icon ? Icons.get(option.icon) : '';
+        const showLabel = (isFirst || isLast) && option.label;
+
+        return `
+            <div class="likert-option ${isSelected ? 'likert-option--selected' : ''}"
+                 data-screen="${Security.escapeHtml(screenId)}"
+                 data-value="${option.value}"
+                 role="button"
+                 tabindex="0"
+                 aria-label="${Security.escapeHtml(option.label || `Rating ${option.value}`)}">
+                <div class="likert-option__icon">
+                    ${iconSvg}
+                </div>
+                ${showLabel ? `<span class="likert-option__label">${Security.escapeHtml(option.label)}</span>` : ''}
+            </div>
+        `;
+    },
+
+    /**
+     * Render horizontal likert scale with 5 options
+     * @param {Array} options - Array of option objects
+     * @param {string} screenId - Current screen ID
+     * @returns {string} HTML string
+     */
+    likertScale(options, screenId) {
+        const optionsHtml = options.map((option, index) => {
+            const isFirst = index === 0;
+            const isLast = index === options.length - 1;
+            return this.likertOption(option, screenId, isFirst, isLast);
+        }).join('');
+
+        return `
+            <div class="likert-scale" data-screen="${Security.escapeHtml(screenId)}">
+                ${optionsHtml}
             </div>
         `;
     },
@@ -526,6 +785,100 @@ const Screens = {
     },
 
     /**
+     * Render multiple choice question screen
+     * Supports checkbox_list and icon_checkbox_list styles
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    multipleChoice(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline);
+        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
+        const questionNumber = screenData.questionNumber || 1;
+        const isIconStyle = screenData.optionStyle === 'icon_checkbox_list';
+
+        // Determine previous screen for back button
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        // Filter out text_input options and render checkboxes
+        const regularOptions = screenData.options.filter(opt => opt.type !== 'text_input');
+        const hasTextInput = screenData.options.some(opt => opt.type === 'text_input');
+
+        // Render checkbox answers based on style
+        const checkboxesHtml = regularOptions.map(option => {
+            return isIconStyle
+                ? Components.iconCheckboxAnswer(option, screenData.id)
+                : Components.checkboxAnswer(option, screenData.id);
+        }).join('');
+
+        // Check if continue should be disabled
+        const hasSelection = State.hasAnswers(screenData.id);
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                ${Components.progressBar(questionNumber)}
+
+                <main class="content content--left">
+                    <h1 class="headline headline--question">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--question">${safeSubheadline}</p>` : ''}
+
+                    <div class="checkbox-answers ${isIconStyle ? 'checkbox-answers--icon' : ''}">
+                        ${checkboxesHtml}
+                    </div>
+
+                    ${hasTextInput ? Components.textInputField(screenData.id) : ''}
+
+                    <div class="continue-container">
+                        ${Components.continueButton(!hasSelection, screenData.id)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render likert scale question screen
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    likertScaleScreen(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline);
+        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
+        const questionNumber = screenData.questionNumber || 1;
+
+        // Determine previous screen for back button
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                ${Components.progressBar(questionNumber)}
+
+                <main class="content content--left">
+                    <h1 class="headline headline--question headline--likert">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--question">${safeSubheadline}</p>` : ''}
+
+                    ${Components.likertScale(screenData.options, screenData.id)}
+                </main>
+            </div>
+        `;
+    },
+
+    /**
      * Render placeholder for screens not yet implemented
      * @param {Object} screenData - Screen data from JSON
      * @returns {string} HTML string
@@ -561,8 +914,10 @@ const Events = {
      */
     init() {
         // Use event delegation on the app container
-        document.getElementById('app').addEventListener('click', this.handleClick.bind(this));
-        document.getElementById('app').addEventListener('keydown', this.handleKeydown.bind(this));
+        const appEl = document.getElementById('app');
+        appEl.addEventListener('click', this.handleClick.bind(this));
+        appEl.addEventListener('keydown', this.handleKeydown.bind(this));
+        appEl.addEventListener('input', this.handleInput.bind(this));
     },
 
     /**
@@ -594,12 +949,44 @@ const Events = {
             return;
         }
 
+        // Checkbox answer click (multiple choice questions)
+        const checkboxAnswer = e.target.closest('.checkbox-answer');
+        if (checkboxAnswer) {
+            this.handleCheckboxSelect(checkboxAnswer);
+            return;
+        }
+
+        // Likert option click
+        const likertOption = e.target.closest('.likert-option');
+        if (likertOption) {
+            this.handleLikertSelect(likertOption);
+            return;
+        }
+
+        // Continue button click
+        const continueButton = e.target.closest('.continue-button:not(.continue-button--disabled)');
+        if (continueButton) {
+            this.handleContinueClick(continueButton);
+            return;
+        }
+
         // Other navigation button click (NOT back button)
         const navButton = e.target.closest('[data-navigate]:not(.back-button)');
         if (navButton) {
             const targetScreen = navButton.dataset.navigate;
             Router.navigate(targetScreen);
             return;
+        }
+    },
+
+    /**
+     * Handle input events (for text input auto-select)
+     * @param {Event} e - Input event
+     */
+    handleInput(e) {
+        const textInput = e.target.closest('.text-input-field__input');
+        if (textInput) {
+            this.handleTextInput(textInput);
         }
     },
 
@@ -622,6 +1009,22 @@ const Events = {
             if (answerCard) {
                 e.preventDefault();
                 this.handleAnswerSelect(answerCard);
+                return;
+            }
+
+            // Checkbox answer keyboard activation
+            const checkboxAnswer = e.target.closest('.checkbox-answer');
+            if (checkboxAnswer) {
+                e.preventDefault();
+                this.handleCheckboxSelect(checkboxAnswer);
+                return;
+            }
+
+            // Likert option keyboard activation
+            const likertOption = e.target.closest('.likert-option');
+            if (likertOption) {
+                e.preventDefault();
+                this.handleLikertSelect(likertOption);
                 return;
             }
         }
@@ -703,6 +1106,128 @@ const Events = {
             // Fallback to landing if history is empty
             log.info('[User Action] Back navigation (fallback) to: landing');
             Router.navigate('landing');
+        }
+    },
+
+    /**
+     * Handle checkbox selection (multiple choice questions)
+     * Toggles selection and re-renders to update UI
+     * @param {HTMLElement} checkbox - The clicked checkbox element
+     */
+    handleCheckboxSelect(checkbox) {
+        const screenId = checkbox.dataset.screen;
+        const answer = checkbox.dataset.answer;
+
+        log.info(`[User Action] Toggled checkbox on ${screenId}: ${answer}`);
+
+        // Toggle the answer in state
+        State.toggleAnswer(screenId, answer);
+
+        // Re-render to update UI (checkbox state and continue button)
+        App.render();
+    },
+
+    /**
+     * Handle likert scale selection
+     * Selects value and auto-advances to next screen
+     * @param {HTMLElement} option - The clicked likert option element
+     */
+    handleLikertSelect(option) {
+        const screenId = option.dataset.screen;
+        const value = parseInt(option.dataset.value, 10);
+
+        log.info(`[User Action] Selected likert value on ${screenId}: ${value}`);
+
+        // Record the answer
+        State.recordAnswer(screenId, value);
+
+        // Push current screen to history
+        State.pushHistory(screenId);
+
+        // Auto-advance to next screen
+        const nextScreen = Router.getNextScreen(screenId);
+        if (nextScreen) {
+            Router.navigate(nextScreen);
+        } else {
+            log.warn(`[Router] No next screen defined for ${screenId}`);
+        }
+    },
+
+    /**
+     * Handle text input for "Type your answer" field
+     * Auto-selects as a checkbox option when user types
+     * @param {HTMLElement} input - The text input element
+     */
+    handleTextInput(input) {
+        const screenId = input.dataset.screen;
+        const value = input.value.trim();
+        const customKey = '__custom:' + value;
+
+        log.info(`[User Action] Text input on ${screenId}: "${value}"`);
+
+        // Get current answers
+        let current = State.getAnswer(screenId);
+        if (!Array.isArray(current)) {
+            current = [];
+        }
+
+        // Remove any existing custom answer
+        current = current.filter(v => !v.startsWith('__custom:'));
+
+        // Add new custom answer if not empty
+        if (value.length > 0) {
+            current.push(customKey);
+        }
+
+        // Save to state
+        State.recordAnswer(screenId, current);
+
+        // Update continue button state without full re-render
+        const continueBtn = document.querySelector('.continue-button');
+        if (continueBtn) {
+            const hasSelection = State.hasAnswers(screenId);
+            continueBtn.disabled = !hasSelection;
+            continueBtn.classList.toggle('continue-button--disabled', !hasSelection);
+        }
+
+        // Update text input checkbox visual
+        const textField = input.closest('.text-input-field');
+        if (textField) {
+            textField.classList.toggle('text-input-field--active', value.length > 0);
+            const checkboxDiv = textField.querySelector('.text-input-field__checkbox');
+            if (checkboxDiv) {
+                checkboxDiv.innerHTML = value.length > 0 
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>`
+                    : '';
+            }
+        }
+    },
+
+    /**
+     * Handle continue button click
+     * Validates selection and navigates to next screen
+     * @param {HTMLElement} button - The continue button element
+     */
+    handleContinueClick(button) {
+        const screenId = button.dataset.screen;
+
+        // Verify we have at least one selection
+        if (!State.hasAnswers(screenId)) {
+            log.warn(`[Events] Continue clicked but no answers selected for ${screenId}`);
+            return;
+        }
+
+        log.info(`[User Action] Continue clicked on ${screenId}`);
+
+        // Push current screen to history
+        State.pushHistory(screenId);
+
+        // Navigate to next screen
+        const nextScreen = Router.getNextScreen(screenId);
+        if (nextScreen) {
+            Router.navigate(nextScreen);
+        } else {
+            log.warn(`[Router] No next screen defined for ${screenId}`);
         }
     }
 };
@@ -839,6 +1364,12 @@ const App = {
                 break;
             case 'single_choice':
                 html = Screens.singleChoice(screenData);
+                break;
+            case 'multiple_choice':
+                html = Screens.multipleChoice(screenData);
+                break;
+            case 'likert_scale':
+                html = Screens.likertScaleScreen(screenData);
                 break;
             default:
                 html = Screens.placeholder(screenData);
