@@ -39,6 +39,19 @@ All notable changes to this project will be documented in this file.
   - 4 new components: circularProgress, progressChecklist, engagementModal, testimonialCard
   - CSS animations: `checkmarkPop`, `fadeIn/fadeOut`, `modalSlideUp`
 
+- **Value proposition & paywall screens** (Issue #9)
+  - Plan ready (`plan_ready`): feature list + "Get my plan" CTA
+  - Paywall (`paywall`): countdown timer (10:00 loop), promo code badge, 3 pricing tiers, FAQ accordion, testimonials, trust elements
+  - `CountdownTimer` controller — real-time MM:SS with infinite loop, cleanup on unmount
+  - 14 new components: featureList, ctaButton, countdownTimer, promoCodeBadge, pricingCard, paymentIcons, mediaLogos, statisticsBlock, awardBadge, moneyBackGuarantee, faqAccordion, companyFooter
+  - State: `selectedTier`, `openFaqIndex`
+  - Payment icons: Visa, Mastercard, Amex, Apple Pay, Google Pay, PayPal SVGs
+
+- **Toast notifications**
+  - `App.showToast(type, message)` — generic toast with `error` / `success` variants
+  - `App.showError()` / `App.showSuccess()` convenience wrappers
+  - Delegated close handler (no inline onclick)
+
 - **Icon library** - 19 Lucide-inspired inline SVGs + 17 emoji mappings
   - Relationship: people, heart, rings, link, handshake, broken_heart
   - Actions: thumbs_up, thumbs_down, smile, lightning, hand_stop, checkmark, question, prohibited, puzzle
@@ -58,11 +71,11 @@ All notable changes to this project will be documented in this file.
   - `CONFIG.debug` flag to toggle console logging
   - Centralized `log.info/warn/error` utilities
   - Fallback data if JSON fails to load (landing + question_1)
-  - `App.showError()` inline toast for non-blocking error display
+  - `App.showToast()` / `showError()` / `showSuccess()` for non-blocking notifications
   - Multiple JSON path fallback for different server configs
 
 - **CSS design tokens**
-  - `--color-success` for semantic green (#22c55e)
+  - `--color-success`, `--color-error`, `--color-urgent`, `--color-promo` for status/urgency
   - `--color-primary-rgb` for rgba() usage (91, 91, 214)
 
 - **Project tooling**
@@ -71,10 +84,14 @@ All notable changes to this project will be documented in this file.
   - `CLAUDE.md` - Dev workflow, test credentials, GitHub integration docs
 
 ### Changed
-- `handleContinueClick` now skips answer validation for interstitial/transition screens
-- `App.render()` cleans up LoadingController before DOM swap, starts it for transition screens
+- `handleContinueClick` skips answer validation for interstitial, transition, personalized_results, value_proposition screens
+- `App.render()` cleans up LoadingController and CountdownTimer before DOM swap
 
 ### Fixed
+- **Timer reset on paywall** — pricing/FAQ clicks use targeted DOM updates instead of full re-render; countdown no longer restarts
+- **Keyboard accessibility** — pricing cards and FAQ questions now respond to Enter/Space
+- **Toast close** — delegated handler replaces inline onclick; consistent event delegation
+- **Success toast** — paywall CTA uses `showSuccess()` (green) instead of `showError()` (red)
 - Hardcoded green color replaced with `var(--color-success)` CSS variable
 - `--color-primary-rgb` defined in `:root` (expert badge background was transparent)
 - Citation year now escaped via `Security.escapeHtml()`

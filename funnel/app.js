@@ -136,6 +136,11 @@ const Icons = {
             <path d="M20 6 9 17l-5-5"/>
         </svg>`,
 
+        // Chevron down - for FAQ accordion
+        chevron_down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+        </svg>`,
+
         question: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
@@ -164,6 +169,54 @@ const Icons = {
             <path d="M7 10v12"/>
             <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>
             <path d="M19 2l1 2 2 .5-1.5 1.5.5 2-2-1-2 1 .5-2L16 4.5l2-.5 1-2z" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"/>
+        </svg>`,
+
+        // ========================================
+        // Payment Icons (Phase 3c - Paywall)
+        // ========================================
+        
+        // Visa card icon
+        visa: `<svg viewBox="0 0 48 32" fill="none">
+            <rect width="48" height="32" rx="4" fill="#1A1F71"/>
+            <path d="M18.5 22L21.8 10H25L21.7 22H18.5ZM32.7 10.3C32 10.1 30.9 9.8 29.5 9.8C26.2 9.8 23.9 11.5 23.9 14C23.9 15.8 25.6 16.8 26.9 17.4C28.2 18 28.7 18.4 28.7 19C28.7 19.9 27.6 20.3 26.6 20.3C25.2 20.3 24.4 20.1 23.3 19.6L22.9 19.4L22.5 21.9C23.3 22.3 24.8 22.6 26.4 22.6C30 22.6 32.2 20.9 32.3 18.2C32.3 16.8 31.4 15.7 29.4 14.8C28.2 14.2 27.5 13.8 27.5 13.2C27.5 12.7 28.1 12.1 29.4 12.1C30.5 12.1 31.4 12.3 32.1 12.6L32.5 12.8L32.7 10.3ZM38.5 10H36C35.2 10 34.6 10.2 34.2 11L29 22H32.6L33.3 20.2H37.7L38.2 22H41.5L38.5 10ZM34.2 17.7L35.8 13L36.8 17.7H34.2ZM15.5 10L12 19.5L11.6 17.4L10.4 11.8C10.2 10.8 9.5 10.1 8.6 10H8.6L8.6 10H3V10.3C4.2 10.6 5.3 11 6.2 11.5L9.3 22H13L19 10H15.5Z" fill="white"/>
+        </svg>`,
+
+        // Mastercard icon
+        mastercard: `<svg viewBox="0 0 48 32" fill="none">
+            <rect width="48" height="32" rx="4" fill="#000000"/>
+            <circle cx="18" cy="16" r="9" fill="#EB001B"/>
+            <circle cx="30" cy="16" r="9" fill="#F79E1B"/>
+            <path d="M24 9C25.9 10.5 27 12.9 27 15.5C27 18.1 25.9 20.5 24 22C22.1 20.5 21 18.1 21 15.5C21 12.9 22.1 10.5 24 9Z" fill="#FF5F00"/>
+        </svg>`,
+
+        // American Express icon
+        amex: `<svg viewBox="0 0 48 32" fill="none">
+            <rect width="48" height="32" rx="4" fill="#016FD0"/>
+            <path d="M10.5 12L8 20H10.8L11.3 18.5H13.1L13.6 20H16.8V18.8L17.2 20H19.2L19.6 18.8V20H29V18.5H29.3C29.6 18.5 29.6 18.5 29.6 18.8V20H36.5L37.5 18.9L38.4 20H42L38.6 16L42 12H38.5L37.5 13.1L36.6 12H29.3V13.4C29.1 13.4 28.9 13.4 28.7 13.4H27.2V12H23.5L22.7 14L21.8 12H17.5V13.1L17.1 12H13.7L10.5 12Z" fill="white"/>
+        </svg>`,
+
+        // Apple Pay icon
+        applepay: `<svg viewBox="0 0 48 32" fill="none">
+            <rect width="48" height="32" rx="4" fill="black"/>
+            <path d="M12.5 10.5C12.9 10 13.4 9.5 14 9.5C14 10.1 13.8 10.7 13.4 11.2C13 11.7 12.4 12 11.8 12C11.7 11.5 12 10.9 12.5 10.5ZM14 12.1C13.1 12 12.3 12.6 11.9 12.6C11.5 12.6 10.8 12.1 10.1 12.1C9.2 12.2 8.4 12.7 7.9 13.5C7 15.1 7.6 17.5 8.5 18.9C8.9 19.6 9.4 20.3 10.1 20.3C10.8 20.3 11 19.9 11.8 19.9C12.6 19.9 12.8 20.3 13.5 20.3C14.3 20.3 14.7 19.6 15.1 18.9C15.5 18.1 15.7 17.4 15.7 17.4C15.7 17.4 14.5 16.9 14.5 15.5C14.5 14.3 15.4 13.7 15.5 13.7C14.9 12.9 14 12.1 14 12.1Z" fill="white"/>
+            <path d="M19.5 9.5H22.1L24.6 17.5L27.2 9.5H29.7L25.9 20.2H23.4L19.5 9.5Z" fill="white"/>
+            <path d="M30.5 20.2V9.5H35.5C37.4 9.5 38.7 10.8 38.7 12.5C38.7 14.2 37.3 15.5 35.4 15.5H32.8V20.2H30.5ZM32.8 11.2V13.8H35C36.1 13.8 36.7 13.2 36.7 12.5C36.7 11.8 36.1 11.2 35 11.2H32.8Z" fill="white"/>
+        </svg>`,
+
+        // Google Pay icon
+        googlepay: `<svg viewBox="0 0 48 32" fill="none">
+            <rect width="48" height="32" rx="4" fill="white" stroke="#DADCE0"/>
+            <path d="M23 16V19.5H27.7C27.5 20.6 26.5 22.6 23 22.6C19.9 22.6 17.4 20.1 17.4 16.9C17.4 13.7 19.9 11.2 23 11.2C24.8 11.2 26 12 26.9 12.8L29.6 10.2C28 8.7 25.9 7.7 23 7.7C17.5 7.7 13 12.1 13 17.6C13 23.1 17.5 27.5 23 27.5C28.8 27.5 32.3 23.6 32.3 17.8C32.3 17.1 32.2 16.6 32.1 16.1H23V16Z" fill="#4285F4"/>
+            <path d="M23 16V19.5H27.7C27.5 20.6 26.5 22.6 23 22.6V27.5C28.8 27.5 32.3 23.6 32.3 17.8C32.3 17.1 32.2 16.6 32.1 16.1H23V16Z" fill="#34A853"/>
+            <path d="M17.4 16.9C17.4 15.9 17.7 14.9 18.2 14L15.3 11.7C14.2 13.2 13.5 15 13.5 17C13.5 19 14.2 20.8 15.3 22.3L18.2 20C17.7 19.1 17.4 18.1 17.4 16.9Z" fill="#FBBC05"/>
+            <path d="M23 11.2C24.8 11.2 26 12 26.9 12.8L29.6 10.2C28 8.7 25.9 7.7 23 7.7C19.1 7.7 15.7 9.9 14.3 13.1L17.2 15.4C17.9 13.3 20.2 11.2 23 11.2Z" fill="#EA4335"/>
+        </svg>`,
+
+        // PayPal icon
+        paypal: `<svg viewBox="0 0 48 32" fill="none">
+            <rect width="48" height="32" rx="4" fill="#003087"/>
+            <path d="M18.5 9.5H23.8C26.5 9.5 28.3 11 28.3 13.3C28.3 16.2 26.1 18 23 18H20.8L19.8 22.5H17.5L18.5 9.5ZM23.3 11.7H21.2L20.5 15.8H22.6C24.3 15.8 25.5 15 25.5 13.6C25.5 12.3 24.5 11.7 23.3 11.7Z" fill="white"/>
+            <path d="M27.5 17.8C27.5 15.3 29.4 13.3 32 13.3C34.6 13.3 36.5 15.3 36.5 17.8C36.5 20.3 34.6 22.3 32 22.3C29.4 22.3 27.5 20.3 27.5 17.8ZM34.2 17.8C34.2 16.5 33.3 15.5 32 15.5C30.7 15.5 29.8 16.5 29.8 17.8C29.8 19.1 30.7 20.1 32 20.1C33.3 20.1 34.2 19.1 34.2 17.8Z" fill="#009CDE"/>
         </svg>`
     },
 
@@ -227,7 +280,9 @@ const State = {
         currentScreen: 'landing',
         answers: {},
         history: [],      // Navigation history for back button
-        startedAt: null
+        startedAt: null,
+        selectedTier: '1_month',  // Phase 3c: Default pricing tier
+        openFaqIndex: null        // Phase 3c: Currently open FAQ (null = all closed)
     },
 
     /**
@@ -256,7 +311,9 @@ const State = {
             currentScreen: 'landing',
             answers: {},
             history: [],
-            startedAt: new Date().toISOString()
+            startedAt: new Date().toISOString(),
+            selectedTier: '1_month',
+            openFaqIndex: null
         };
         this.save();
         log.info('[State] Reset to defaults');
@@ -1023,6 +1080,346 @@ const Components = {
                 ${safeText}
             </footer>
         `;
+    },
+
+    // ========================================
+    // Phase 3c: Value Proposition & Paywall Components
+    // ========================================
+
+    /**
+     * Render feature list with checkmark bullets (plan_ready)
+     * @param {Array<string>} features - Array of feature text strings
+     * @returns {string} HTML string
+     */
+    featureList(features) {
+        const featuresHtml = features.map(feature => `
+            <li class="feature-list__item">
+                <div class="feature-list__icon">${Icons.get('checkmark')}</div>
+                <span class="feature-list__text">${Security.escapeHtml(feature)}</span>
+            </li>
+        `).join('');
+
+        return `<ul class="feature-list">${featuresHtml}</ul>`;
+    },
+
+    /**
+     * Render primary CTA button (reusable)
+     * @param {string} text - Button text
+     * @param {string} screenId - Screen ID for navigation
+     * @param {boolean} disabled - Whether button is disabled
+     * @returns {string} HTML string
+     */
+    ctaButton(text, screenId, disabled = false) {
+        const safeText = Security.escapeHtml(text);
+        return `
+            <button class="cta-button ${disabled ? 'cta-button--disabled' : ''}"
+                    data-screen="${Security.escapeHtml(screenId)}"
+                    ${disabled ? 'disabled' : ''}>
+                ${safeText}
+            </button>
+        `;
+    },
+
+    /**
+     * Render countdown timer (paywall)
+     * Real-time countdown with MM:SS format, infinite loop
+     * @param {string} headline - Timer headline text
+     * @param {number} initialMinutes - Starting time in minutes
+     * @returns {string} HTML string
+     */
+    countdownTimer(headline, initialMinutes = 10) {
+        const safeHeadline = Security.escapeHtml(headline || 'Discount is reserved for:');
+        
+        // Calculate initial display
+        const minutes = Math.floor(initialMinutes);
+        const seconds = Math.floor((initialMinutes % 1) * 60);
+        const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        return `
+            <div class="countdown-timer">
+                <p class="countdown-timer__headline">${safeHeadline}</p>
+                <div class="countdown-timer__display">
+                    <span class="countdown-timer__digits">${display}</span>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Generate personalized promo code
+     * Format: {NAME}_{MONTH}_{DISCOUNT}
+     * Example: "JOHN_FEB_50"
+     * @param {string} name - User's name (from state)
+     * @param {number} discount - Discount percentage
+     * @returns {string} Promo code string
+     */
+    generatePromoCode(name, discount) {
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const currentMonth = months[new Date().getMonth()];
+        
+        // Sanitize name: uppercase, remove non-letters, use fallback if empty
+        let userName = (name || '').toUpperCase().replace(/[^A-Z]/g, '');
+        if (!userName) {
+            // Fallback: try email username
+            const email = State.getAnswer('email_capture');
+            userName = email ? email.split('@')[0].toUpperCase().replace(/[^A-Z]/g, '') : 'USER';
+        }
+
+        return `${userName}_${currentMonth}_${discount}`;
+    },
+
+    /**
+     * Render promo code badge (paywall)
+     * @param {string} label - Badge label text
+     * @param {string} promoCode - Generated promo code
+     * @param {string} status - Status text (e.g., "Activated")
+     * @returns {string} HTML string
+     */
+    promoCodeBadge(label, promoCode, status) {
+        const safeLabel = Security.escapeHtml(label || 'Your personal promo code');
+        const safeCode = Security.escapeHtml(promoCode);
+        const safeStatus = Security.escapeHtml(status || 'Activated');
+
+        return `
+            <div class="promo-badge">
+                <p class="promo-badge__label">${safeLabel}</p>
+                <div class="promo-badge__code-wrapper">
+                    <span class="promo-badge__code">${safeCode}</span>
+                    <span class="promo-badge__status">${safeStatus}</span>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render "MOST POPULAR" badge ribbon
+     * @returns {string} HTML string
+     */
+    mostPopularBadge() {
+        return `<div class="most-popular-badge">MOST POPULAR</div>`;
+    },
+
+    /**
+     * Render pricing tier card (paywall)
+     * @param {Object} tier - Tier object from JSON
+     * @param {boolean} isSelected - Whether this tier is currently selected
+     * @returns {string} HTML string
+     */
+    pricingCard(tier, isSelected) {
+        const safeName = Security.escapeHtml(tier.name);
+        const safeOriginalPrice = Security.escapeHtml(tier.originalPrice);
+        const safeDiscountedPrice = Security.escapeHtml(tier.discountedPrice);
+        const safePricePerDay = Security.escapeHtml(tier.pricePerDay);
+        const safeSavings = Security.escapeHtml(tier.savings);
+        const safeId = Security.escapeHtml(tier.id);
+        
+        const selectedClass = isSelected ? 'pricing-card--selected' : '';
+        const recommendedClass = tier.recommended ? 'pricing-card--recommended' : '';
+        const hasBadge = tier.badge;
+
+        return `
+            <div class="pricing-card ${selectedClass} ${recommendedClass}"
+                 data-tier-id="${safeId}"
+                 role="button"
+                 tabindex="0"
+                 aria-label="Select ${safeName}">
+                ${hasBadge ? this.mostPopularBadge() : ''}
+                <h3 class="pricing-card__name">${safeName}</h3>
+                <div class="pricing-card__prices">
+                    <span class="pricing-card__original-price">${safeOriginalPrice}</span>
+                    <span class="pricing-card__discounted-price">${safeDiscountedPrice}</span>
+                </div>
+                <p class="pricing-card__per-day">${safePricePerDay}</p>
+                <span class="pricing-card__savings">${safeSavings}</span>
+            </div>
+        `;
+    },
+
+    /**
+     * Render pricing tiers container (paywall)
+     * @param {Array<Object>} tiers - Array of pricing tier objects
+     * @param {string} selectedTierId - Currently selected tier ID
+     * @returns {string} HTML string
+     */
+    pricingTiers(tiers, selectedTierId) {
+        const cardsHtml = tiers.map(tier => 
+            this.pricingCard(tier, tier.id === selectedTierId)
+        ).join('');
+
+        return `
+            <div class="pricing-tiers">
+                ${cardsHtml}
+            </div>
+        `;
+    },
+
+    /**
+     * Render payment security icons (paywall)
+     * @param {string} headline - Section headline
+     * @param {Array<string>} icons - Array of payment icon names
+     * @returns {string} HTML string
+     */
+    paymentIcons(headline, icons) {
+        const safeHeadline = Security.escapeHtml(headline || 'Pay Safe & Secure');
+        const iconsHtml = icons.map(iconName => {
+            const iconKey = iconName.toLowerCase().replace(/\s+/g, '');
+            return `<div class="payment-icon">${Icons.get(iconKey)}</div>`;
+        }).join('');
+
+        return `
+            <div class="payment-icons-section">
+                <h3 class="payment-icons__headline">${safeHeadline}</h3>
+                <div class="payment-icons">
+                    ${iconsHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render media logos as text labels (paywall)
+     * @param {string} headline - Section headline
+     * @param {Array<string>} logos - Array of media brand names
+     * @returns {string} HTML string
+     */
+    mediaLogos(headline, logos) {
+        const safeHeadline = Security.escapeHtml(headline || 'As featured in');
+        const logosHtml = logos.map(logo => 
+            `<span class="media-logo">${Security.escapeHtml(logo)}</span>`
+        ).join('');
+
+        return `
+            <div class="media-logos-section">
+                <h3 class="media-logos__headline">${safeHeadline}</h3>
+                <div class="media-logos">
+                    ${logosHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render statistics block (paywall)
+     * Three percentage stats with descriptions
+     * @param {Array<Object>} stats - Array of {percentage, description} objects
+     * @returns {string} HTML string
+     */
+    statisticsBlock(stats) {
+        const statsHtml = stats.map(stat => `
+            <div class="stat-item">
+                <span class="stat-percentage">${Security.escapeHtml(stat.percentage)}</span>
+                <p class="stat-description">${Security.escapeHtml(stat.description)}</p>
+            </div>
+        `).join('');
+
+        return `
+            <div class="statistics-block">
+                ${statsHtml}
+            </div>
+        `;
+    },
+
+    /**
+     * Render award badge (paywall)
+     * @param {Object} award - Award object with badge and source
+     * @returns {string} HTML string
+     */
+    awardBadge(award) {
+        const safeBadge = Security.escapeHtml(award.badge || '2025 Best Mobile App Award winner');
+        const safeSource = Security.escapeHtml(award.source || 'App Excellence Awards');
+
+        return `
+            <div class="award-badge">
+                <div class="award-badge__icon">🏆</div>
+                <div class="award-badge__content">
+                    <p class="award-badge__title">${safeBadge}</p>
+                    <p class="award-badge__source">${safeSource}</p>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render money-back guarantee card (paywall)
+     * @param {Object} guarantee - Guarantee object with duration, headline, description
+     * @returns {string} HTML string
+     */
+    moneyBackGuarantee(guarantee) {
+        const safeHeadline = Security.escapeHtml(guarantee.headline || '30-Day Money-Back Guarantee');
+        const safeDescription = Security.escapeHtml(guarantee.description || '');
+        
+        return `
+            <div class="money-back-guarantee">
+                <div class="guarantee-icon">✓</div>
+                <div class="guarantee-content">
+                    <h3 class="guarantee-headline">${safeHeadline}</h3>
+                    <p class="guarantee-description">${safeDescription}</p>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render FAQ accordion (paywall)
+     * Only one question can be open at a time
+     * @param {string} headline - Section headline
+     * @param {Array<Object>} questions - Array of {question, answer} objects
+     * @param {number|null} openIndex - Currently open question index (null = all closed)
+     * @returns {string} HTML string
+     */
+    faqAccordion(headline, questions, openIndex) {
+        const safeHeadline = Security.escapeHtml(headline || 'Frequently Asked Questions');
+        
+        const questionsHtml = questions.map((item, index) => {
+            const isOpen = index === openIndex;
+            const safeQuestion = Security.escapeHtml(item.question);
+            const safeAnswer = Security.escapeHtml(item.answer);
+
+            return `
+                <div class="faq-item ${isOpen ? 'faq-item--open' : ''}" data-faq-index="${index}">
+                    <button class="faq-question" aria-expanded="${isOpen}">
+                        <span>${safeQuestion}</span>
+                        <span class="faq-chevron">${Icons.get('chevron_down')}</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>${safeAnswer}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="faq-accordion-section">
+                <h3 class="faq-accordion__headline">${safeHeadline}</h3>
+                <div class="faq-accordion">
+                    ${questionsHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render company footer with policy links (paywall)
+     * @param {Object} companyInfo - Company object with name, address, links
+     * @returns {string} HTML string
+     */
+    companyFooter(companyInfo) {
+        const safeName = Security.escapeHtml(companyInfo.name || '');
+        const safeAddress = Security.escapeHtml(companyInfo.address || '');
+        
+        const linksHtml = (companyInfo.links || []).map(link => 
+            `<a href="#${link.toLowerCase().replace(/\s+/g, '-')}" class="footer-link">${Security.escapeHtml(link)}</a>`
+        ).join('');
+
+        return `
+            <div class="company-footer">
+                <p class="company-footer__name">${safeName}</p>
+                <p class="company-footer__address">${safeAddress}</p>
+                <div class="footer-links">
+                    ${linksHtml}
+                </div>
+            </div>
+        `;
     }
 };
 
@@ -1650,6 +2047,151 @@ const Screens = {
         `;
     },
 
+    // ========================================
+    // Phase 3c: Value Proposition & Paywall Screens
+    // ========================================
+
+    /**
+     * Render value proposition screen (plan_ready)
+     * Shows personalized plan features before paywall
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    valueProp(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
+        const ctaText = screenData.ctaButton || 'Get my plan';
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        return `
+            <div class="screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content value-prop">
+                    <h1 class="headline">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline">${safeSubheadline}</p>` : ''}
+
+                    ${screenData.planFeatures ? Components.featureList(screenData.planFeatures) : ''}
+
+                    <div class="cta-container">
+                        ${Components.ctaButton(ctaText, safeId)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render paywall screen with all trust elements
+     * Full interactive paywall with countdown, pricing tiers, FAQ, etc.
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    paywall(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || 'Choose Your Plan');
+
+        // Generate personalized promo code
+        const userName = State.getAnswer('name_capture');
+        const promoCode = Components.generatePromoCode(userName, 50);
+
+        // Get currently selected tier from state
+        const selectedTierId = State.data.selectedTier || '1_month';
+
+        // Get current FAQ open index from state
+        const openFaqIndex = State.data.openFaqIndex;
+
+        // Build paywall sections in order (as per JSON structure)
+        return `
+            <div class="screen paywall-screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <main class="content paywall">
+                    <h1 class="headline">${safeHeadline}</h1>
+
+                    <!-- 1. Countdown Timer -->
+                    ${screenData.urgencyElements?.countdownTimer ? 
+                        Components.countdownTimer(
+                            screenData.urgencyElements.countdownTimer.headline,
+                            screenData.urgencyElements.countdownTimer.initialMinutes
+                        ) : ''}
+
+                    <!-- 2. Promo Code Badge -->
+                    ${screenData.urgencyElements?.promoCode ? 
+                        Components.promoCodeBadge(
+                            screenData.urgencyElements.promoCode.label,
+                            promoCode,
+                            screenData.urgencyElements.promoCode.discount
+                        ) : ''}
+
+                    <!-- 3. Pricing Tiers -->
+                    ${screenData.pricingTiers ? 
+                        Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
+
+                    <!-- 4. CTA Button -->
+                    <div class="paywall__cta">
+                        ${Components.ctaButton(
+                            screenData.ctaButton?.text || 'Get my plan',
+                            safeId
+                        )}
+                    </div>
+
+                    <!-- 5. Payment Security -->
+                    ${screenData.trustElements?.paymentSecurity ? 
+                        Components.paymentIcons(
+                            screenData.trustElements.paymentSecurity.headline,
+                            screenData.trustElements.paymentSecurity.icons
+                        ) : ''}
+
+                    <!-- 6. Media Features -->
+                    ${screenData.trustElements?.mediaFeatures ? 
+                        Components.mediaLogos(
+                            screenData.trustElements.mediaFeatures.headline,
+                            screenData.trustElements.mediaFeatures.logos
+                        ) : ''}
+
+                    <!-- 7. Statistics Block -->
+                    ${screenData.trustElements?.statistics ? 
+                        Components.statisticsBlock(screenData.trustElements.statistics) : ''}
+
+                    <!-- 8. Award Badge -->
+                    ${screenData.trustElements?.award ? 
+                        Components.awardBadge(screenData.trustElements.award) : ''}
+
+                    <!-- 9. Money-Back Guarantee -->
+                    ${screenData.trustElements?.moneyBackGuarantee ? 
+                        Components.moneyBackGuarantee(screenData.trustElements.moneyBackGuarantee) : ''}
+
+                    <!-- 10. FAQ Accordion -->
+                    ${screenData.faq ? 
+                        Components.faqAccordion(
+                            screenData.faq.headline,
+                            screenData.faq.questions || [],
+                            openFaqIndex
+                        ) : ''}
+
+                    <!-- 11. Testimonials -->
+                    ${screenData.testimonials ? `
+                        <div class="testimonial-cards">
+                            ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
+                        </div>
+                    ` : ''}
+
+                    <!-- 12. Company Footer -->
+                    ${screenData.companyInfo ? Components.companyFooter(screenData.companyInfo) : ''}
+                </main>
+            </div>
+        `;
+    },
+
     /**
      * Render placeholder for screens not yet implemented
      * @param {Object} screenData - Screen data from JSON
@@ -1674,6 +2216,69 @@ const Screens = {
                 </main>
             </div>
         `;
+    }
+};
+
+// ========================================
+// Countdown Timer Controller (Phase 3c)
+// ========================================
+const CountdownTimer = {
+    /** Active timer interval ID */
+    timerId: null,
+    /** Remaining seconds */
+    remainingSeconds: 600, // 10 minutes = 600 seconds
+
+    /**
+     * Start countdown timer with infinite loop
+     * @param {number} initialMinutes - Starting time in minutes (default 10)
+     */
+    start(initialMinutes = 10) {
+        this.cleanup();
+        this.remainingSeconds = initialMinutes * 60;
+        
+        // Update display immediately
+        this.updateDisplay();
+
+        // Update every second
+        this.timerId = setInterval(() => {
+            this.remainingSeconds--;
+
+            // Loop back to start when reaching 0
+            if (this.remainingSeconds < 0) {
+                this.remainingSeconds = initialMinutes * 60;
+            }
+
+            this.updateDisplay();
+        }, 1000);
+
+        log.info(`[Timer] Started ${initialMinutes}:00 countdown with infinite loop`);
+    },
+
+    /**
+     * Update timer display in DOM
+     */
+    updateDisplay() {
+        const timerEl = document.querySelector('.countdown-timer__digits');
+        if (!timerEl) return;
+
+        const minutes = Math.floor(this.remainingSeconds / 60);
+        const seconds = this.remainingSeconds % 60;
+        
+        // Format as MM:SS with leading zeros
+        const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        timerEl.textContent = display;
+    },
+
+    /**
+     * Clean up timer interval
+     */
+    cleanup() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+        this.remainingSeconds = 600;
+        log.info('[Timer] Cleaned up');
     }
 };
 
@@ -1882,6 +2487,13 @@ const Events = {
      * @param {Event} e - Click event
      */
     handleClick(e) {
+        // Toast close button (delegated — replaces inline onclick)
+        const toastClose = e.target.closest('.toast__close');
+        if (toastClose) {
+            toastClose.closest('.toast').remove();
+            return;
+        }
+
         // Back button click (check FIRST - highest priority)
         const backButton = e.target.closest('.back-button');
         if (backButton) {
@@ -1932,6 +2544,27 @@ const Events = {
         const continueButton = e.target.closest('.continue-button:not(.continue-button--disabled)');
         if (continueButton) {
             this.handleContinueClick(continueButton);
+            return;
+        }
+
+        // CTA button click (Phase 3c - plan_ready, paywall)
+        const ctaButton = e.target.closest('.cta-button:not(.cta-button--disabled)');
+        if (ctaButton) {
+            this.handleCtaClick(ctaButton);
+            return;
+        }
+
+        // Pricing card click (Phase 3c)
+        const pricingCard = e.target.closest('.pricing-card');
+        if (pricingCard) {
+            this.handlePricingCardClick(pricingCard);
+            return;
+        }
+
+        // FAQ question click (Phase 3c)
+        const faqQuestion = e.target.closest('.faq-question');
+        if (faqQuestion) {
+            this.handleFaqClick(faqQuestion);
             return;
         }
 
@@ -1997,6 +2630,22 @@ const Events = {
             if (likertOption) {
                 e.preventDefault();
                 this.handleLikertSelect(likertOption);
+                return;
+            }
+
+            // Pricing card keyboard activation (Phase 3c)
+            const pricingCard = e.target.closest('.pricing-card');
+            if (pricingCard) {
+                e.preventDefault();
+                this.handlePricingCardClick(pricingCard);
+                return;
+            }
+
+            // FAQ question keyboard activation (Phase 3c)
+            const faqQuestion = e.target.closest('.faq-question');
+            if (faqQuestion) {
+                e.preventDefault();
+                this.handleFaqClick(faqQuestion);
                 return;
             }
         }
@@ -2218,11 +2867,13 @@ const Events = {
     handleContinueClick(button) {
         const screenId = button.dataset.screen;
 
-        // Skip answer validation for interstitial and transition screens
+        // Skip answer validation for interstitial, transition, and results screens
         const screenData = Router.getScreen(screenId);
         const isNonQuestion = screenData && (
             screenData.screenType === 'interstitial' ||
-            screenData.screenType === 'transition'
+            screenData.screenType === 'transition' ||
+            screenData.screenType === 'personalized_results' ||
+            screenData.screenType === 'value_proposition'
         );
 
         // For form capture screens, store input value before navigating
@@ -2258,6 +2909,86 @@ const Events = {
         } else {
             log.warn(`[Router] No next screen defined for ${screenId}`);
         }
+    },
+
+    // ========================================
+    // Phase 3c Event Handlers
+    // ========================================
+
+    /**
+     * Handle CTA button click (plan_ready, paywall)
+     * @param {HTMLElement} button - The CTA button element
+     */
+    handleCtaClick(button) {
+        const screenId = button.dataset.screen;
+        log.info(`[User Action] CTA clicked on ${screenId}`);
+
+        // For value_proposition, navigate to paywall
+        const screenData = Router.getScreen(screenId);
+        if (screenData?.screenType === 'value_proposition') {
+            State.pushHistory(screenId);
+            const nextScreen = Router.getNextScreen(screenId);
+            if (nextScreen) {
+                Router.navigate(nextScreen);
+            }
+            return;
+        }
+
+        // For paywall, store selected tier and show success toast
+        if (screenData?.screenType === 'payment') {
+            log.info(`[User Action] Selected tier: ${State.data.selectedTier}`);
+            App.showSuccess(`Plan selected: ${State.data.selectedTier}. Stripe integration coming soon!`);
+            // TODO: Integrate with Stripe checkout in next phase
+        }
+    },
+
+    /**
+     * Handle pricing card selection (paywall)
+     * Uses targeted DOM updates to avoid full re-render (which would reset the timer)
+     * @param {HTMLElement} card - The pricing card element
+     */
+    handlePricingCardClick(card) {
+        const tierId = card.dataset.tierId;
+        log.info(`[User Action] Selected pricing tier: ${tierId}`);
+
+        // Update state without re-render
+        State.set('selectedTier', tierId);
+
+        // Targeted DOM update: toggle selection classes on all pricing cards
+        document.querySelectorAll('.pricing-card').forEach(c => {
+            const isSelected = c.dataset.tierId === tierId;
+            c.classList.toggle('pricing-card--selected', isSelected);
+        });
+    },
+
+    /**
+     * Handle FAQ question click (paywall)
+     * Toggles accordion using targeted DOM updates (no full re-render)
+     * Only one question can be open at a time
+     * @param {HTMLElement} questionBtn - The FAQ question button element
+     */
+    handleFaqClick(questionBtn) {
+        const faqItem = questionBtn.closest('.faq-item');
+        const clickedIndex = parseInt(faqItem.dataset.faqIndex, 10);
+        const currentOpenIndex = State.data.openFaqIndex;
+
+        log.info(`[User Action] FAQ clicked: ${clickedIndex}, currently open: ${currentOpenIndex}`);
+
+        // Toggle: if clicking the open question, close it; otherwise open the clicked one
+        const newOpenIndex = clickedIndex === currentOpenIndex ? null : clickedIndex;
+
+        // Update state without re-render
+        State.set('openFaqIndex', newOpenIndex);
+
+        // Targeted DOM update: toggle open class on all FAQ items
+        document.querySelectorAll('.faq-item').forEach(item => {
+            const itemIndex = parseInt(item.dataset.faqIndex, 10);
+            const isOpen = itemIndex === newOpenIndex;
+            item.classList.toggle('faq-item--open', isOpen);
+            // Update aria-expanded for accessibility
+            const btn = item.querySelector('.faq-question');
+            if (btn) btn.setAttribute('aria-expanded', String(isOpen));
+        });
     }
 };
 
@@ -2266,24 +2997,41 @@ const Events = {
 // ========================================
 const App = {
     /**
-     * Show inline error message to user (non-blocking alternative to alert)
-     * @param {string} message - Error message to display
+     * Show a toast notification (non-blocking)
+     * @param {'error'|'success'} type - Toast type for styling
+     * @param {string} message - Message to display
      */
-    showError(message) {
+    showToast(type, message) {
         const appEl = document.getElementById('app');
-        const errorHtml = `
-            <div class="error-toast" role="alert">
+        const toastHtml = `
+            <div class="toast toast--${type}" role="alert">
                 <span>${Security.escapeHtml(message)}</span>
-                <button class="error-toast__close" onclick="this.parentElement.remove()" aria-label="Dismiss">×</button>
+                <button class="toast__close" aria-label="Dismiss">×</button>
             </div>
         `;
-        appEl.insertAdjacentHTML('beforeend', errorHtml);
+        appEl.insertAdjacentHTML('beforeend', toastHtml);
         
         // Auto-dismiss after 5 seconds
         setTimeout(() => {
-            const toast = appEl.querySelector('.error-toast');
+            const toast = appEl.querySelector('.toast');
             if (toast) toast.remove();
         }, 5000);
+    },
+
+    /**
+     * Convenience: show error toast
+     * @param {string} message - Error message to display
+     */
+    showError(message) {
+        this.showToast('error', message);
+    },
+
+    /**
+     * Convenience: show success toast
+     * @param {string} message - Success message to display
+     */
+    showSuccess(message) {
+        this.showToast('success', message);
     },
 
     /**
@@ -2432,12 +3180,19 @@ const App = {
             case 'timeline_selection':
                 html = Screens.goalTimeline(screenData);
                 break;
+            case 'value_proposition':
+                html = Screens.valueProp(screenData);
+                break;
+            case 'payment':
+                html = Screens.paywall(screenData);
+                break;
             default:
                 html = Screens.placeholder(screenData);
         }
 
-        // Clean up any running loading animations before DOM swap
+        // Clean up any running controllers before DOM swap
         LoadingController.cleanup();
+        CountdownTimer.cleanup(); // Phase 3c
 
         // Update DOM
         document.getElementById('app').innerHTML = html;
@@ -2445,6 +3200,12 @@ const App = {
         // Start loading animation for transition screens
         if ((screenData.screenType || screenData.type) === 'transition') {
             LoadingController.start(screenData);
+        }
+
+        // Start countdown timer for paywall screen (Phase 3c)
+        if ((screenData.screenType || screenData.type) === 'payment') {
+            const initialMinutes = screenData.urgencyElements?.countdownTimer?.initialMinutes || 10;
+            CountdownTimer.start(initialMinutes);
         }
 
         log.info(`[App] Rendered screen: ${currentScreenId}`);
