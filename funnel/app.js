@@ -10,10 +10,11 @@ const CONFIG = {
     brandName: 'Compass',
     // JSON data path (now in same directory for Vercel deployment)
     funnelDataPaths: [
-        'liven-funnel-analysis.json'
+        'liven-funnel-analysis.json',
+        './liven-funnel-analysis.json'
     ],
     storageKey: 'compass_funnel_state',
-    debug: false, // Set to true for development debugging
+    debug: true, // Set to true for development debugging
     subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN'
 };
 
