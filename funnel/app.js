@@ -632,6 +632,216 @@ const Components = {
         `;
     },
 
+    // ========================================
+    // Interstitial Components
+    // ========================================
+
+    /**
+     * Render info card with heart icon (interstitial_1)
+     * @param {Object} content - Content object with title and description
+     * @returns {string} HTML string
+     */
+    infoCard(content) {
+        return `
+            <div class="info-card">
+                <div class="info-card__icon">${Icons.get('heart')}</div>
+                <h2 class="info-card__title">${Security.escapeHtml(content.title || '')}</h2>
+                <p class="info-card__description">${Security.escapeHtml(content.description || '')}</p>
+            </div>
+        `;
+    },
+
+    /**
+     * Render checkmark bullet list
+     * @param {Array<string>} bullets - Array of bullet point texts
+     * @returns {string} HTML string
+     */
+    checkmarkBullets(bullets) {
+        const bulletsHtml = bullets.map(text => `
+            <li class="checkmark-bullet">
+                <div class="checkmark-bullet__icon">${Icons.get('checkmark')}</div>
+                <span class="checkmark-bullet__text">${Security.escapeHtml(text)}</span>
+            </li>
+        `).join('');
+
+        return `<ul class="checkmark-bullets">${bulletsHtml}</ul>`;
+    },
+
+    /**
+     * Render research citation (interstitial_2)
+     * @param {Object} citation - Citation with author, year, title
+     * @returns {string} HTML string
+     */
+    researchCitation(citation) {
+        return `
+            <div class="research-citation">
+                <span class="research-citation__author">${Security.escapeHtml(citation.author)}</span>
+                <span class="research-citation__year">(${Security.escapeHtml(String(citation.year))})</span>
+                <em class="research-citation__title">${Security.escapeHtml(citation.title)}</em>
+            </div>
+        `;
+    },
+
+    /**
+     * Render image placeholder block
+     * @param {string} label - Description of the placeholder image
+     * @returns {string} HTML string
+     */
+    imagePlaceholder(label) {
+        return `
+            <div class="image-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="m21 15-5-5L5 21"/>
+                </svg>
+                <span>${Security.escapeHtml(label)}</span>
+            </div>
+        `;
+    },
+
+    /**
+     * Render university credibility logos (interstitial_3)
+     * @param {Array<Object>} logos - Array of {name, type} objects
+     * @returns {string} HTML string
+     */
+    universityLogos(logos) {
+        const logosHtml = logos.map(logo => {
+            const initial = logo.name.charAt(0);
+            return `
+                <div class="university-logo">
+                    <div class="university-logo__shield">${Security.escapeHtml(initial)}</div>
+                    <span class="university-logo__name">${Security.escapeHtml(logo.name)}</span>
+                </div>
+            `;
+        }).join('');
+
+        return `<div class="university-logos">${logosHtml}</div>`;
+    },
+
+    /**
+     * Render CBT circular diagram (interstitial_4)
+     * Shows Thoughts ↔ Feelings ↔ Behavior in a triangle
+     * @param {Object} cbtModel - Model with elements array
+     * @returns {string} HTML string
+     */
+    cbtDiagram(cbtModel) {
+        const elements = cbtModel.elements || ['Thoughts', 'Feelings', 'Behavior'];
+        return `
+            <div class="cbt-diagram">
+                <svg viewBox="0 0 200 180" class="cbt-diagram__svg">
+                    <!-- Connecting arrows (circular) -->
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+                                markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-primary)"/>
+                        </marker>
+                    </defs>
+                    <!-- Top to right -->
+                    <line x1="120" y1="35" x2="160" y2="110" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Right to left -->
+                    <line x1="145" y1="140" x2="55" y2="140" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Left to top -->
+                    <line x1="40" y1="110" x2="80" y2="35" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow)"/>
+
+                    <!-- Node circles -->
+                    <circle cx="100" cy="25" r="22" fill="var(--color-primary)" opacity="0.15" stroke="var(--color-primary)" stroke-width="2"/>
+                    <circle cx="165" cy="140" r="22" fill="var(--color-primary)" opacity="0.15" stroke="var(--color-primary)" stroke-width="2"/>
+                    <circle cx="35" cy="140" r="22" fill="var(--color-primary)" opacity="0.15" stroke="var(--color-primary)" stroke-width="2"/>
+
+                    <!-- Labels -->
+                    <text x="100" y="29" text-anchor="middle" fill="var(--color-primary)" font-size="10" font-weight="600">${Security.escapeHtml(elements[0])}</text>
+                    <text x="165" y="144" text-anchor="middle" fill="var(--color-primary)" font-size="10" font-weight="600">${Security.escapeHtml(elements[1])}</text>
+                    <text x="35" y="144" text-anchor="middle" fill="var(--color-primary)" font-size="10" font-weight="600">${Security.escapeHtml(elements[2])}</text>
+                </svg>
+            </div>
+        `;
+    },
+
+    /**
+     * Render expert review badge
+     * @param {Object} expert - Expert object with badge text
+     * @returns {string} HTML string
+     */
+    expertBadge(expert) {
+        return `
+            <div class="expert-badge">
+                ${Icons.get('checkmark')}
+                <span>${Security.escapeHtml(expert.badge || 'Content reviewed by an expert')}</span>
+            </div>
+        `;
+    },
+
+    /**
+     * Render therapist card with photo placeholder
+     * @param {Object} expert - Expert object with name and title
+     * @returns {string} HTML string
+     */
+    therapistCard(expert) {
+        return `
+            <div class="therapist-card">
+                <div class="therapist-card__photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M20 21a8 8 0 1 0-16 0"/>
+                    </svg>
+                </div>
+                <div class="therapist-card__info">
+                    <span class="therapist-card__name">${Security.escapeHtml(expert.name || '')}</span>
+                    <span class="therapist-card__title">${Security.escapeHtml(expert.title || '')}</span>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render stylized world map with avatar markers (interstitial_5)
+     * @param {Array<string>} locations - Continent names for marker placement
+     * @returns {string} HTML string
+     */
+    worldMap(locations) {
+        // Marker positions mapped to approximate continent centers
+        const markerPositions = {
+            'North America': { x: 120, y: 100 },
+            'South America': { x: 170, y: 220 },
+            'Europe': { x: 330, y: 85 },
+            'Africa': { x: 330, y: 180 },
+            'Asia': { x: 440, y: 110 },
+            'Australia': { x: 490, y: 240 }
+        };
+
+        const markersHtml = locations.map(loc => {
+            const pos = markerPositions[loc] || { x: 300, y: 150 };
+            return `
+                <circle cx="${pos.x}" cy="${pos.y}" r="6" fill="var(--color-primary)" opacity="0.8" class="avatar-marker"/>
+                <circle cx="${pos.x}" cy="${pos.y}" r="12" fill="var(--color-primary)" opacity="0.2" class="avatar-marker__pulse"/>
+            `;
+        }).join('');
+
+        return `
+            <div class="world-map">
+                <svg viewBox="0 0 600 320" class="world-map__svg">
+                    <!-- Simplified continent outlines -->
+                    <!-- North America -->
+                    <path d="M80,50 Q100,30 140,40 L160,60 Q170,80 160,100 L140,120 Q120,140 100,130 L80,110 Q60,90 70,70 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
+                    <!-- South America -->
+                    <path d="M150,160 Q165,150 175,165 L185,200 Q190,230 180,250 L165,260 Q150,255 148,240 L145,210 Q140,180 150,160 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
+                    <!-- Europe -->
+                    <path d="M300,50 Q320,40 340,50 L350,70 Q355,85 345,95 L325,100 Q310,95 305,80 L300,65 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
+                    <!-- Africa -->
+                    <path d="M310,120 Q330,110 350,120 L355,150 Q360,180 350,210 L335,230 Q320,235 310,220 L305,190 Q300,160 305,140 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
+                    <!-- Asia -->
+                    <path d="M370,40 Q400,30 440,45 L470,60 Q490,80 485,110 L470,130 Q450,145 420,140 L390,130 Q370,115 365,90 L360,70 Q360,50 370,40 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
+                    <!-- Australia -->
+                    <path d="M470,210 Q490,200 510,210 L515,230 Q510,250 495,255 L480,250 Q465,240 468,225 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
+
+                    <!-- Avatar markers -->
+                    ${markersHtml}
+                </svg>
+            </div>
+        `;
+    },
+
     /**
      * Render single likert scale option
      * @param {Object} option - Option object with value, label, and icon
@@ -676,6 +886,105 @@ const Components = {
         return `
             <div class="likert-scale" data-screen="${Security.escapeHtml(screenId)}">
                 ${optionsHtml}
+            </div>
+        `;
+    },
+
+    // ========================================
+    // Loading/Transition Components
+    // ========================================
+
+    /**
+     * Render animated circular progress indicator
+     * SVG circle with stroke-dasharray animation, percentage text in center
+     * @returns {string} HTML string
+     */
+    circularProgress() {
+        const circumference = 2 * Math.PI * 45; // r=45
+        return `
+            <div class="circular-progress" data-circumference="${circumference}">
+                <svg viewBox="0 0 100 100" class="circular-progress__svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-border)" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-primary)" stroke-width="6"
+                            stroke-linecap="round"
+                            stroke-dasharray="${circumference}"
+                            stroke-dashoffset="${circumference}"
+                            class="circular-progress__circle"
+                            transform="rotate(-90 50 50)"/>
+                </svg>
+                <span class="circular-progress__text">0%</span>
+            </div>
+        `;
+    },
+
+    /**
+     * Render progress checklist with sequential step completion
+     * Steps start as pending and animate to completed via LoadingController
+     * @param {Array<Object>} steps - Array of {label, status} objects
+     * @returns {string} HTML string
+     */
+    progressChecklist(steps) {
+        const stepsHtml = steps.map((step, index) => `
+            <div class="progress-step" data-step="${index}">
+                <div class="progress-step__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M20 6 9 17l-5-5"/>
+                    </svg>
+                </div>
+                <span class="progress-step__label">${Security.escapeHtml(step.label)}</span>
+            </div>
+        `).join('');
+
+        return `<div class="progress-checklist">${stepsHtml}</div>`;
+    },
+
+    /**
+     * Render engagement modal overlay (commitment/knowledge/interest questions)
+     * Fire-and-forget — answers are not stored in state
+     * @param {Object} modal - Modal object with question, options, type
+     * @param {number} index - Modal index for tracking
+     * @returns {string} HTML string
+     */
+    engagementModal(modal, index) {
+        const optionsHtml = modal.options.map(option => `
+            <button class="engagement-modal__btn" data-modal-index="${index}">
+                ${Security.escapeHtml(option)}
+            </button>
+        `).join('');
+
+        return `
+            <div class="engagement-modal" data-modal-index="${index}">
+                <div class="engagement-modal__overlay"></div>
+                <div class="engagement-modal__card">
+                    <p class="engagement-modal__question">${Security.escapeHtml(modal.question)}</p>
+                    <div class="engagement-modal__buttons">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render testimonial card with Trustpilot-style star rating
+     * @param {Object} testimonial - Object with rating, title, content, author, source
+     * @returns {string} HTML string
+     */
+    testimonialCard(testimonial) {
+        // Generate star icons
+        const stars = Array.from({ length: Math.min(testimonial.rating || 5, 5) }, () =>
+            `<span class="testimonial-card__star">★</span>`
+        ).join('');
+
+        return `
+            <div class="testimonial-card">
+                <div class="testimonial-card__header">
+                    <div class="testimonial-card__stars">${stars}</div>
+                    ${testimonial.source ? `<span class="testimonial-card__source">${Security.escapeHtml(testimonial.source)}</span>` : ''}
+                </div>
+                <h4 class="testimonial-card__title">${Security.escapeHtml(testimonial.title || '')}</h4>
+                <p class="testimonial-card__content">${Security.escapeHtml(testimonial.content || '')}</p>
+                <span class="testimonial-card__author">— ${Security.escapeHtml(testimonial.author || '')}</span>
             </div>
         `;
     },
@@ -878,6 +1187,222 @@ const Screens = {
         `;
     },
 
+    // ========================================
+    // Interstitial Screen Renderers
+    // ========================================
+
+    /**
+     * Render trust building interstitial screen
+     * Handles 3 variants based on data fields:
+     *   - interstitial_1: heart icon + checkmark bullets
+     *   - interstitial_3: university credibility logos
+     *   - interstitial_4: CBT diagram + therapist card
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    trustBuilding(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline);
+        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
+
+        // Determine previous screen for back button
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        // Build variant-specific content
+        let bodyHtml = '';
+
+        if (screenData.credibilityLogos) {
+            // Variant: interstitial_3 — university logos
+            bodyHtml = Components.universityLogos(screenData.credibilityLogos);
+        } else if (screenData.content?.cbtModel) {
+            // Variant: interstitial_4 — CBT diagram + therapist
+            bodyHtml = `
+                ${Components.cbtDiagram(screenData.content.cbtModel)}
+                <p class="interstitial__description">${Security.escapeHtml(screenData.content.description)}</p>
+                ${Components.expertBadge(screenData.content.expertReview)}
+                ${Components.therapistCard(screenData.content.expertReview)}
+            `;
+        } else if (screenData.content) {
+            // Variant: interstitial_1 — info card + checkmark bullets
+            bodyHtml = `
+                ${Components.infoCard(screenData.content)}
+                ${screenData.content.bulletPoints ? Components.checkmarkBullets(screenData.content.bulletPoints) : ''}
+            `;
+        }
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content content--left interstitial">
+                    <h1 class="headline headline--interstitial">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--interstitial">${safeSubheadline}</p>` : ''}
+
+                    ${bodyHtml}
+
+                    <div class="continue-container">
+                        ${Components.continueButton(false, screenData.id)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render educational interstitial screen (interstitial_2)
+     * Shows research citation + image placeholder
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    educational(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline);
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content content--left interstitial">
+                    <h1 class="headline headline--interstitial">${safeHeadline}</h1>
+
+                    ${Components.imagePlaceholder(screenData.image || 'illustration')}
+
+                    <div class="educational-card">
+                        <p class="educational-card__description">
+                            ${Security.escapeHtml(screenData.content?.description || '')}
+                        </p>
+                        ${screenData.content?.citation ? Components.researchCitation(screenData.content.citation) : ''}
+                    </div>
+
+                    <div class="continue-container">
+                        ${Components.continueButton(false, screenData.id)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render social proof interstitial screen (interstitial_5)
+     * Shows world map with avatar markers + user count
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    socialProof(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline);
+        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content interstitial interstitial--centered">
+                    <h1 class="headline headline--interstitial">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--interstitial">${safeSubheadline}</p>` : ''}
+
+                    ${Components.worldMap(screenData.visual?.locations || [])}
+
+                    <div class="continue-container">
+                        ${Components.continueButton(false, screenData.id)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    // ========================================
+    // Loading/Transition Screen Renderers
+    // ========================================
+
+    /**
+     * Render loading screen with social proof (loading_1)
+     * Shows circular progress animation + social proof text, auto-advances when done
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    loadingSocialProof(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+        const safeContent = Security.escapeHtml(screenData.content || '');
+        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+        const safeLoadingText = Security.escapeHtml(screenData.loadingText || '');
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <main class="content loading-screen">
+                    <h1 class="headline headline--loading">${safeHeadline}</h1>
+                    <p class="loading-screen__content">${safeContent}</p>
+                    <p class="loading-screen__subheadline">${safeSubheadline}</p>
+
+                    ${Components.circularProgress()}
+
+                    <p class="loading-screen__status">${safeLoadingText}</p>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render loading screen with engagement modals (profile_creation, plan_creation_v2)
+     * Shows progress checklist, engagement modals at intervals, optional testimonials
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    loadingEngagement(screenData) {
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+
+        // Render progress checklist
+        const checklistHtml = screenData.progressSteps
+            ? Components.progressChecklist(screenData.progressSteps)
+            : '';
+
+        // Render testimonial cards (profile_creation only)
+        const testimonialsHtml = screenData.testimonials
+            ? `<div class="testimonial-cards">${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}</div>`
+            : '';
+
+        return `
+            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+                ${Components.header()}
+
+                <main class="content loading-screen">
+                    <h1 class="headline headline--loading">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="loading-screen__subheadline loading-screen__subheadline--highlight">${safeSubheadline}</p>` : ''}
+
+                    ${Components.circularProgress()}
+                    ${checklistHtml}
+                    ${testimonialsHtml}
+
+                    <div class="continue-container">
+                        ${Components.continueButton(true, screenData.id)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
     /**
      * Render placeholder for screens not yet implemented
      * @param {Object} screenData - Screen data from JSON
@@ -902,6 +1427,191 @@ const Screens = {
                 </main>
             </div>
         `;
+    }
+};
+
+// ========================================
+// Loading Animation Controller
+// ========================================
+const LoadingController = {
+    /** Active timer ID for cleanup */
+    timerId: null,
+    /** Current progress percentage (0-100) */
+    progress: 0,
+    /** Whether animation is paused (e.g., modal open) */
+    paused: false,
+    /** Index of next modal to show */
+    currentModalIndex: 0,
+    /** Total modals for current screen */
+    totalModals: 0,
+    /** Screen data for current loading screen */
+    screenData: null,
+    /** Whether all modals have been answered */
+    allModalsAnswered: false,
+
+    /**
+     * Start the loading animation sequence
+     * Called after App.render() for transition screens
+     * @param {Object} screenData - Screen data from JSON
+     */
+    start(screenData) {
+        this.cleanup();
+        this.progress = 0;
+        this.paused = false;
+        this.currentModalIndex = 0;
+        this.screenData = screenData;
+        this.totalModals = screenData.engagementModals?.length || 0;
+        this.allModalsAnswered = this.totalModals === 0;
+
+        const isAutoAdvance = screenData.type === 'loading_with_social_proof';
+        const duration = isAutoAdvance ? 3000 : 5000; // ms
+        const interval = 50; // update every 50ms
+        const increment = (100 / (duration / interval));
+
+        // Calculate modal trigger points (evenly spaced during animation)
+        const modalTriggerPoints = [];
+        if (this.totalModals > 0) {
+            for (let i = 0; i < this.totalModals; i++) {
+                modalTriggerPoints.push(Math.round((i + 1) * (80 / (this.totalModals + 1))));
+            }
+        }
+
+        this.timerId = setInterval(() => {
+            if (this.paused) return;
+
+            this.progress = Math.min(100, this.progress + increment);
+            this.updateProgressUI();
+
+            // Check if we should trigger a modal
+            if (this.currentModalIndex < this.totalModals) {
+                const triggerPoint = modalTriggerPoints[this.currentModalIndex];
+                if (this.progress >= triggerPoint) {
+                    this.paused = true;
+                    this.showModal(this.currentModalIndex);
+                }
+            }
+
+            // Update checklist steps based on progress
+            this.updateChecklist();
+
+            // Animation complete
+            if (this.progress >= 100) {
+                clearInterval(this.timerId);
+                this.timerId = null;
+
+                if (isAutoAdvance) {
+                    // Auto-advance to next screen (loading_1)
+                    State.pushHistory(screenData.id);
+                    const nextScreen = Router.getNextScreen(screenData.id);
+                    if (nextScreen) {
+                        Router.navigate(nextScreen);
+                    }
+                } else if (this.allModalsAnswered) {
+                    // Enable continue button
+                    this.enableContinue();
+                }
+            }
+        }, interval);
+    },
+
+    /**
+     * Update the circular progress SVG and percentage text
+     */
+    updateProgressUI() {
+        const circle = document.querySelector('.circular-progress__circle');
+        const text = document.querySelector('.circular-progress__text');
+        if (!circle || !text) return;
+
+        const circumference = parseFloat(circle.closest('.circular-progress').dataset.circumference);
+        const offset = circumference - (this.progress / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+        text.textContent = `${Math.round(this.progress)}%`;
+    },
+
+    /**
+     * Update checklist steps based on current progress
+     * Steps complete sequentially as progress increases
+     */
+    updateChecklist() {
+        const steps = document.querySelectorAll('.progress-step');
+        if (!steps.length) return;
+
+        const stepsPerSegment = 100 / steps.length;
+        steps.forEach((step, index) => {
+            const threshold = (index + 1) * stepsPerSegment;
+            if (this.progress >= threshold) {
+                step.classList.add('progress-step--completed');
+            } else if (this.progress >= threshold - stepsPerSegment) {
+                step.classList.add('progress-step--active');
+            }
+        });
+    },
+
+    /**
+     * Show an engagement modal overlay
+     * @param {number} index - Modal index from engagementModals array
+     */
+    showModal(index) {
+        const modal = this.screenData.engagementModals[index];
+        if (!modal) return;
+
+        const modalHtml = Components.engagementModal(modal, index);
+        document.getElementById('app').insertAdjacentHTML('beforeend', modalHtml);
+
+        log.info(`[Loading] Showing engagement modal ${index}: "${modal.question}"`);
+    },
+
+    /**
+     * Dismiss an engagement modal and resume animation
+     * @param {number} index - Modal index to dismiss
+     */
+    dismissModal(index) {
+        const modalEl = document.querySelector(`.engagement-modal[data-modal-index="${index}"]`);
+        if (modalEl) {
+            modalEl.classList.add('engagement-modal--closing');
+            setTimeout(() => modalEl.remove(), 200);
+        }
+
+        this.currentModalIndex++;
+        log.info(`[Loading] Modal ${index} dismissed, next: ${this.currentModalIndex}/${this.totalModals}`);
+
+        // Check if all modals answered
+        if (this.currentModalIndex >= this.totalModals) {
+            this.allModalsAnswered = true;
+        }
+
+        // Resume animation
+        this.paused = false;
+
+        // If animation already finished while modal was open, enable continue
+        if (this.progress >= 100 && this.allModalsAnswered) {
+            this.enableContinue();
+        }
+    },
+
+    /**
+     * Enable the continue button after animation + modals complete
+     */
+    enableContinue() {
+        const btn = document.querySelector('.continue-button');
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('continue-button--disabled');
+        }
+    },
+
+    /**
+     * Clean up timers and state
+     */
+    cleanup() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+        this.progress = 0;
+        this.paused = false;
+        this.currentModalIndex = 0;
+        this.screenData = null;
     }
 };
 
@@ -960,6 +1670,14 @@ const Events = {
         const likertOption = e.target.closest('.likert-option');
         if (likertOption) {
             this.handleLikertSelect(likertOption);
+            return;
+        }
+
+        // Engagement modal button click (dismiss modal)
+        const modalBtn = e.target.closest('.engagement-modal__btn');
+        if (modalBtn) {
+            const modalIndex = parseInt(modalBtn.dataset.modalIndex, 10);
+            LoadingController.dismissModal(modalIndex);
             return;
         }
 
@@ -1211,8 +1929,14 @@ const Events = {
     handleContinueClick(button) {
         const screenId = button.dataset.screen;
 
-        // Verify we have at least one selection
-        if (!State.hasAnswers(screenId)) {
+        // Skip answer validation for interstitial and transition screens
+        const screenData = Router.getScreen(screenId);
+        const isNonQuestion = screenData && (
+            screenData.screenType === 'interstitial' ||
+            screenData.screenType === 'transition'
+        );
+
+        if (!isNonQuestion && !State.hasAnswers(screenId)) {
             log.warn(`[Events] Continue clicked but no answers selected for ${screenId}`);
             return;
         }
@@ -1371,13 +2095,41 @@ const App = {
             case 'likert_scale':
                 html = Screens.likertScaleScreen(screenData);
                 break;
+            case 'interstitial':
+                // Branch to specific renderer based on sub-type
+                if (screenData.type === 'educational') {
+                    html = Screens.educational(screenData);
+                } else if (screenData.type === 'social_proof') {
+                    html = Screens.socialProof(screenData);
+                } else {
+                    // trust_building covers interstitial_1, _3, _4
+                    html = Screens.trustBuilding(screenData);
+                }
+                break;
+            case 'transition':
+                // Branch loading screens by sub-type
+                if (screenData.type === 'loading_with_social_proof') {
+                    html = Screens.loadingSocialProof(screenData);
+                } else {
+                    // loading_with_engagement covers profile_creation, plan_creation_v2
+                    html = Screens.loadingEngagement(screenData);
+                }
+                break;
             default:
                 html = Screens.placeholder(screenData);
         }
 
+        // Clean up any running loading animations before DOM swap
+        LoadingController.cleanup();
+
         // Update DOM
         document.getElementById('app').innerHTML = html;
-        
+
+        // Start loading animation for transition screens
+        if ((screenData.screenType || screenData.type) === 'transition') {
+            LoadingController.start(screenData);
+        }
+
         log.info(`[App] Rendered screen: ${currentScreenId}`);
     }
 };

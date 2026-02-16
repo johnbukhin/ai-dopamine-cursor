@@ -47,6 +47,10 @@
     --font-size-xl: 24px;
     --font-size-2xl: 32px;
     
+    /* Semantic colors */
+    --color-success: #22c55e;
+    --color-primary-rgb: 91, 91, 214;
+
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
@@ -822,4 +826,636 @@ body {
     .likert-option__label {
         font-size: var(--font-size-sm);
     }
+}
+
+/* ========================================
+   Interstitial Screens
+   ======================================== */
+.interstitial {
+    padding-top: var(--spacing-md);
+}
+
+.interstitial--centered {
+    text-align: center;
+    align-items: center;
+}
+
+.headline--interstitial {
+    font-size: var(--font-size-xl);
+    line-height: 1.3;
+    margin-bottom: var(--spacing-sm);
+}
+
+.subheadline--interstitial {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.5;
+}
+
+.interstitial__description {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* ========================================
+   Info Card (interstitial_1)
+   ======================================== */
+.info-card {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.info-card__icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto var(--spacing-md);
+    color: var(--color-primary);
+}
+
+.info-card__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.info-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.info-card__description {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+/* ========================================
+   Checkmark Bullets
+   ======================================== */
+.checkmark-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.checkmark-bullet {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+}
+
+.checkmark-bullet__icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    color: var(--color-success);
+    margin-top: 2px;
+}
+
+.checkmark-bullet__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.checkmark-bullet__text {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+/* ========================================
+   Educational Card (interstitial_2)
+   ======================================== */
+.educational-card {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.educational-card__description {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+/* ========================================
+   Research Citation
+   ======================================== */
+.research-citation {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-sm);
+    line-height: 1.5;
+}
+
+.research-citation__author {
+    font-weight: 600;
+}
+
+.research-citation__year {
+    margin: 0 4px;
+}
+
+.research-citation__title {
+    display: block;
+    margin-top: 2px;
+}
+
+/* ========================================
+   Image Placeholder
+   ======================================== */
+.image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    background: var(--color-surface);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl) var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-muted);
+}
+
+.image-placeholder svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+}
+
+.image-placeholder span {
+    font-size: var(--font-size-sm);
+    text-transform: capitalize;
+}
+
+/* ========================================
+   University Logos (interstitial_3)
+   ======================================== */
+.university-logos {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.university-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.university-logo__shield {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+.university-logo__name {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-align: center;
+    font-weight: 500;
+    max-width: 90px;
+}
+
+/* ========================================
+   CBT Diagram (interstitial_4)
+   ======================================== */
+.cbt-diagram {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.cbt-diagram__svg {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+}
+
+/* ========================================
+   Expert Badge & Therapist Card
+   ======================================== */
+.expert-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: rgba(var(--color-primary-rgb, 139, 92, 246), 0.1);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.expert-badge svg {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+}
+
+.therapist-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.therapist-card__photo {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    border-radius: 50%;
+    background: var(--color-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+}
+
+.therapist-card__photo svg {
+    width: 32px;
+    height: 32px;
+}
+
+.therapist-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.therapist-card__name {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.therapist-card__title {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* ========================================
+   World Map (interstitial_5)
+   ======================================== */
+.world-map {
+    width: 100%;
+    margin-bottom: var(--spacing-lg);
+}
+
+.world-map__svg {
+    width: 100%;
+    height: auto;
+}
+
+.avatar-marker {
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.5));
+}
+
+@keyframes pulse-marker {
+    0%, 100% { opacity: 0.2; r: 12; }
+    50% { opacity: 0.05; r: 18; }
+}
+
+.avatar-marker__pulse {
+    animation: pulse-marker 2s ease-in-out infinite;
+}
+
+/* ========================================
+   Loading/Transition Screens
+   ======================================== */
+.loading-screen {
+    align-items: center;
+    text-align: center;
+    padding-top: var(--spacing-xl);
+}
+
+.headline--loading {
+    text-transform: none;
+    font-size: var(--font-size-xl);
+    letter-spacing: 0;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.loading-screen__content {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+    max-width: 320px;
+}
+
+.loading-screen__subheadline {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.loading-screen__subheadline--highlight {
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+}
+
+.loading-screen__status {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-md);
+}
+
+/* ========================================
+   Circular Progress
+   ======================================== */
+.circular-progress {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: var(--spacing-lg) auto;
+}
+
+.circular-progress__svg {
+    width: 100%;
+    height: 100%;
+}
+
+.circular-progress__circle {
+    transition: stroke-dashoffset 0.05s linear;
+}
+
+.circular-progress__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+/* ========================================
+   Progress Checklist
+   ======================================== */
+.progress-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+    max-width: 300px;
+    margin: var(--spacing-lg) auto;
+    text-align: left;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    opacity: 0.4;
+    transition: opacity var(--transition-normal);
+}
+
+.progress-step--active {
+    opacity: 0.7;
+}
+
+.progress-step--completed {
+    opacity: 1;
+}
+
+.progress-step__icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-border);
+    color: white;
+    transition: background-color var(--transition-normal),
+                transform var(--transition-normal);
+}
+
+.progress-step__icon svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.progress-step--completed .progress-step__icon {
+    background: var(--color-success);
+    animation: checkmarkPop 0.3s ease;
+}
+
+.progress-step--completed .progress-step__icon svg {
+    opacity: 1;
+}
+
+.progress-step__label {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.progress-step--completed .progress-step__label {
+    color: var(--color-text-primary);
+}
+
+@keyframes checkmarkPop {
+    0% { transform: scale(0.5); }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ========================================
+   Engagement Modal
+   ======================================== */
+.engagement-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.engagement-modal--closing {
+    animation: fadeOut 0.2s ease forwards;
+}
+
+.engagement-modal__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.engagement-modal__card {
+    position: relative;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    max-width: 340px;
+    width: calc(100% - var(--spacing-xl));
+    text-align: center;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    animation: modalSlideUp 0.3s ease;
+}
+
+.engagement-modal__question {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    line-height: 1.4;
+    margin-bottom: var(--spacing-lg);
+}
+
+.engagement-modal__buttons {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.engagement-modal__btn {
+    flex: 1;
+    padding: var(--spacing-md);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    font-family: inherit;
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: border-color var(--transition-fast),
+                background-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.engagement-modal__btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: white;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   Testimonial Cards
+   ======================================== */
+.testimonial-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+    margin-top: var(--spacing-lg);
+}
+
+.testimonial-card {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: left;
+}
+
+.testimonial-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.testimonial-card__stars {
+    display: flex;
+    gap: 2px;
+}
+
+.testimonial-card__star {
+    color: var(--color-success);
+    font-size: var(--font-size-lg);
+}
+
+.testimonial-card__source {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.testimonial-card__title {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.testimonial-card__content {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: var(--spacing-sm);
+}
+
+.testimonial-card__author {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-style: italic;
 }
