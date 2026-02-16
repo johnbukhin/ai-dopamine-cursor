@@ -8,10 +8,8 @@
 // ========================================
 const CONFIG = {
     brandName: 'Compass',
-    // Try multiple paths for JSON loading (relative to funnel/ or project root)
+    // JSON data path (now in same directory for Vercel deployment)
     funnelDataPaths: [
-        '../liven-funnel-analysis.json',
-        '/liven-funnel-analysis.json',
         'liven-funnel-analysis.json'
     ],
     storageKey: 'compass_funnel_state',
