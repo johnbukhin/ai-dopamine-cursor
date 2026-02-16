@@ -126,6 +126,12 @@ const Icons = {
             <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
         </svg>`,
 
+        // Lock icon - for privacy/security indicators
+        lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>`,
+
         checkmark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 6 9 17l-5-5"/>
         </svg>`,
@@ -1403,6 +1409,247 @@ const Screens = {
         `;
     },
 
+    // ========================================
+    // Phase 3b: Form Capture & Results Screens
+    // ========================================
+
+    /**
+     * Render email capture gate screen
+     * Input field with email validation, lock icon, privacy note
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    emailCapture(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+        const safePlaceholder = Security.escapeHtml(
+            screenData.inputField?.placeholder || 'Enter your email'
+        );
+        const safePrivacy = Security.escapeHtml(screenData.privacyNote || '');
+        const safeCta = Security.escapeHtml(screenData.ctaButton || 'Continue');
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        return `
+            <div class="screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content">
+                    <h1 class="headline">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--accent">${safeSubheadline}</p>` : ''}
+
+                    <div class="form-capture">
+                        <input type="email"
+                               class="form-capture__input"
+                               data-screen="${safeId}"
+                               data-field-type="email"
+                               placeholder="${safePlaceholder}"
+                               autocomplete="email"
+                               inputmode="email" />
+
+                        <div class="form-capture__privacy">
+                            <span class="form-capture__lock-icon">${Icons.get('lock')}</span>
+                            <p class="form-capture__privacy-text">${safePrivacy}</p>
+                        </div>
+
+                        <button class="continue-button continue-button--disabled"
+                                data-screen="${safeId}"
+                                disabled>
+                            ${safeCta}
+                        </button>
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render name capture gate screen
+     * Text input field, continues after non-empty input
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    nameCapture(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+        const safePlaceholder = Security.escapeHtml(
+            screenData.inputField?.placeholder || 'Enter your name'
+        );
+        const safeCta = Security.escapeHtml(screenData.ctaButton || 'Continue');
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        return `
+            <div class="screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content">
+                    <h1 class="headline">${safeHeadline}</h1>
+
+                    <div class="form-capture">
+                        <input type="text"
+                               class="form-capture__input"
+                               data-screen="${safeId}"
+                               data-field-type="name"
+                               placeholder="${safePlaceholder}"
+                               autocomplete="name"
+                               inputmode="text" />
+
+                        <button class="continue-button continue-button--disabled"
+                                data-screen="${safeId}"
+                                disabled>
+                            ${safeCta}
+                        </button>
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render personalized profile summary screen
+     * Dynamically pulls user's quiz answers to build profile
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    profileSummary(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        // Pull user's name from name_capture answer, fallback to email username or 'there'
+        let userName = State.getAnswer('name_capture');
+        if (!userName) {
+            const email = State.getAnswer('email_capture');
+            userName = email ? email.split('@')[0] : 'there';
+        }
+        const safeName = Security.escapeHtml(userName);
+
+        // Build sections from JSON data + dynamic content
+        const sectionsHtml = (screenData.sections || []).map(section => {
+            const safeTitle = Security.escapeHtml(section.title || '');
+
+            if (section.items) {
+                // List-based section (e.g., "Recommended Focus Areas")
+                const itemsHtml = section.items
+                    .map(item => `
+                        <li class="profile-summary__focus-item">
+                            <span class="profile-summary__focus-icon">${Icons.get('checkmark')}</span>
+                            ${Security.escapeHtml(item)}
+                        </li>
+                    `).join('');
+                return `
+                    <div class="profile-summary__section">
+                        <h3 class="profile-summary__section-title">${safeTitle}</h3>
+                        <ul class="profile-summary__focus-list">${itemsHtml}</ul>
+                    </div>
+                `;
+            }
+
+            // Description-based section (e.g., "Your Patterns")
+            const safeDesc = Security.escapeHtml(section.description || '');
+            return `
+                <div class="profile-summary__section">
+                    <h3 class="profile-summary__section-title">${safeTitle}</h3>
+                    <p class="profile-summary__description">${safeDesc}</p>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content">
+                    <div class="profile-summary">
+                        <div class="profile-summary__greeting">
+                            <span class="profile-summary__avatar">${Icons.get('smile')}</span>
+                            <span class="profile-summary__name">${safeName}</span>
+                        </div>
+
+                        <h1 class="headline">${safeHeadline}</h1>
+
+                        ${sectionsHtml}
+                    </div>
+
+                    ${Components.continueButton(false, safeId)}
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render goal timeline selection screen
+     * Single-choice text_list with "Recommended" badge, auto-advance on tap
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    goalTimeline(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+
+        const previousScreen = State.data.history.length > 0
+            ? State.data.history[State.data.history.length - 1]
+            : 'landing';
+
+        // Render options as answer cards (reuse existing single-choice pattern)
+        const optionsHtml = (screenData.options || []).map(option => {
+            const safeLabel = Security.escapeHtml(option.label);
+            const recommendedBadge = option.recommended
+                ? '<span class="recommended-badge">Recommended</span>'
+                : '';
+            return `
+                <div class="answer-card"
+                     data-screen="${safeId}"
+                     data-answer="${safeLabel}"
+                     tabindex="0"
+                     role="button"
+                     aria-label="${safeLabel}">
+                    <span class="answer-card__label">${safeLabel}</span>
+                    ${recommendedBadge}
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <nav class="question-nav">
+                    ${Components.backButton(previousScreen)}
+                </nav>
+
+                <main class="content content--left">
+                    <h1 class="headline headline--question">${safeHeadline}</h1>
+
+                    <div class="answer-cards">
+                        ${optionsHtml}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
     /**
      * Render placeholder for screens not yet implemented
      * @param {Object} screenData - Screen data from JSON
@@ -1705,6 +1952,13 @@ const Events = {
         const textInput = e.target.closest('.text-input-field__input');
         if (textInput) {
             this.handleTextInput(textInput);
+            return;
+        }
+
+        // Form capture input (email/name gates)
+        const formInput = e.target.closest('.form-capture__input');
+        if (formInput) {
+            this.handleFormInput(formInput);
         }
     },
 
@@ -1922,6 +2176,41 @@ const Events = {
     },
 
     /**
+     * Handle form capture input (email/name gates)
+     * Validates input and enables/disables Continue button
+     * Note: Input value is NOT stored until Continue is clicked (by handleContinueClick).
+     * This prevents incomplete/unvalidated data from being saved to state.
+     * @param {HTMLElement} input - The form input element
+     */
+    handleFormInput(input) {
+        const screenId = input.dataset.screen;
+        const fieldType = input.dataset.fieldType;
+        const value = input.value.trim();
+
+        log.info(`[User Action] Form input (${fieldType}) on ${screenId}: "${value}"`);
+
+        // Validate based on field type
+        let isValid = false;
+        if (fieldType === 'email') {
+            // Basic email format validation
+            isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        } else {
+            // Name: non-empty
+            isValid = value.length > 0;
+        }
+
+        // Toggle input valid state for styling
+        input.classList.toggle('form-capture__input--valid', isValid);
+
+        // Enable/disable Continue button
+        const continueBtn = document.querySelector('.continue-button');
+        if (continueBtn) {
+            continueBtn.disabled = !isValid;
+            continueBtn.classList.toggle('continue-button--disabled', !isValid);
+        }
+    },
+
+    /**
      * Handle continue button click
      * Validates selection and navigates to next screen
      * @param {HTMLElement} button - The continue button element
@@ -1936,7 +2225,23 @@ const Events = {
             screenData.screenType === 'transition'
         );
 
-        if (!isNonQuestion && !State.hasAnswers(screenId)) {
+        // For form capture screens, store input value before navigating
+        const isFormCapture = screenData && (
+            screenData.screenType === 'email_gate' ||
+            screenData.screenType === 'name_gate'
+        );
+
+        if (isFormCapture) {
+            const formInput = document.querySelector('.form-capture__input');
+            if (formInput && formInput.value.trim()) {
+                State.recordAnswer(screenId, formInput.value.trim());
+            } else {
+                log.warn(`[Events] Continue clicked but form input empty for ${screenId}`);
+                return;
+            }
+        }
+
+        if (!isNonQuestion && !isFormCapture && !State.hasAnswers(screenId)) {
             log.warn(`[Events] Continue clicked but no answers selected for ${screenId}`);
             return;
         }
@@ -2114,6 +2419,18 @@ const App = {
                     // loading_with_engagement covers profile_creation, plan_creation_v2
                     html = Screens.loadingEngagement(screenData);
                 }
+                break;
+            case 'email_gate':
+                html = Screens.emailCapture(screenData);
+                break;
+            case 'name_gate':
+                html = Screens.nameCapture(screenData);
+                break;
+            case 'personalized_results':
+                html = Screens.profileSummary(screenData);
+                break;
+            case 'timeline_selection':
+                html = Screens.goalTimeline(screenData);
                 break;
             default:
                 html = Screens.placeholder(screenData);

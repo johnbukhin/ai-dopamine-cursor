@@ -19,6 +19,9 @@
     --color-text-secondary: #6B6B80;
     --color-text-muted: #9999AA;
     
+    /* Status colors */
+    --color-success: #10b981;
+    
     /* Border & Shadow */
     --color-border: #E5E5EE;
     --shadow-card: 0 2px 8px rgba(91, 91, 214, 0.08);
@@ -1458,4 +1461,180 @@ body {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-style: italic;
+}
+
+/* ========================================
+   Form Capture Screens (email/name gates)
+   ======================================== */
+
+.form-capture {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    width: 100%;
+    max-width: 400px;
+    margin: var(--spacing-xl) auto 0;
+}
+
+.form-capture__input {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-md);
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-capture__input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.form-capture__input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(91, 91, 214, 0.15);
+}
+
+.form-capture__input--valid {
+    border-color: var(--color-success);
+}
+
+.form-capture__privacy {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+}
+
+.form-capture__lock-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+.form-capture__lock-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.form-capture__privacy-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Accent subheadline (e.g., "Profile Summary" on email gate) */
+.subheadline--accent {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: var(--font-size-xl);
+}
+
+/* ========================================
+   Profile Summary Screen
+   ======================================== */
+
+.profile-summary {
+    width: 100%;
+}
+
+.profile-summary__greeting {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--color-primary-light);
+    border-radius: var(--radius-md);
+}
+
+.profile-summary__avatar {
+    width: 32px;
+    height: 32px;
+    color: var(--color-primary);
+}
+
+.profile-summary__avatar svg {
+    width: 100%;
+    height: 100%;
+}
+
+.profile-summary__name {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.profile-summary__section {
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-card);
+}
+
+.profile-summary__section-title {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.profile-summary__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.profile-summary__focus-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.profile-summary__focus-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    padding: var(--spacing-sm);
+    background: var(--color-background);
+    border-radius: var(--radius-sm);
+}
+
+.profile-summary__focus-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--color-success);
+}
+
+.profile-summary__focus-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ========================================
+   Recommended Badge (goal timeline)
+   ======================================== */
+
+.recommended-badge {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+    padding: 2px var(--spacing-sm);
+    border-radius: var(--radius-full);
+    margin-left: auto;
 }
