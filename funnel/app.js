@@ -15,7 +15,11 @@ const CONFIG = {
     ],
     storageKey: 'compass_funnel_state',
     debug: false, // Set to true for development debugging
-    subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN'
+    subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN',
+    // Webapp URL for post-account-creation redirect.
+    // Empty string = local dev (falls back to app_dashboard screen).
+    // Set to Vercel webapp URL in production, e.g. 'https://compass-app.vercel.app'
+    webappUrl: ''
 };
 
 // ========================================
@@ -3311,15 +3315,25 @@ const Events = {
 
             log.info('[Account] User created successfully:', result.user?.id);
 
+            // Store both tokens so the webapp can initialize a full Supabase session
+            // without requiring the user to log in again
             if (result.access_token) {
                 localStorage.setItem('compass_access_token', result.access_token);
+            }
+            if (result.refresh_token) {
+                localStorage.setItem('compass_refresh_token', result.refresh_token);
             }
 
             State.set('accountCreated', true);
             App.showSuccess('Account created successfully!');
 
             setTimeout(() => {
-                const screenData = Router.getScreen(screenId);
+                // Production: redirect to webapp (auto-auth via stored tokens)
+                // Local dev: CONFIG.webappUrl is empty, fall through to app_dashboard
+                if (CONFIG.webappUrl) {
+                    window.location.href = CONFIG.webappUrl;
+                    return;
+                }
                 const nextScreen = Router.getNextScreen(screenId);
                 if (nextScreen) {
                     State.pushHistory(screenId);

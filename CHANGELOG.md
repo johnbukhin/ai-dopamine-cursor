@@ -46,6 +46,16 @@ All notable changes to this project will be documented in this file.
   - 3 renderers: `trustBuilding()`, `educational()`, `socialProof()`
   - 9 new components: infoCard, checkmarkBullets, researchCitation, imagePlaceholder, universityLogos, cbtDiagram, expertBadge, therapistCard, worldMap
 
+- **Form capture & personalized results screens** (Issue #8 / YEV-10 split)
+  - Email capture gate (`email_capture`): email input with regex validation, lock icon, privacy note, disabled Continue until valid
+  - Name capture gate (`name_capture`): text input, disabled Continue until non-empty
+  - Profile summary (`profile_summary`): dynamic sections from JSON + user name pulled from State; checkmark focus-area list
+  - Goal timeline (`goal_timeline`): single-choice text_list with "Recommended" badge on first option, auto-advance on tap
+  - `Events.handleFormInput()` — validates email (regex) / name (non-empty), toggles Continue button
+  - `handleContinueClick()` extended — stores form values via `State.recordAnswer()` before navigating; bypasses `hasAnswers` for form gates
+  - `Icons.lock` added — padlock SVG for privacy indicator
+  - 3 new CSS sections: `.form-capture`, `.profile-summary`, `.recommended-badge`
+
 - **Loading/transition screens** (Issue #7 / YEV-10 split)
   - Social proof loading (loading_1): circular progress animation + "534,568 people" text, auto-advances after ~3s
   - Engagement loading (profile_creation): progress checklist + 3 overlay engagement modals + 2 Trustpilot testimonials

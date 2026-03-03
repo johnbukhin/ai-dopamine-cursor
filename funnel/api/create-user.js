@@ -60,9 +60,12 @@ export default async function handler(req, res) {
       });
     }
 
+    // Return both tokens so the webapp can initialize a full Supabase session
+    // (access_token for immediate auth, refresh_token for session renewal)
     return res.status(200).json({
       user: authData.user,
-      access_token: session?.session?.access_token
+      access_token: session?.session?.access_token,
+      refresh_token: session?.session?.refresh_token
     });
   } catch (error) {
     console.error('[create-user] Unexpected error:', error);
