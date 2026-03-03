@@ -19,7 +19,7 @@ const CONFIG = {
     // Webapp URL for post-account-creation redirect.
     // Empty string = local dev (falls back to app_dashboard screen).
     // Set to Vercel webapp URL in production, e.g. 'https://compass-app.vercel.app'
-    webappUrl: ''
+    webappUrl: 'https://mind-compass-webapp.vercel.app'
 };
 
 // ========================================
