@@ -99,8 +99,8 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    // Sign out from Supabase and clear locally stored funnel tokens
-    await supabase.auth.signOut();
+    // Sign out from Supabase (guard: client may be null if env vars are missing)
+    await supabase?.auth.signOut();
     localStorage.removeItem('compass_access_token');
     localStorage.removeItem('compass_refresh_token');
     setIsAuthenticated(false);
