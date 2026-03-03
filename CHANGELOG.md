@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **User creation flow + Supabase backend** (Issue #12, commit `eddfa69`)
+  - `thank_you` screen: animated SVG checkmark, selected plan summary, promo code display
+  - `create_account` screen: read-only pre-filled email, password + confirm fields, real-time requirement indicators (8+ chars, 1 number, 1 uppercase), submit disabled until all pass
+  - `app_dashboard` screen: placeholder welcome screen for future main product
+  - `funnel/api/create-user.js`: Vercel serverless function — creates Supabase auth user + `users_profile` record, returns access token
+  - `funnel/package.json`: `@supabase/supabase-js ^2` dependency for serverless function
+  - `webapp/`: Next.js scaffold for future main product (`page.tsx`, `layout.tsx`, `lib/supabase.ts`)
+  - New state field: `accountCreated: false`
+  - New event handlers: `handleAccountFormInput()` (real-time validation), `handleAccountFormSubmit()` (async API call)
+  - New CSS: thank-you checkmark animation (`stroke-dasharray`), account creation form, app dashboard placeholder
+
+### Changed
+- `Events.handleCtaClick()`: paywall `payment` screen now navigates to `thank_you` (was: showed success toast); `confirmation` screen navigates to `create_account`
+- `funnel/liven-funnel-analysis.json`: paywall screen gains `nextScreenLogic: "thank_you"`; added 4 new screen definitions (`thank_you`, `create_account`, `app_dashboard`)
+
+### Added
 - **Compass Funnel App** (`funnel/`) - Interactive quiz funnel with multi-screen architecture
   - Landing screen with gender selection (Male/Female cards)
   - 3D cartoon-style character images (generated)
