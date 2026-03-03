@@ -14,7 +14,7 @@ const CONFIG = {
         './liven-funnel-analysis.json'
     ],
     storageKey: 'compass_funnel_state',
-    debug: true, // Set to true for development debugging
+    debug: false, // Set to true for development debugging
     subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN'
 };
 
@@ -281,7 +281,8 @@ const State = {
         history: [],      // Navigation history for back button
         startedAt: null,
         selectedTier: '1_month',  // Phase 3c: Default pricing tier
-        openFaqIndex: null        // Phase 3c: Currently open FAQ (null = all closed)
+        openFaqIndex: null,       // Phase 3c: Currently open FAQ (null = all closed)
+        accountCreated: false     // Whether user account has been created
     },
 
     /**
@@ -312,7 +313,8 @@ const State = {
             history: [],
             startedAt: new Date().toISOString(),
             selectedTier: '1_month',
-            openFaqIndex: null
+            openFaqIndex: null,
+            accountCreated: false
         };
         this.save();
         log.info('[State] Reset to defaults');
@@ -2089,6 +2091,238 @@ const Screens = {
     },
 
     /**
+     * Render thank-you confirmation screen after purchase
+     * Shows animated checkmark, plan summary, and continue button
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    thankYou(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || 'Thank You for Your Purchase!');
+        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+
+        const selectedTierId = State.data.selectedTier || '1_month';
+        const paywall = Router.getScreen('paywall');
+        const selectedTier = paywall?.pricingTiers?.find(t => t.id === selectedTierId);
+
+        const tierName = selectedTier ? Security.escapeHtml(selectedTier.name) : 'Selected Plan';
+        const tierPrice = selectedTier ? Security.escapeHtml(selectedTier.discountedPrice) : '';
+
+        const userName = State.getAnswer('name_capture');
+        const promoCode = Components.generatePromoCode(userName, 50);
+
+        const ctaText = screenData.ctaButton?.text || 'Create Your Account';
+
+        return `
+            <div class="screen thank-you-screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <main class="content thank-you">
+                    <div class="thank-you__checkmark">
+                        <svg class="thank-you__checkmark-svg" viewBox="0 0 52 52">
+                            <circle class="thank-you__checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="thank-you__checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
+                    </div>
+
+                    <h1 class="headline">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline">${safeSubheadline}</p>` : ''}
+
+                    <div class="thank-you__summary">
+                        <div class="thank-you__summary-row">
+                            <span class="thank-you__summary-label">Plan</span>
+                            <span class="thank-you__summary-value">${tierName}</span>
+                        </div>
+                        ${tierPrice ? `
+                        <div class="thank-you__summary-row">
+                            <span class="thank-you__summary-label">Price</span>
+                            <span class="thank-you__summary-value">${tierPrice}</span>
+                        </div>
+                        ` : ''}
+                        ${promoCode ? `
+                        <div class="thank-you__summary-row">
+                            <span class="thank-you__summary-label">Promo Code</span>
+                            <span class="thank-you__summary-value thank-you__promo">${Security.escapeHtml(promoCode)}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="cta-container">
+                        ${Components.ctaButton(ctaText, safeId)}
+                    </div>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render account creation screen with email (pre-filled) and password fields
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    createAccount(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || 'Create Your Account');
+        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+
+        const email = State.getAnswer('email_capture') || '';
+        const safeEmail = Security.escapeHtml(email);
+
+        const requirements = screenData.fields?.password?.requirements || [
+            'At least 8 characters',
+            'At least 1 number',
+            'At least 1 uppercase letter'
+        ];
+
+        const ctaText = screenData.ctaButton?.text || 'Create Account';
+
+        return `
+            <div class="screen create-account-screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <main class="content create-account">
+                    <div class="create-account__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <line x1="19" y1="8" x2="19" y2="14"/>
+                            <line x1="22" y1="11" x2="16" y2="11"/>
+                        </svg>
+                    </div>
+
+                    <h1 class="headline">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline">${safeSubheadline}</p>` : ''}
+
+                    <form class="create-account__form" data-screen="${safeId}">
+                        <div class="create-account__field">
+                            <label class="create-account__label" for="account-email">Email</label>
+                            <input
+                                type="email"
+                                id="account-email"
+                                class="create-account__input create-account__input--readonly"
+                                value="${safeEmail}"
+                                readonly
+                                tabindex="-1"
+                            />
+                        </div>
+
+                        <div class="create-account__field">
+                            <label class="create-account__label" for="account-password">Password</label>
+                            <input
+                                type="password"
+                                id="account-password"
+                                class="create-account__input"
+                                placeholder="${Security.escapeHtml(screenData.fields?.password?.placeholder || 'Enter your password')}"
+                                data-field="password"
+                                data-screen="${safeId}"
+                                minlength="8"
+                                autocomplete="new-password"
+                            />
+                        </div>
+
+                        <div class="create-account__field">
+                            <label class="create-account__label" for="account-confirm-password">Confirm Password</label>
+                            <input
+                                type="password"
+                                id="account-confirm-password"
+                                class="create-account__input"
+                                placeholder="${Security.escapeHtml(screenData.fields?.confirmPassword?.placeholder || 'Re-enter your password')}"
+                                data-field="confirmPassword"
+                                data-screen="${safeId}"
+                                minlength="8"
+                                autocomplete="new-password"
+                            />
+                        </div>
+
+                        <div class="create-account__requirements">
+                            ${requirements.map(req => `
+                                <div class="create-account__req" data-requirement="${Security.escapeHtml(req)}">
+                                    <span class="create-account__req-icon">&#9675;</span>
+                                    <span class="create-account__req-text">${Security.escapeHtml(req)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="create-account__error" style="display: none;"></div>
+
+                        <button type="submit"
+                                class="cta-button cta-button--disabled create-account__submit"
+                                data-screen="${safeId}"
+                                disabled>
+                            ${Security.escapeHtml(ctaText)}
+                        </button>
+                    </form>
+
+                    <p class="create-account__secure">
+                        ${Icons.get('lock')} Your data is encrypted and secure
+                    </p>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render app dashboard placeholder screen (post-account-creation)
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    appDashboard(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const safeHeadline = Security.escapeHtml(screenData.headline || 'Welcome to Compass!');
+        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+        const safeMessage = Security.escapeHtml(screenData.message || '');
+
+        const userName = State.getAnswer('name_capture');
+        const greeting = userName ? `Welcome, ${Security.escapeHtml(userName)}!` : safeHeadline;
+
+        return `
+            <div class="screen app-dashboard-screen" data-screen="${safeId}">
+                <header class="app-header">
+                    <span class="app-header__brand">${Security.escapeHtml(CONFIG.brandName)}</span>
+                </header>
+
+                <main class="content app-dashboard">
+                    <div class="app-dashboard__welcome-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="64" height="64">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                    </div>
+
+                    <h1 class="headline">${greeting}</h1>
+                    ${safeSubheadline ? `<p class="subheadline">${safeSubheadline}</p>` : ''}
+
+                    <div class="app-dashboard__card">
+                        <h2 class="app-dashboard__card-title">Your Personalized Plan</h2>
+                        <p class="app-dashboard__card-text">${safeMessage}</p>
+                    </div>
+
+                    <div class="app-dashboard__features">
+                        <div class="app-dashboard__feature">
+                            <div class="app-dashboard__feature-icon">&#128218;</div>
+                            <span>Daily Exercises</span>
+                        </div>
+                        <div class="app-dashboard__feature">
+                            <div class="app-dashboard__feature-icon">&#128200;</div>
+                            <span>Progress Tracking</span>
+                        </div>
+                        <div class="app-dashboard__feature">
+                            <div class="app-dashboard__feature-icon">&#128101;</div>
+                            <span>Community</span>
+                        </div>
+                    </div>
+
+                    <p class="app-dashboard__coming-soon">
+                        Full app experience coming soon. This is a placeholder for the main product.
+                    </p>
+                </main>
+            </div>
+        `;
+    },
+
+    /**
      * Render paywall screen with all trust elements
      * Full interactive paywall with countdown, pricing tiers, FAQ, etc.
      * @param {Object} screenData - Screen data from JSON
@@ -2479,6 +2713,11 @@ const Events = {
         appEl.addEventListener('click', this.handleClick.bind(this));
         appEl.addEventListener('keydown', this.handleKeydown.bind(this));
         appEl.addEventListener('input', this.handleInput.bind(this));
+        appEl.addEventListener('submit', (e) => {
+            if (e.target.closest('.create-account__form')) {
+                e.preventDefault();
+            }
+        });
     },
 
     /**
@@ -2546,6 +2785,14 @@ const Events = {
             return;
         }
 
+        // Account creation form submit button
+        const accountSubmit = e.target.closest('.create-account__submit:not(.cta-button--disabled)');
+        if (accountSubmit) {
+            e.preventDefault();
+            this.handleAccountFormSubmit(accountSubmit);
+            return;
+        }
+
         // CTA button click (Phase 3c - plan_ready, paywall)
         const ctaButton = e.target.closest('.cta-button:not(.cta-button--disabled)');
         if (ctaButton) {
@@ -2591,6 +2838,13 @@ const Events = {
         const formInput = e.target.closest('.form-capture__input');
         if (formInput) {
             this.handleFormInput(formInput);
+            return;
+        }
+
+        // Account creation password inputs
+        const accountInput = e.target.closest('.create-account__input');
+        if (accountInput && !accountInput.readOnly) {
+            this.handleAccountFormInput();
         }
     },
 
@@ -2933,11 +3187,152 @@ const Events = {
             return;
         }
 
-        // For paywall, store selected tier and show success toast
+        // For paywall, navigate to thank_you (payment assumed successful for now)
         if (screenData?.screenType === 'payment') {
             log.info(`[User Action] Selected tier: ${State.data.selectedTier}`);
-            App.showSuccess(`Plan selected: ${State.data.selectedTier}. Stripe integration coming soon!`);
-            // TODO: Integrate with Stripe checkout in next phase
+            State.pushHistory(screenId);
+            const nextScreen = Router.getNextScreen(screenId);
+            if (nextScreen) {
+                Router.navigate(nextScreen);
+            }
+            return;
+        }
+
+        // For confirmation (thank_you), navigate to account creation
+        if (screenData?.screenType === 'confirmation') {
+            State.pushHistory(screenId);
+            const nextScreen = Router.getNextScreen(screenId);
+            if (nextScreen) {
+                Router.navigate(nextScreen);
+            }
+            return;
+        }
+    },
+
+    /**
+     * Validate password and update requirement indicators in the account creation form
+     */
+    handleAccountFormInput() {
+        const passwordEl = document.getElementById('account-password');
+        const confirmEl = document.getElementById('account-confirm-password');
+        if (!passwordEl || !confirmEl) return;
+
+        const password = passwordEl.value;
+        const confirm = confirmEl.value;
+
+        const checks = {
+            'At least 8 characters': password.length >= 8,
+            'At least 1 number': /\d/.test(password),
+            'At least 1 uppercase letter': /[A-Z]/.test(password)
+        };
+
+        document.querySelectorAll('.create-account__req').forEach(reqEl => {
+            const reqText = reqEl.dataset.requirement;
+            const passed = checks[reqText] || false;
+            reqEl.classList.toggle('create-account__req--passed', passed);
+            reqEl.querySelector('.create-account__req-icon').innerHTML = passed ? '&#9679;' : '&#9675;';
+        });
+
+        const allPassed = Object.values(checks).every(Boolean);
+        const passwordsMatch = password === confirm && confirm.length > 0;
+
+        const submitBtn = document.querySelector('.create-account__submit');
+        if (submitBtn) {
+            const canSubmit = allPassed && passwordsMatch;
+            submitBtn.disabled = !canSubmit;
+            submitBtn.classList.toggle('cta-button--disabled', !canSubmit);
+        }
+
+        const errorEl = document.querySelector('.create-account__error');
+        if (errorEl) {
+            if (confirm.length > 0 && !passwordsMatch) {
+                errorEl.textContent = 'Passwords do not match';
+                errorEl.style.display = 'block';
+            } else {
+                errorEl.style.display = 'none';
+            }
+        }
+    },
+
+    /**
+     * Handle account creation form submission
+     * Calls the /api/create-user serverless function
+     * @param {HTMLElement} button - The submit button element
+     */
+    async handleAccountFormSubmit(button) {
+        const screenId = button.dataset.screen;
+        log.info(`[User Action] Account form submitted on ${screenId}`);
+
+        const email = State.getAnswer('email_capture');
+        const password = document.getElementById('account-password')?.value;
+        const confirmPassword = document.getElementById('account-confirm-password')?.value;
+
+        if (!email || !password) {
+            App.showError('Please fill in all fields');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            App.showError('Passwords do not match');
+            return;
+        }
+
+        if (password.length < 8) {
+            App.showError('Password must be at least 8 characters');
+            return;
+        }
+
+        button.disabled = true;
+        button.classList.add('cta-button--disabled');
+        button.textContent = 'Creating Account...';
+
+        const userName = State.getAnswer('name_capture');
+        const promoCode = Components.generatePromoCode(userName, 50);
+
+        try {
+            const response = await fetch('/api/create-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    name: userName || null,
+                    selectedPlan: State.data.selectedTier,
+                    promoCode,
+                    quizAnswers: State.data.answers
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to create account');
+            }
+
+            log.info('[Account] User created successfully:', result.user?.id);
+
+            if (result.access_token) {
+                localStorage.setItem('compass_access_token', result.access_token);
+            }
+
+            State.set('accountCreated', true);
+            App.showSuccess('Account created successfully!');
+
+            setTimeout(() => {
+                const screenData = Router.getScreen(screenId);
+                const nextScreen = Router.getNextScreen(screenId);
+                if (nextScreen) {
+                    State.pushHistory(screenId);
+                    Router.navigate(nextScreen);
+                }
+            }, 1000);
+
+        } catch (error) {
+            log.error('[Account] Creation failed:', error.message);
+            App.showError(error.message || 'Failed to create account. Please try again.');
+            button.disabled = false;
+            button.classList.remove('cta-button--disabled');
+            button.textContent = 'Create Account';
         }
     },
 
@@ -3184,6 +3579,15 @@ const App = {
                 break;
             case 'payment':
                 html = Screens.paywall(screenData);
+                break;
+            case 'confirmation':
+                html = Screens.thankYou(screenData);
+                break;
+            case 'account_creation':
+                html = Screens.createAccount(screenData);
+                break;
+            case 'app_placeholder':
+                html = Screens.appDashboard(screenData);
                 break;
             default:
                 html = Screens.placeholder(screenData);
