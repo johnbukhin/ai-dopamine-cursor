@@ -1,58 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './Button';
-import { Compass } from 'lucide-react';
-import { supabase } from '../src/lib/supabase';
+import { Compass, ShieldCheck, ExternalLink } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
+
+/** Funnel URL — users without an account should purchase there first */
+const FUNNEL_URL = 'https://ai-dopamine-cursor.vercel.app/funnel/';
 
 interface LoginProps {
   onLogin: () => void;
 }
 
 /**
- * Login component with Supabase authentication.
+ * Login component with three rendering states:
  *
- * Auto-auth flow: On mount, checks localStorage for tokens written by the funnel
- * after account creation. If found, restores the Supabase session silently and
- * calls onLogin() — the user never sees the login form.
- *
- * Manual flow: If no tokens are present (e.g., user opens the app directly),
- * shows an email + password form and authenticates via supabase.auth.signInWithPassword().
+ * 1. Checking (spinner) — silently tries to restore session from localStorage tokens
+ *    written by the funnel after account creation.
+ * 2. Login form — shown when no valid tokens exist (direct URL access, expired session).
+ * 3. Not configured — shown when Supabase env vars are missing (dev/build misconfiguration).
  */
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  // Start in "checking" state — hide the form while we try auto-auth
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // If Supabase isn't configured at all, skip the check and show the form/error
+    if (!isSupabaseConfigured) {
+      setChecking(false);
+      return;
+    }
+
     /**
      * Attempt silent auto-authentication from tokens stored by the funnel.
-     * The funnel's create-user serverless function returns access_token + refresh_token
-     * and the funnel stores them as compass_access_token / compass_refresh_token.
+     * The funnel's create-user API returns access_token + refresh_token;
+     * both are stored in localStorage as compass_access_token / compass_refresh_token.
      */
     const tryAutoAuth = async () => {
       const accessToken = localStorage.getItem('compass_access_token');
       const refreshToken = localStorage.getItem('compass_refresh_token');
 
       if (accessToken && refreshToken) {
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
+        try {
+          const { error: sessionError } = await supabase!.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
 
-        if (!sessionError) {
-          // Session restored — proceed directly to the app
-          onLogin();
-          return;
+          if (!sessionError) {
+            onLogin();
+            return;
+          }
+        } catch {
+          // Network error or invalid tokens — fall through to login form
         }
 
-        // Tokens expired or invalid — clear them and fall through to login form
+        // Tokens expired or invalid — clear them
         localStorage.removeItem('compass_access_token');
         localStorage.removeItem('compass_refresh_token');
       }
 
-      // No valid tokens — show the login form
       setChecking(false);
     };
 
@@ -62,6 +70,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   /** Handle manual email/password sign-in */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
+
     setError('');
     setLoading(true);
 
@@ -79,70 +89,122 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   };
 
-  // Show nothing while auto-auth is in progress
+  // ── Spinner while checking for stored tokens ─────────────────────────────
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
-        <Compass className="text-emerald-800 animate-spin" size={32} />
+        <div className="flex flex-col items-center gap-3">
+          <Compass className="text-emerald-700 animate-spin" size={36} />
+          <p className="text-stone-400 text-sm">Loading your space…</p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-stone-100">
-        <div className="flex flex-col items-center mb-8">
-          <div className="bg-emerald-50 p-4 rounded-full mb-4">
-            <Compass className="text-emerald-800" size={48} />
+  // ── Supabase not configured (missing env vars) ────────────────────────────
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-stone-100 text-center">
+          <div className="bg-amber-50 p-4 rounded-full inline-flex mb-4">
+            <Compass className="text-amber-600" size={40} />
           </div>
-          <h1 className="text-2xl font-bold text-emerald-900">Compass</h1>
-          <p className="text-stone-500 mt-2 text-center">
-            Your private space for recovery and impulse control.
+          <h1 className="text-xl font-bold text-stone-800 mb-2">Configuration needed</h1>
+          <p className="text-stone-500 text-sm">
+            The app is not fully configured yet. If you're the developer, set{' '}
+            <code className="bg-stone-100 px-1 rounded text-xs">VITE_SUPABASE_URL</code> and{' '}
+            <code className="bg-stone-100 px-1 rounded text-xs">VITE_SUPABASE_ANON_KEY</code>{' '}
+            in Vercel and redeploy.
           </p>
         </div>
+      </div>
+    );
+  }
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 focus:ring-2 focus:ring-emerald-200 outline-none transition-colors"
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 focus:ring-2 focus:ring-emerald-200 outline-none transition-colors"
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-            />
+  // ── Login form (direct URL access or expired session) ────────────────────
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+      <div className="max-w-md w-full space-y-4">
+
+        {/* Branding card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-stone-100">
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-emerald-50 p-4 rounded-full mb-4">
+              <Compass className="text-emerald-800" size={48} />
+            </div>
+            <h1 className="text-2xl font-bold text-emerald-900">Compass</h1>
+            <p className="text-stone-500 mt-2 text-center text-sm">
+              Your private space for recovery and impulse control.
+            </p>
           </div>
 
-          {error && (
-            <p className="text-red-600 text-sm text-center">{error}</p>
-          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 focus:ring-2 focus:ring-emerald-200 outline-none transition-colors text-stone-800"
+                placeholder="you@example.com"
+                required
+                autoComplete="email"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 focus:ring-2 focus:ring-emerald-200 outline-none transition-colors text-stone-800"
+                placeholder="••••••••"
+                required
+                autoComplete="current-password"
+              />
+            </div>
 
-          <Button type="submit" fullWidth className="mt-4" disabled={loading}>
-            {loading ? 'Signing in…' : 'Enter Personal Space'}
-          </Button>
-        </form>
+            {error && (
+              <p className="text-red-600 text-sm text-center bg-red-50 rounded-lg p-2">{error}</p>
+            )}
 
-        <p className="text-center text-xs text-stone-400 mt-6">
-          Privacy First. No social logins. Encrypted local session.
-        </p>
+            <Button type="submit" fullWidth className="mt-2" disabled={loading}>
+              {loading ? 'Signing in…' : 'Enter My Space'}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-2 mt-6 justify-center">
+            <ShieldCheck size={14} className="text-stone-300" />
+            <p className="text-xs text-stone-400">
+              Private. Encrypted. No social logins.
+            </p>
+          </div>
+        </div>
+
+        {/* No account yet — prompt to go through funnel */}
+        <div className="bg-white rounded-2xl border border-stone-100 p-5 flex items-start gap-4">
+          <div className="bg-emerald-50 p-2 rounded-xl flex-shrink-0">
+            <ExternalLink size={20} className="text-emerald-700" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-stone-700">Don't have an account yet?</p>
+            <p className="text-xs text-stone-400 mt-0.5 mb-2">
+              Access is created automatically when you complete the Compass program.
+            </p>
+            <a
+              href={FUNNEL_URL}
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors underline underline-offset-2"
+            >
+              Start my Compass journey →
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   );
