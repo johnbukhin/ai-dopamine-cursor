@@ -2394,6 +2394,178 @@ body {
     border-radius: var(--radius-md);
 }
 
+/* ========================================
+   Mobile Viewport Optimization (Issue #10)
+   Applies to non-paywall screens only.
+   ======================================== */
+
+/* Shared mobile CTA behavior (non-paywall only) */
+@media (max-width: 768px) {
+    .screen:not(.paywall-screen) .continue-container,
+    .screen:not(.paywall-screen) .cta-container {
+        position: fixed;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: calc(480px - 32px);
+        background: none;
+        border: none;
+        padding: 0;
+        z-index: 50;
+        margin-top: 0;
+    }
+
+    .screen:not(.paywall-screen) .continue-container .continue-button,
+    .screen:not(.paywall-screen) .cta-container .cta-button {
+        border-radius: 28px;
+        box-shadow: 0 6px 24px rgba(91, 91, 214, 0.4);
+    }
+}
+
+/* < 375px (iPhone SE / compact Android) */
+@media (max-width: 374px) {
+    .screen:not(.paywall-screen) {
+        padding: 10px 10px var(--spacing-md);
+    }
+
+    .screen:not(.paywall-screen) .header {
+        padding: 4px 0;
+        margin-bottom: 8px;
+    }
+
+    .screen:not(.paywall-screen) .progress-container {
+        margin-bottom: 8px;
+    }
+
+    .screen:not(.paywall-screen) .question-nav {
+        margin-bottom: 4px;
+    }
+
+    .screen:not(.paywall-screen) .headline--question {
+        font-size: 17px;
+        margin-bottom: 10px;
+    }
+
+    .screen:not(.paywall-screen) .headline {
+        margin-bottom: 6px;
+    }
+
+    .screen:not(.paywall-screen) .subheadline {
+        margin-bottom: 10px;
+    }
+
+    .screen:not(.paywall-screen) .badge {
+        margin-bottom: 12px;
+    }
+
+    .screen[data-screen="landing"] .content {
+        flex: 0 0 auto;
+    }
+
+    .screen[data-screen="landing"] .legal {
+        margin-top: var(--spacing-md);
+        padding: 10px 0;
+    }
+
+    .screen:not(.paywall-screen) .answer-cards {
+        gap: 6px;
+        margin-bottom: 86px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card {
+        padding: 9px 10px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card__icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card__icon svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* 375px - 428px (most iPhones) */
+@media (min-width: 375px) and (max-width: 428px) {
+    .screen:not(.paywall-screen) {
+        padding: 12px 12px var(--spacing-md);
+    }
+
+    .screen:not(.paywall-screen) .header {
+        padding: 6px 0;
+        margin-bottom: 10px;
+    }
+
+    .screen:not(.paywall-screen) .progress-container {
+        margin-bottom: 10px;
+    }
+
+    .screen:not(.paywall-screen) .question-nav {
+        margin-bottom: 6px;
+    }
+
+    .screen:not(.paywall-screen) .headline--question {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .screen[data-screen="landing"] .content {
+        flex: 0 0 auto;
+    }
+
+    .screen[data-screen="landing"] .legal {
+        margin-top: var(--spacing-md);
+        padding: 12px 0;
+    }
+
+    .screen:not(.paywall-screen) .answer-cards {
+        gap: 8px;
+        margin-bottom: 88px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card {
+        padding: 10px 12px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card__icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card__icon svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* 429px - 768px (large phones / tablets) */
+@media (min-width: 429px) and (max-width: 768px) {
+    .screen:not(.paywall-screen) {
+        padding: 14px 14px var(--spacing-md);
+    }
+
+    .screen:not(.paywall-screen) .header {
+        margin-bottom: 12px;
+    }
+
+    .screen:not(.paywall-screen) .headline--question {
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+
+    .screen:not(.paywall-screen) .answer-cards {
+        gap: 10px;
+        margin-bottom: 92px;
+    }
+
+    .screen:not(.paywall-screen) .answer-card {
+        padding: 12px 14px;
+    }
+}
+
 /* Responsive adjustments for paywall */
 @media (max-width: 768px) {
     .pricing-tiers {
