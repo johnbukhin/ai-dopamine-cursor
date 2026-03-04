@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Webapp merge into monorepo** (Issue #13)
+  - Replaced `webapp/` placeholder scaffold with the working Mind-Compass React + Vite app
+  - Added product modules: Dashboard, Daily Check-In, AI Coach, Urge Help, 28-day Plan, Settings
+  - Added webapp data/prompts/services structure (`data/`, `prompts/`, `services/`, `components/`)
+  - Added Supabase webapp client bootstrap (`webapp/src/lib/supabase.ts`) for login/session integration
+  - Added lightweight shared client logger (`webapp/src/lib/logger.ts`) for consistent warn/error reporting
+
+### Changed
+- **Issue #13 post-merge auth flow hardening**
+  - `funnel/app.js`: post-account-creation redirect points to deployed webapp URL (`https://mind-compass-webapp.vercel.app`)
+  - `webapp/components/Login.tsx`: production login replaces fake login; supports silent token restore from funnel (`compass_access_token` + `compass_refresh_token`)
+  - `webapp/components/Login.tsx`: funnel entry URL is now configurable via `VITE_FUNNEL_URL` (with fallback)
+  - `webapp/.env.local.example`: documented `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GEMINI_API_KEY`, and optional `VITE_FUNNEL_URL`
+  - `webapp/services/geminiService.ts`: tightened error typing (`unknown` + narrowing), removed unsafe `any` paths
+
+### Fixed
+- **Issue #13 white-screen regression**
+  - Prevented app bootstrap crash when `VITE_GEMINI_API_KEY` is missing by making Gemini client init resilient
+  - Replaced temporary debug instrumentation added during troubleshooting with clean production code
+  - `webapp/App.tsx`: logout now null-guards Supabase client (`supabase?.auth.signOut()`) to avoid runtime errors in unconfigured environments
+
+### Security
+- Kept Supabase service-role usage scoped to serverless function (`funnel/api/create-user.js`); webapp uses anon client credentials only
+
+### Removed
+- Removed debugging instrumentation used for runtime white-screen diagnosis from webapp runtime files
+
+### Added
 - **User creation flow + Supabase backend** (Issue #12, commit `eddfa69`)
   - `thank_you` screen: animated SVG checkmark, selected plan summary, promo code display
   - `create_account` screen: read-only pre-filled email, password + confirm fields, real-time requirement indicators (8+ chars, 1 number, 1 uppercase), submit disabled until all pass
