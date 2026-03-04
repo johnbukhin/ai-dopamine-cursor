@@ -3600,13 +3600,10 @@ const App = {
     async initStripe(screenData) {
         const tierId = State.data.selectedTier || '1_month';
         const email  = State.getAnswer('email_capture') || '';
-        // #region agent log
-        fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H6',location:'funnel/app.js:3603',message:'initStripe started',data:{tierId,hasEmail:Boolean(email),origin:window.location.origin,path:window.location.pathname},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
 
-        const payBtn    = document.getElementById('checkout-pay-btn');
-        const errorEl   = document.getElementById('checkout-error');
-        const mountEl   = document.getElementById('payment-element');
+        const payBtn  = document.getElementById('checkout-pay-btn');
+        const errorEl = document.getElementById('checkout-error');
+        const mountEl = document.getElementById('payment-element');
 
         // Helper: surface an inline error below the payment form
         const showCheckoutError = (msg) => {
@@ -3626,9 +3623,6 @@ const App = {
 
         try {
             // ── Step 1: create Stripe Customer + Subscription Schedule ──────
-            // #region agent log
-            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H7',location:'funnel/app.js:3621',message:'calling create-checkout api',data:{tierId,hasEmail:Boolean(email)},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             const response = await fetch('/api/create-checkout', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3646,9 +3640,6 @@ const App = {
                 );
                 return;
             }
-            // #region agent log
-            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H7',location:'funnel/app.js:3628',message:'create-checkout response parsed',data:{ok:response.ok,status:response.status,hasClientSecret:Boolean(data?.clientSecret),error:data?.error||null},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
 
             if (!response.ok || !data.clientSecret) {
                 showCheckoutError(data.error || 'Payment setup failed. Please try again.');
@@ -3661,8 +3652,8 @@ const App = {
                 return;
             }
 
-            const stripe   = window.Stripe(CONFIG.stripePk);
-            const elements = stripe.elements({ clientSecret: data.clientSecret });
+            const stripe    = window.Stripe(CONFIG.stripePk);
+            const elements  = stripe.elements({ clientSecret: data.clientSecret });
             const paymentEl = elements.create('payment');
 
             paymentEl.mount('#payment-element');
@@ -3681,6 +3672,9 @@ const App = {
             });
 
             // ── Step 3: wire up submit button ───────────────────────────────
+            // Use { once: true } so the listener is removed after first click,
+            // preventing duplicate confirmPayment() calls if initStripe() is
+            // ever invoked more than once on the same DOM node.
             if (payBtn) {
                 payBtn.addEventListener('click', async () => {
                     if (payBtn.disabled) return;
@@ -3692,14 +3686,21 @@ const App = {
 
                     const { error } = await stripe.confirmPayment({
                         elements,
-                        // redirect: 'if_required' keeps the user on-page for
-                        // card payments; Stripe redirects for wallet payments.
+                        confirmParams: {
+                            // Required for payment methods that redirect (3DS, iDEAL,
+                            // Bancontact, SEPA, etc.) even with redirect: 'if_required'.
+                            return_url: window.location.href,
+                        },
+                        // Stay on-page for standard card payments; only redirect
+                        // when the payment method strictly requires it.
                         redirect: 'if_required',
                     });
 
                     if (error) {
                         // Stripe declined or network error — show inline message
                         showCheckoutError(error.message || 'Payment failed. Please try again.');
+                        payBtn.disabled = false;
+                        payBtn.classList.remove('cta-button--disabled');
                         payBtn.textContent = 'Complete Payment';
                         return;
                     }
@@ -3711,21 +3712,15 @@ const App = {
                     if (nextScreen) {
                         Router.navigate(nextScreen);
                     }
-                });
+                }, { once: true });
             }
 
         } catch (err) {
-            // #region agent log
-            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H8',location:'funnel/app.js:3693',message:'initStripe catch triggered',data:{message:err?.message||'unknown'},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             log.error('[Checkout] initStripe error:', err.message);
             showCheckoutError('An unexpected error occurred. Please refresh and try again.');
         }
     },
 
-    /**
-     * Initialize the application
-     */
     /**
      * Dev shortcut: if the URL contains a hash matching a known screen ID,
      * jump directly to that screen instead of starting from the beginning.

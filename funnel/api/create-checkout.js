@@ -54,8 +54,13 @@ export default async function handler(req, res) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
     try {
-        // 1. Create a Stripe Customer for this email.
-        const customer = await stripe.customers.create({ email });
+        // 1. Look up an existing Stripe Customer by email to avoid duplicates;
+        //    create a new one only if none exists. This prevents orphaned
+        //    customers + invoices when the user navigates back and re-submits.
+        const existing = await stripe.customers.list({ email, limit: 1 });
+        const customer = existing.data.length > 0
+            ? existing.data[0]
+            : await stripe.customers.create({ email });
 
         // 2. Create a 2-phase Subscription Schedule:
         //    Phase 1: introductory price × 1 billing period

@@ -40,7 +40,10 @@ export default async function handler(req, res) {
             // pass the raw string so Stripe can verify the HMAC signature.
             event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
         } else {
-            // Dev / pre-webhook-setup: trust the payload without signature check
+            // Signature verification is disabled — log clearly so this is visible
+            // in Vercel logs. Set STRIPE_WEBHOOK_SECRET to a real whsec_... value
+            // in the Vercel dashboard to enable verification.
+            console.warn('[webhook] STRIPE_WEBHOOK_SECRET not set — skipping signature verification. Any POST will be accepted.');
             event = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
         }
     } catch (err) {
