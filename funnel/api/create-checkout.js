@@ -117,8 +117,31 @@ export default async function handler(req, res) {
 
         const paymentIntent =
             subscription?.latest_invoice?.payment_intent;
+        const invoice = subscription?.latest_invoice;
+        let clientSecret = paymentIntent?.client_secret || null;
 
-        if (!paymentIntent?.client_secret) {
+        // Some nested Stripe expansions return payment_intent objects without client_secret.
+        // Fallback: retrieve PaymentIntent directly by ID.
+        if (!clientSecret && paymentIntent?.id) {
+            const fullPaymentIntent = await stripe.paymentIntents.retrieve(paymentIntent.id);
+            clientSecret = fullPaymentIntent?.client_secret || null;
+            // #region agent log
+            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-post-fix',hypothesisId:'H7',location:'funnel/api/create-checkout.js:114',message:'retrieved payment intent directly',data:{paymentIntentId:paymentIntent.id,hasClientSecret:Boolean(clientSecret)},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+        }
+
+        // Additional fallback for newer invoice flows.
+        if (!clientSecret && invoice?.id) {
+            const fullInvoice = await stripe.invoices.retrieve(invoice.id, {
+                expand: ['confirmation_secret'],
+            });
+            clientSecret = fullInvoice?.confirmation_secret?.client_secret || null;
+            // #region agent log
+            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-post-fix',hypothesisId:'H7',location:'funnel/api/create-checkout.js:125',message:'retrieved invoice confirmation secret',data:{invoiceId:invoice.id,hasClientSecret:Boolean(clientSecret)},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+        }
+
+        if (!clientSecret) {
             const diagnostics = {
                 scheduleId: schedule?.id || null,
                 subscriptionType: typeof schedule?.subscription,
@@ -128,6 +151,8 @@ export default async function handler(req, res) {
                 normalizedSubscriptionType: typeof subscription,
                 normalizedLatestInvoiceType: typeof subscription?.latest_invoice,
                 paymentIntentType: typeof subscription?.latest_invoice?.payment_intent,
+                paymentIntentId: paymentIntent?.id || null,
+                hasDirectClientSecret: Boolean(paymentIntent?.client_secret),
             };
             // #region agent log
             fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H5',location:'funnel/api/create-checkout.js:106',message:'payment intent client secret missing',data:diagnostics,timestamp:Date.now()})}).catch(()=>{});
@@ -139,7 +164,7 @@ export default async function handler(req, res) {
         }
 
         return res.status(200).json({
-            clientSecret:    paymentIntent.client_secret,
+            clientSecret,
             customerId:      customer.id,
             subscriptionId:  schedule.subscription?.id,
             scheduleId:      schedule.id,
