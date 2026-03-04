@@ -53,8 +53,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
         const hashAccessToken = params.get('access_token');
         const hashRefreshToken = params.get('refresh_token');
 
-        // Strip hash from URL immediately — tokens must not linger in browser history
-        history.replaceState(null, '', window.location.pathname);
+        // Strip hash from URL immediately — tokens must not linger in browser history.
+        // Preserve query params (utm/deep-link context).
+        history.replaceState(null, '', window.location.pathname + window.location.search);
 
         if (hashAccessToken && hashRefreshToken) {
           try {

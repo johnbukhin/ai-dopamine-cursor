@@ -3329,13 +3329,15 @@ const Events = {
 
             log.info('[Account] User created successfully:', result.user?.id);
 
-            // Always write to localStorage as a same-origin fallback (used in local dev
-            // where funnel and webapp share the same origin / no CONFIG.webappUrl is set).
-            if (result.access_token) {
-                localStorage.setItem('compass_access_token', result.access_token);
-            }
-            if (result.refresh_token) {
-                localStorage.setItem('compass_refresh_token', result.refresh_token);
+            // Same-origin local dev fallback only: keep tokens in localStorage
+            // when no external webapp URL is configured.
+            if (!CONFIG.webappUrl) {
+                if (result.access_token) {
+                    localStorage.setItem('compass_access_token', result.access_token);
+                }
+                if (result.refresh_token) {
+                    localStorage.setItem('compass_refresh_token', result.refresh_token);
+                }
             }
 
             State.set('accountCreated', true);

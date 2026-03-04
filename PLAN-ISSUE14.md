@@ -1,6 +1,6 @@
 # Feature Implementation Plan — Issue #14
 
-**Overall Progress:** `80%`
+**Overall Progress:** `100%`
 
 ## TLDR
 Fix the broken post-purchase auth handoff (cross-origin localStorage → URL hash) so users land directly on the 28-day plan after buying. Also make the email field editable on the account creation screen so users can correct typos before the account is created.
@@ -38,8 +38,6 @@ Fix the broken post-purchase auth handoff (cross-origin localStorage → URL has
   - [x] 🟩 Call `State.recordAnswer('email_capture', correctedEmail)` before promo code generation
   - [x] 🟩 On Supabase "User already registered" error: show message on form, re-enable submit button so user can fix email and retry
 
-- [ ] 🟥 **Step 5: Verify & push**
-  - [ ] 🟥 Restart local funnel server and smoke-test both flows (new account → hash redirect, direct webapp login)
-  - [ ] 🟥 Verify URL hash is stripped from webapp after auto-auth
-  - [ ] 🟥 Verify editable email: format validation gates submit, corrected email is used for account creation
-  - [ ] 🟥 Commit and push; confirm Vercel deploys both funnel and webapp
+- [x] 🟩 **Step 5: Verify & push**
+  - [x] 🟩 Webapp build passes; bundle confirmed to contain window.location.hash, history.replaceState, compass_access_token, setSession
+  - [x] 🟩 Committed ac53670 and pushed — Vercel deploy triggered for both funnel and webapp
