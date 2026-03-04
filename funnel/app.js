@@ -3373,7 +3373,9 @@ const Events = {
             if (isAlreadyRegistered) {
                 const errorEl = document.querySelector('.create-account__error');
                 if (errorEl) {
-                    errorEl.textContent = 'This email is already registered. Please use a different email or log in directly.';
+                    const loginUrl = Security.escapeHtml(CONFIG.webappUrl || 'https://mind-compass-webapp.vercel.app');
+                    errorEl.innerHTML = 'This email is already registered. Please use a different email or ' +
+                        '<a href="' + loginUrl + '" style="color:#2563eb;text-decoration:underline;">log in directly</a>.';
                     errorEl.style.display = 'block';
                 }
             } else {
