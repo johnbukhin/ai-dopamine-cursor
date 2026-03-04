@@ -3600,6 +3600,9 @@ const App = {
     async initStripe(screenData) {
         const tierId = State.data.selectedTier || '1_month';
         const email  = State.getAnswer('email_capture') || '';
+        // #region agent log
+        fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H6',location:'funnel/app.js:3603',message:'initStripe started',data:{tierId,hasEmail:Boolean(email),origin:window.location.origin,path:window.location.pathname},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
 
         const payBtn    = document.getElementById('checkout-pay-btn');
         const errorEl   = document.getElementById('checkout-error');
@@ -3616,15 +3619,36 @@ const App = {
             }
         };
 
+        if (!email) {
+            showCheckoutError('Please complete email capture before checkout.');
+            return;
+        }
+
         try {
             // ── Step 1: create Stripe Customer + Subscription Schedule ──────
+            // #region agent log
+            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H7',location:'funnel/app.js:3621',message:'calling create-checkout api',data:{tierId,hasEmail:Boolean(email)},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             const response = await fetch('/api/create-checkout', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ tierId, email }),
             });
-
-            const data = await response.json();
+            const raw = await response.text();
+            let data = {};
+            try {
+                data = raw ? JSON.parse(raw) : {};
+            } catch {
+                // Non-JSON response (commonly local static server returning HTML/501)
+                showCheckoutError(
+                    'Checkout API is unavailable in this local server mode. ' +
+                    'Use Vercel deployment or run with serverless APIs enabled.'
+                );
+                return;
+            }
+            // #region agent log
+            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H7',location:'funnel/app.js:3628',message:'create-checkout response parsed',data:{ok:response.ok,status:response.status,hasClientSecret:Boolean(data?.clientSecret),error:data?.error||null},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
 
             if (!response.ok || !data.clientSecret) {
                 showCheckoutError(data.error || 'Payment setup failed. Please try again.');
@@ -3691,6 +3715,9 @@ const App = {
             }
 
         } catch (err) {
+            // #region agent log
+            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-local-debug',hypothesisId:'H8',location:'funnel/app.js:3693',message:'initStripe catch triggered',data:{message:err?.message||'unknown'},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             log.error('[Checkout] initStripe error:', err.message);
             showCheckoutError('An unexpected error occurred. Please refresh and try again.');
         }
@@ -3699,6 +3726,24 @@ const App = {
     /**
      * Initialize the application
      */
+    /**
+     * Dev shortcut: if the URL contains a hash matching a known screen ID,
+     * jump directly to that screen instead of starting from the beginning.
+     *
+     * Usage: /funnel/#paywall  /funnel/#checkout  /funnel/#thank_you  etc.
+     * No-op in normal use (no hash present) — funnel logic is unaffected.
+     */
+    applyHashNavigation() {
+        const hash = window.location.hash.slice(1); // strip leading '#'
+        if (!hash) return;
+
+        const screen = Router.getScreen(hash);
+        if (screen) {
+            State.set('currentScreen', hash);
+            log.info(`[App] Hash nav: jumped to screen "${hash}"`);
+        }
+    },
+
     async init() {
         log.info(`[App] Initializing ${CONFIG.brandName} Funnel...`);
         
@@ -3707,7 +3752,11 @@ const App = {
         
         // Load funnel data
         await this.loadFunnelData();
-        
+
+        // Dev shortcut: jump to any screen via URL hash, e.g. /funnel/#paywall
+        // Has no effect on normal flow — only activates when a hash is present.
+        this.applyHashNavigation();
+
         // Initialize event handlers
         Events.init();
         
