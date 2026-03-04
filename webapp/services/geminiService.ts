@@ -5,7 +5,13 @@ import { buildCoachSystemPrompt } from "../prompts/aiCoach";
 
 // Use Vite's VITE_GEMINI_API_KEY env var (set in .env.local or Vercel environment variables)
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+const ai: GoogleGenAI | null = (() => {
+  try {
+    return new GoogleGenAI({ apiKey });
+  } catch {
+    return null;
+  }
+})();
 
 // Helper to pause execution
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -26,6 +32,7 @@ const isRateLimitError = (error: any): boolean => {
 
 // Helper to make calls with retry logic for rate limits
 const callGeminiWithRetry = async (prompt: string, model: string = 'gemini-3-flash-preview', retries = 2): Promise<string | null> => {
+    if (!ai) return null;
     for (let i = 0; i <= retries; i++) {
         try {
             const response: GenerateContentResponse = await ai.models.generateContent({
