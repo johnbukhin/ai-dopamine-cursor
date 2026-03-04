@@ -72,7 +72,12 @@ export default async function handler(req, res) {
         //    payment is confirmed via the Payment Element.
         const schedule = await stripe.subscriptionSchedules.create({
             customer: customer.id,
-            start_behavior: 'now',
+            start_date: 'now',
+            // Subscription starts in 'incomplete' status until the first payment
+            // is confirmed via the Payment Element (standard embedded-UI pattern).
+            default_settings: {
+                payment_behavior: 'default_incomplete',
+            },
             phases: [
                 {
                     items: [{ price: plan.introPrice, quantity: 1 }],
