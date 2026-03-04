@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { logger } from './logger';
 
 /**
  * Supabase client for the Compass webapp.
@@ -21,10 +22,7 @@ let supabase: SupabaseClient | null = null;
 if (supabaseUrl && supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 } else {
-  console.warn(
-    '[Compass] Supabase is not configured. ' +
-    'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY and redeploy.'
-  );
+  logger.warn('Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY and redeploy.');
 }
 
 export { supabase };

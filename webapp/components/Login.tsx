@@ -4,7 +4,7 @@ import { Compass, ShieldCheck, ExternalLink } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../src/lib/supabase';
 
 /** Funnel URL — users without an account should purchase there first */
-const FUNNEL_URL = 'https://ai-dopamine-cursor.vercel.app/funnel/';
+const FUNNEL_URL = import.meta.env.VITE_FUNNEL_URL || 'https://ai-dopamine-cursor.vercel.app/funnel/';
 
 interface LoginProps {
   onLogin: () => void;
