@@ -2203,10 +2203,12 @@ const Screens = {
                             <input
                                 type="email"
                                 id="account-email"
-                                class="create-account__input create-account__input--readonly"
+                                class="create-account__input"
                                 value="${safeEmail}"
-                                readonly
-                                tabindex="-1"
+                                data-field="email"
+                                data-screen="${safeId}"
+                                autocomplete="email"
+                                placeholder="your@email.com"
                             />
                         </div>
 
@@ -3214,15 +3216,21 @@ const Events = {
     },
 
     /**
-     * Validate password and update requirement indicators in the account creation form
+     * Validate email + password and update requirement indicators in the account creation form.
+     * Email is now editable so its format is validated here alongside password requirements.
      */
     handleAccountFormInput() {
+        const emailEl = document.getElementById('account-email');
         const passwordEl = document.getElementById('account-password');
         const confirmEl = document.getElementById('account-confirm-password');
         if (!passwordEl || !confirmEl) return;
 
+        const email = emailEl ? emailEl.value.trim() : '';
         const password = passwordEl.value;
         const confirm = confirmEl.value;
+
+        // Basic email format check (same regex used in the email_gate screen)
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
         const checks = {
             'At least 8 characters': password.length >= 8,
@@ -3242,7 +3250,7 @@ const Events = {
 
         const submitBtn = document.querySelector('.create-account__submit');
         if (submitBtn) {
-            const canSubmit = allPassed && passwordsMatch;
+            const canSubmit = emailValid && allPassed && passwordsMatch;
             submitBtn.disabled = !canSubmit;
             submitBtn.classList.toggle('cta-button--disabled', !canSubmit);
         }
@@ -3267,7 +3275,13 @@ const Events = {
         const screenId = button.dataset.screen;
         log.info(`[User Action] Account form submitted on ${screenId}`);
 
-        const email = State.getAnswer('email_capture');
+        // Read email from the DOM input — the user may have corrected it on this screen.
+        // Update State so downstream usages (promo code name-fallback, etc.) stay consistent.
+        const email = document.getElementById('account-email')?.value.trim();
+        if (email) {
+            State.recordAnswer('email_capture', email);
+        }
+
         const password = document.getElementById('account-password')?.value;
         const confirmPassword = document.getElementById('account-confirm-password')?.value;
 
@@ -3315,8 +3329,8 @@ const Events = {
 
             log.info('[Account] User created successfully:', result.user?.id);
 
-            // Store both tokens so the webapp can initialize a full Supabase session
-            // without requiring the user to log in again
+            // Always write to localStorage as a same-origin fallback (used in local dev
+            // where funnel and webapp share the same origin / no CONFIG.webappUrl is set).
             if (result.access_token) {
                 localStorage.setItem('compass_access_token', result.access_token);
             }
@@ -3328,12 +3342,19 @@ const Events = {
             App.showSuccess('Account created successfully!');
 
             setTimeout(() => {
-                // Production: redirect to webapp (auto-auth via stored tokens)
-                // Local dev: CONFIG.webappUrl is empty, fall through to app_dashboard
                 if (CONFIG.webappUrl) {
-                    window.location.href = CONFIG.webappUrl;
+                    // Production: pass tokens via URL hash so the webapp can initialise a
+                    // Supabase session cross-origin (localStorage is scoped per origin and
+                    // cannot be read by a different domain).
+                    // The webapp reads, consumes, and strips the hash on mount.
+                    const hash = result.access_token && result.refresh_token
+                        ? '#access_token=' + encodeURIComponent(result.access_token) +
+                          '&refresh_token=' + encodeURIComponent(result.refresh_token)
+                        : '';
+                    window.location.href = CONFIG.webappUrl + hash;
                     return;
                 }
+                // Local dev: CONFIG.webappUrl is empty — navigate to the next funnel screen.
                 const nextScreen = Router.getNextScreen(screenId);
                 if (nextScreen) {
                     State.pushHistory(screenId);
@@ -3343,7 +3364,22 @@ const Events = {
 
         } catch (error) {
             log.error('[Account] Creation failed:', error.message);
-            App.showError(error.message || 'Failed to create account. Please try again.');
+
+            // Surface "already registered" inline on the form so the user can correct
+            // the email and retry without losing their password input.
+            const isAlreadyRegistered = /already registered|already been registered|user already exists/i.test(
+                error.message || ''
+            );
+            if (isAlreadyRegistered) {
+                const errorEl = document.querySelector('.create-account__error');
+                if (errorEl) {
+                    errorEl.textContent = 'This email is already registered. Please use a different email or log in directly.';
+                    errorEl.style.display = 'block';
+                }
+            } else {
+                App.showError(error.message || 'Failed to create account. Please try again.');
+            }
+
             button.disabled = false;
             button.classList.remove('cta-button--disabled');
             button.textContent = 'Create Account';

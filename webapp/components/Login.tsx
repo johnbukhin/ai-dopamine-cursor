@@ -13,8 +13,12 @@ interface LoginProps {
 /**
  * Login component with three rendering states:
  *
- * 1. Checking (spinner) — silently tries to restore session from localStorage tokens
- *    written by the funnel after account creation.
+ * 1. Checking (spinner) — silently tries to restore session:
+ *    a. URL hash tokens (#access_token=...&refresh_token=...) — written by the funnel
+ *       when redirecting cross-origin after account creation. Hash is stripped from the
+ *       URL after consumption so tokens don't persist in browser history.
+ *    b. localStorage tokens (compass_access_token / compass_refresh_token) — same-origin
+ *       fallback used in local dev where funnel and webapp share an origin.
  * 2. Login form — shown when no valid tokens exist (direct URL access, expired session).
  * 3. Not configured — shown when Supabase env vars are missing (dev/build misconfiguration).
  */
@@ -33,11 +37,43 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
 
     /**
-     * Attempt silent auto-authentication from tokens stored by the funnel.
-     * The funnel's create-user API returns access_token + refresh_token;
-     * both are stored in localStorage as compass_access_token / compass_refresh_token.
+     * Attempt silent auto-authentication.
+     *
+     * Priority order:
+     * 1. URL hash tokens — cross-origin handoff from the funnel after purchase.
+     *    These are URL-encoded in the fragment: #access_token=...&refresh_token=...
+     *    We strip the hash immediately after reading to keep tokens out of history.
+     * 2. localStorage tokens — same-origin fallback for local development.
      */
     const tryAutoAuth = async () => {
+      // ── 1. Check URL hash (cross-origin post-purchase redirect) ──────────────
+      const hash = window.location.hash.slice(1); // strip leading '#'
+      if (hash) {
+        const params = new URLSearchParams(hash);
+        const hashAccessToken = params.get('access_token');
+        const hashRefreshToken = params.get('refresh_token');
+
+        // Strip hash from URL immediately — tokens must not linger in browser history
+        history.replaceState(null, '', window.location.pathname);
+
+        if (hashAccessToken && hashRefreshToken) {
+          try {
+            const { error: sessionError } = await supabase!.auth.setSession({
+              access_token: hashAccessToken,
+              refresh_token: hashRefreshToken,
+            });
+
+            if (!sessionError) {
+              onLogin();
+              return;
+            }
+          } catch {
+            // Invalid/expired hash tokens — fall through to localStorage check
+          }
+        }
+      }
+
+      // ── 2. Check localStorage (same-origin local dev fallback) ────────────────
       const accessToken = localStorage.getItem('compass_access_token');
       const refreshToken = localStorage.getItem('compass_refresh_token');
 
