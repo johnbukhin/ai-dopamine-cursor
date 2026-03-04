@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Stripe checkout screen** (Issue #11)
+  - New `checkout` screen inserted between paywall and `thank_you` — custom branded order summary + embedded Stripe Payment Element (cards, Apple Pay, Google Pay, PayPal)
+  - `funnel/api/create-checkout.js`: serverless function creates Stripe Customer (deduped by email) + 2-phase Subscription Schedule (intro price × 1 period → regular price forever), finalizes draft invoice to obtain PaymentIntent `client_secret`
+  - `funnel/api/webhook.js`: handles `invoice.payment_succeeded` → upserts `subscriptions` row in Supabase; logs warning when signature verification is bypassed
+  - `funnel/app.js`: `Screens.checkout()` renders order summary card with tier name, original price, discount row, promo code badge, and "Total today"; `App.initStripe()` POSTs to `/api/create-checkout`, mounts Payment Element, wires pay button with `{ once: true }` listener and `return_url` for 3DS/redirect payment methods
+  - `funnel/index.html`: Stripe.js CDN script added
+  - `funnel/styles.css`: checkout screen styles (`.checkout__summary`, `.checkout__payment-element`, `.checkout__secure-footer`, etc.)
+  - `funnel/package.json`: `stripe ^14` dependency
+  - URL hash navigation for dev: `#checkout`, `#paywall`, `#email_capture`, etc. jump directly to any screen without clicking through the funnel
+
 ### Fixed
 - **Mobile viewport layout** (Issue #10)
   - All 5 answer options now fit on-screen without scrolling on 375px phones — trimmed header chrome (~156px saved via tighter header, progress bar, nav, question text, card padding, and gap)
