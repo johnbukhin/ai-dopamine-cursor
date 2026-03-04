@@ -19,7 +19,10 @@ const CONFIG = {
     // Webapp URL for post-account-creation redirect.
     // Empty string = local dev (falls back to app_dashboard screen).
     // Set to Vercel webapp URL in production, e.g. 'https://compass-app.vercel.app'
-    webappUrl: 'https://mind-compass-webapp.vercel.app'
+    webappUrl: 'https://mind-compass-webapp.vercel.app',
+    // Stripe publishable key (safe to expose in frontend code).
+    // Production key should be set here before going live.
+    stripePk: 'pk_test_51RGn1FE85qJsu4O7B4vPpGAgvzwq63X3C9vk0IN4oLDBaDpccbctO9gy5I3gjVoNr3ENvISwfVjRbuLUu74Fx8HB00C2nolMtd'
 };
 
 // ========================================
@@ -2329,6 +2332,105 @@ const Screens = {
     },
 
     /**
+     * Render checkout screen — order summary + Stripe Payment Element mount point.
+     *
+     * The actual Stripe initialisation (API call → Payment Element mount) is
+     * triggered *after* the DOM is ready via App.initStripe(), which is called
+     * from App.render() when screenType === 'checkout'.
+     *
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    checkout(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+
+        // Resolve selected tier to display the order summary
+        const tierId = State.data.selectedTier || '1_month';
+        const paywall = Router.getScreen('paywall');
+        const tier = paywall?.pricingTiers?.find(t => t.id === tierId);
+
+        // Display labels — fall back to generic strings if paywall data missing
+        const tierName    = Security.escapeHtml(tier?.name || 'Personalized Plan');
+        const origPrice   = Security.escapeHtml(tier?.originalPrice || '');
+        const introPrice  = Security.escapeHtml(tier?.discountedPrice || '');
+        const savingsText = Security.escapeHtml(tier?.savings || '');
+
+        // Promo code (cosmetic display only — discount is applied server-side)
+        const userName  = State.getAnswer('name_capture');
+        const promoCode = Components.generatePromoCode(userName, 50);
+
+        return `
+            <div class="screen checkout-screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <main class="content checkout">
+
+                    <!-- Order Summary card -->
+                    <div class="checkout__summary">
+                        <h2 class="checkout__summary-title">Order Summary</h2>
+
+                        <div class="checkout__summary-row">
+                            <span class="checkout__summary-label">${tierName}</span>
+                            ${origPrice ? `<span class="checkout__summary-orig">${origPrice}</span>` : ''}
+                        </div>
+
+                        ${savingsText ? `
+                        <div class="checkout__summary-row checkout__summary-row--discount">
+                            <span class="checkout__summary-label">Discount (${savingsText})</span>
+                            <span class="checkout__summary-discount">Applied</span>
+                        </div>
+                        ` : ''}
+
+                        ${promoCode ? `
+                        <div class="checkout__summary-row">
+                            <span class="checkout__summary-label">Promo code</span>
+                            <span class="checkout__promo-badge">${Security.escapeHtml(promoCode)}</span>
+                        </div>
+                        ` : ''}
+
+                        <div class="checkout__summary-row checkout__summary-row--total">
+                            <span class="checkout__summary-label checkout__summary-label--total">Total today</span>
+                            <span class="checkout__summary-total">${introPrice || '—'}</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Element mount point (Stripe injects UI here) -->
+                    <div class="checkout__payment-section">
+                        <div id="payment-element" class="checkout__payment-element">
+                            <!-- Stripe Payment Element mounts here after initStripe() -->
+                            <div class="checkout__payment-loading">
+                                <span>Loading payment form…</span>
+                            </div>
+                        </div>
+
+                        <!-- Inline error message area (shown by App.initStripe on failure) -->
+                        <div id="checkout-error" class="checkout__error" role="alert" style="display:none;"></div>
+
+                        <button
+                            id="checkout-pay-btn"
+                            class="cta-button checkout__pay-btn cta-button--disabled"
+                            data-screen="${safeId}"
+                            disabled
+                        >
+                            Complete Payment
+                        </button>
+                    </div>
+
+                    <!-- Trust footer -->
+                    <div class="checkout__secure-footer">
+                        <svg class="checkout__lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span>Pay Safe &amp; Secure · 256-bit SSL</span>
+                    </div>
+
+                </main>
+            </div>
+        `;
+    },
+
+    /**
      * Render paywall screen with all trust elements
      * Full interactive paywall with countdown, pricing tiers, FAQ, etc.
      * @param {Object} screenData - Screen data from JSON
@@ -3483,6 +3585,118 @@ const App = {
     },
 
     /**
+     * Bootstrap Stripe Payment Element on the checkout screen.
+     *
+     * Flow:
+     *   1. POST /api/create-checkout → returns clientSecret + plan metadata
+     *   2. Mount Stripe Payment Element into #payment-element
+     *   3. Enable the "Complete Payment" button
+     *   4. Button click → stripe.confirmPayment() → on success navigate to thank_you
+     *
+     * Called automatically from App.render() when screenType === 'checkout'.
+     *
+     * @param {Object} screenData - Checkout screen data from JSON
+     */
+    async initStripe(screenData) {
+        const tierId = State.data.selectedTier || '1_month';
+        const email  = State.getAnswer('email_capture') || '';
+
+        const payBtn    = document.getElementById('checkout-pay-btn');
+        const errorEl   = document.getElementById('checkout-error');
+        const mountEl   = document.getElementById('payment-element');
+
+        // Helper: surface an inline error below the payment form
+        const showCheckoutError = (msg) => {
+            if (!errorEl) return;
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+            if (payBtn) {
+                payBtn.disabled = false;
+                payBtn.classList.remove('cta-button--disabled');
+            }
+        };
+
+        try {
+            // ── Step 1: create Stripe Customer + Subscription Schedule ──────
+            const response = await fetch('/api/create-checkout', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ tierId, email }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.clientSecret) {
+                showCheckoutError(data.error || 'Payment setup failed. Please try again.');
+                return;
+            }
+
+            // ── Step 2: mount Stripe Payment Element ────────────────────────
+            if (typeof window.Stripe === 'undefined') {
+                showCheckoutError('Payment provider failed to load. Please refresh.');
+                return;
+            }
+
+            const stripe   = window.Stripe(CONFIG.stripePk);
+            const elements = stripe.elements({ clientSecret: data.clientSecret });
+            const paymentEl = elements.create('payment');
+
+            paymentEl.mount('#payment-element');
+
+            // Enable pay button once Payment Element is ready
+            paymentEl.on('ready', () => {
+                if (payBtn) {
+                    payBtn.disabled = false;
+                    payBtn.classList.remove('cta-button--disabled');
+                }
+                // Clear the "Loading payment form…" placeholder
+                if (mountEl) {
+                    const loader = mountEl.querySelector('.checkout__payment-loading');
+                    if (loader) loader.remove();
+                }
+            });
+
+            // ── Step 3: wire up submit button ───────────────────────────────
+            if (payBtn) {
+                payBtn.addEventListener('click', async () => {
+                    if (payBtn.disabled) return;
+
+                    payBtn.disabled = true;
+                    payBtn.classList.add('cta-button--disabled');
+                    payBtn.textContent = 'Processing…';
+                    if (errorEl) errorEl.style.display = 'none';
+
+                    const { error } = await stripe.confirmPayment({
+                        elements,
+                        // redirect: 'if_required' keeps the user on-page for
+                        // card payments; Stripe redirects for wallet payments.
+                        redirect: 'if_required',
+                    });
+
+                    if (error) {
+                        // Stripe declined or network error — show inline message
+                        showCheckoutError(error.message || 'Payment failed. Please try again.');
+                        payBtn.textContent = 'Complete Payment';
+                        return;
+                    }
+
+                    // Payment succeeded — proceed to thank_you
+                    log.info('[Checkout] Payment confirmed, navigating to thank_you');
+                    State.pushHistory(screenData.id);
+                    const nextScreen = Router.getNextScreen(screenData.id);
+                    if (nextScreen) {
+                        Router.navigate(nextScreen);
+                    }
+                });
+            }
+
+        } catch (err) {
+            log.error('[Checkout] initStripe error:', err.message);
+            showCheckoutError('An unexpected error occurred. Please refresh and try again.');
+        }
+    },
+
+    /**
      * Initialize the application
      */
     async init() {
@@ -3631,6 +3845,9 @@ const App = {
             case 'value_proposition':
                 html = Screens.valueProp(screenData);
                 break;
+            case 'checkout':
+                html = Screens.checkout(screenData);
+                break;
             case 'payment':
                 html = Screens.paywall(screenData);
                 break;
@@ -3663,6 +3880,11 @@ const App = {
         if ((screenData.screenType || screenData.type) === 'payment') {
             const initialMinutes = screenData.urgencyElements?.countdownTimer?.initialMinutes || 10;
             CountdownTimer.start(initialMinutes);
+        }
+
+        // Bootstrap Stripe Payment Element after DOM is ready for checkout screen
+        if ((screenData.screenType || screenData.type) === 'checkout') {
+            this.initStripe(screenData);
         }
 
         log.info(`[App] Rendered screen: ${currentScreenId}`);

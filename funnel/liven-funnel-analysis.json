@@ -957,6 +957,12 @@
         "TestimonialCard",
         "FooterLinks"
       ],
+      "nextScreenLogic": "checkout"
+    },
+    {
+      "id": "checkout",
+      "screenType": "checkout",
+      "headline": "Complete Your Order",
       "nextScreenLogic": "thank_you"
     },
     {

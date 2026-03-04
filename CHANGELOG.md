@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Mobile viewport layout** (Issue #10)
+  - All 5 answer options now fit on-screen without scrolling on 375px phones — trimmed header chrome (~156px saved via tighter header, progress bar, nav, question text, card padding, and gap)
+  - Continue/CTA button is now a fixed floating pill at the bottom of the viewport on all non-paywall screens (always reachable even when 6+ options overflow)
+  - Legal disclaimer on landing screen sits directly below the gender cards instead of being pushed to the viewport bottom
+  - Button container uses `left: 50%; transform: translateX(-50%); width: calc(100% - 32px)` so it never overflows or clips on any iPhone width
+  - Three responsive tiers: `< 374px` (SE), `375px–428px` (most iPhones), shared CTA behavior at `≤ 768px`; paywall screens are fully excluded via `:not(.paywall-screen)` selectors
+
 ### Added
 - **Seamless post-purchase auth handoff** (Issue #14)
   - Funnel now passes `access_token` + `refresh_token` via URL hash fragment (`#access_token=...&refresh_token=...`) on post-purchase redirect to the webapp
