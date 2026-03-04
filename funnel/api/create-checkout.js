@@ -31,6 +31,9 @@ const PLAN_MAP = {
 };
 
 export default async function handler(req, res) {
+    // #region agent log
+    fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H1',location:'funnel/api/create-checkout.js:34',message:'create-checkout entered',data:{method:req.method},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -39,6 +42,9 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const { tierId, email } = req.body;
+    // #region agent log
+    fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H2',location:'funnel/api/create-checkout.js:43',message:'request payload parsed',data:{tierId,hasEmail:Boolean(email)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (!tierId || !email) {
         return res.status(400).json({ error: 'tierId and email are required' });
     }
@@ -61,6 +67,9 @@ export default async function handler(req, res) {
         //    In production you may want to look up an existing customer first;
         //    for the funnel flow a new customer per purchase attempt is fine.
         const customer = await stripe.customers.create({ email });
+        // #region agent log
+        fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H3',location:'funnel/api/create-checkout.js:66',message:'stripe customer created',data:{hasCustomerId:Boolean(customer?.id)},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
 
         // 2. Create a Subscription Schedule with 2 phases:
         //    - Phase 1: intro price × 1 iteration  (auto-renews into phase 2)
@@ -84,15 +93,48 @@ export default async function handler(req, res) {
             ],
             expand: ['subscription.latest_invoice.payment_intent'],
         });
+        // #region agent log
+        fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H4',location:'funnel/api/create-checkout.js:89',message:'subscription schedule created',data:{scheduleId:schedule?.id||null,subscriptionType:typeof schedule?.subscription,subscriptionExpanded:Boolean(schedule?.subscription && typeof schedule.subscription === 'object'),latestInvoiceType:typeof schedule?.subscription?.latest_invoice,hasPaymentIntent:Boolean(schedule?.subscription?.latest_invoice?.payment_intent)},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
 
         // 3. Extract the PaymentIntent client secret from the first invoice.
-        //    This is what the Stripe Payment Element needs on the frontend.
+        //    Stripe can return schedule.subscription as either:
+        //    - expanded object (when expand works), or
+        //    - plain string ID (when not expanded).
+        //    We normalize both paths to reliably get latest_invoice.payment_intent.
+        let subscription = schedule.subscription || null;
+        if (typeof subscription === 'string') {
+            subscription = await stripe.subscriptions.retrieve(subscription, {
+                expand: ['latest_invoice.payment_intent'],
+            });
+        }
+
+        if (subscription && typeof subscription === 'object' && typeof subscription.latest_invoice === 'string') {
+            subscription = await stripe.subscriptions.retrieve(subscription.id, {
+                expand: ['latest_invoice.payment_intent'],
+            });
+        }
+
         const paymentIntent =
-            schedule.subscription?.latest_invoice?.payment_intent;
+            subscription?.latest_invoice?.payment_intent;
 
         if (!paymentIntent?.client_secret) {
+            const diagnostics = {
+                scheduleId: schedule?.id || null,
+                subscriptionType: typeof schedule?.subscription,
+                subscriptionId: typeof schedule?.subscription === 'string'
+                    ? schedule.subscription
+                    : (schedule?.subscription?.id || null),
+                normalizedSubscriptionType: typeof subscription,
+                normalizedLatestInvoiceType: typeof subscription?.latest_invoice,
+                paymentIntentType: typeof subscription?.latest_invoice?.payment_intent,
+            };
+            // #region agent log
+            fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H5',location:'funnel/api/create-checkout.js:106',message:'payment intent client secret missing',data:diagnostics,timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
             return res.status(500).json({
                 error: 'Failed to retrieve payment intent from subscription schedule',
+                diagnostics,
             });
         }
 
@@ -107,6 +149,9 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7939/ingest/4aa7fdbc-e992-435f-8c9a-60a3ad8cc6a7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'d23057'},body:JSON.stringify({sessionId:'d23057',runId:'issue11-pi-pre-fix',hypothesisId:'H5',location:'funnel/api/create-checkout.js:116',message:'create-checkout caught stripe error',data:{message:error?.message||'unknown',type:error?.type||null,code:error?.code||null,param:error?.param||error?.raw?.param||null,statusCode:error?.statusCode||null},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         console.error('[create-checkout] Stripe error:', error.message);
         return res.status(500).json({ error: error.message || 'Payment setup failed' });
     }
