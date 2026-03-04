@@ -39,7 +39,6 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const { tierId, email } = req.body;
-
     if (!tierId || !email) {
         return res.status(400).json({ error: 'tierId and email are required' });
     }
@@ -67,17 +66,12 @@ export default async function handler(req, res) {
         //    - Phase 1: intro price × 1 iteration  (auto-renews into phase 2)
         //    - Phase 2: regular price, no end date  (ongoing)
         //
-        //    payment_behavior: 'default_incomplete' means the subscription starts
-        //    in 'incomplete' status and only becomes 'active' after the first
-        //    payment is confirmed via the Payment Element.
+        //    NOTE: payment_behavior is not supported on subscriptionSchedules.create.
+        //    Stripe will create the underlying subscription/invoice for phase 1;
+        //    we then use latest_invoice.payment_intent.client_secret in the Payment Element flow.
         const schedule = await stripe.subscriptionSchedules.create({
             customer: customer.id,
             start_date: 'now',
-            // Subscription starts in 'incomplete' status until the first payment
-            // is confirmed via the Payment Element (standard embedded-UI pattern).
-            default_settings: {
-                payment_behavior: 'default_incomplete',
-            },
             phases: [
                 {
                     items: [{ price: plan.introPrice, quantity: 1 }],
