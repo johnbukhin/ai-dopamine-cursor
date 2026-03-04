@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Seamless post-purchase auth handoff** (Issue #14)
+  - Funnel now passes `access_token` + `refresh_token` via URL hash fragment (`#access_token=...&refresh_token=...`) on post-purchase redirect to the webapp
+  - `webapp/components/Login.tsx`: `tryAutoAuth` reads hash tokens first (cross-origin), strips them from the URL via `history.replaceState` immediately after consumption, then falls through to the localStorage fallback for same-origin local dev
+  - Users land directly on the 28-day plan after purchase — no manual login required
+
+### Changed
+- **Editable email on account creation** (Issue #14)
+  - Email field on `account_creation` screen is now editable (was read-only) — users can correct a pre-filled typo before account creation
+  - Real-time validation: submit stays disabled until email format is valid **and** all password requirements pass
+  - `handleAccountFormSubmit` reads email from the DOM input and syncs it back to State so promo code generation and name-fallback logic stay consistent
+
+### Fixed
+- **Duplicate email UX** (Issue #14)
+  - "Already registered" errors now surface inline on the form (instead of a generic toast) with a clickable "log in directly" link pointing to the webapp login screen
+  - Submit button is restored after the error so users can correct the email and retry without reloading
+
+### Added
 - **Webapp merge into monorepo** (Issue #13)
   - Replaced `webapp/` placeholder scaffold with the working Mind-Compass React + Vite app
   - Added product modules: Dashboard, Daily Check-In, AI Coach, Urge Help, 28-day Plan, Settings
