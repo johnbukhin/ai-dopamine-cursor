@@ -157,7 +157,7 @@ export default function App() {
              <div className="flex-1 flex items-center justify-center text-stone-400 p-4">
                  <div className="text-center">
                     <h2 className="text-xl font-semibold mb-2">Coming Soon</h2>
-                    <p>This module is under development.</p>
+                    <p>This very module is under development.</p>
                  </div>
              </div>
         )}
