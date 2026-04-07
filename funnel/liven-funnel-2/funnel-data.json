@@ -1,0 +1,1160 @@
+{
+  "funnelName": "Mind Compass Quiz Funnel",
+  "funnelUrl": "https://quiz.mindcompass.com/en",
+  "totalQuestions": 36,
+  "funnelType": "quiz-to-paywall",
+  "estimatedCompletionTime": "3 minutes",
+
+  "screens": [
+    {
+      "id": "landing",
+      "type": "gender_selection",
+      "screenType": "landing",
+      "headline": "IS PORN REWIRING YOUR DOPAMINE SYSTEM?",
+      "subheadline": "3-MINUTE QUIZ",
+      "options": ["Male", "Female"],
+      "optionStyle": "image_cards",
+      "hasProgressIndicator": false,
+      "nextScreenLogic": "age_selection",
+      "legalText": "By clicking 'Male' or 'Female' you agree with the Terms of Use and Service, Privacy Policy, Subscription Policy and Cookie Policy"
+    },
+    {
+      "id": "age_selection",
+      "type": "age_selection",
+      "screenType": "age",
+      "headline": "What's your age?",
+      "options": [
+        {"label": "18-24"},
+        {"label": "25-34"},
+        {"label": "35-44"},
+        {"label": "45-54"},
+        {"label": "55-64"},
+        {"label": "65+"}
+      ],
+      "optionStyle": "text_list",
+      "hasProgressIndicator": false,
+      "nextScreenLogic": "welcome_interstitial"
+    },
+    {
+      "id": "welcome_interstitial",
+      "type": "trust_building",
+      "screenType": "interstitial",
+      "variant": "welcome",
+      "headline": "We're glad you are here",
+      "content": {
+        "description": "This quiz is a space for honest reflection — not judgment. Your answers help us understand your unique patterns so we can recommend the most effective, science-backed strategies for you.",
+        "bulletPoints": [
+          "Your responses are private and secure",
+          "There are no right or wrong answers"
+        ]
+      },
+      "ctaButton": "Continue",
+      "nextScreenLogic": "question_1"
+    },
+    {
+      "id": "question_1",
+      "type": "likert_scale",
+      "questionNumber": 1,
+      "progressFormat": "1 / 36",
+      "headline": "\"I often can't stop myself, even when I promised I would\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "dopamine_sensitivity",
+      "nextScreenLogic": "question_2"
+    },
+    {
+      "id": "question_2",
+      "type": "likert_scale",
+      "questionNumber": 2,
+      "progressFormat": "2 / 36",
+      "headline": "\"I don't decide to watch, sometimes my hands open it before my brain catches up\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "dopamine_sensitivity",
+      "nextScreenLogic": "question_3"
+    },
+    {
+      "id": "question_3",
+      "type": "likert_scale",
+      "questionNumber": 3,
+      "progressFormat": "3 / 36",
+      "headline": "\"I often reach for porn when I experience difficult emotions\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "dopamine_sensitivity",
+      "nextScreenLogic": "question_4"
+    },
+    {
+      "id": "question_4",
+      "type": "likert_scale",
+      "questionNumber": 4,
+      "progressFormat": "4 / 36",
+      "headline": "\"Sometimes the urge hits out of nowhere\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "dopamine_sensitivity",
+      "nextScreenLogic": "question_5"
+    },
+    {
+      "id": "question_5",
+      "type": "likert_scale",
+      "questionNumber": 5,
+      "progressFormat": "5 / 36",
+      "headline": "\"What used to shock me barely registers now\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "emotional_regulation",
+      "nextScreenLogic": "question_6"
+    },
+    {
+      "id": "question_6",
+      "type": "likert_scale",
+      "questionNumber": 6,
+      "progressFormat": "6 / 36",
+      "headline": "\"After finishing, a wave of disgust, shame, or emptiness hits\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "emotional_regulation",
+      "nextScreenLogic": "question_7"
+    },
+    {
+      "id": "question_7",
+      "type": "likert_scale",
+      "questionNumber": 7,
+      "progressFormat": "7 / 36",
+      "headline": "\"Sometimes I feel nothing at all, and that worries me\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "emotional_regulation",
+      "nextScreenLogic": "question_8"
+    },
+    {
+      "id": "question_8",
+      "type": "likert_scale",
+      "questionNumber": 8,
+      "progressFormat": "8 / 36",
+      "headline": "\"I feel like I lead a double life, no one knows the version of me that exists behind closed doors\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "pattern_stage",
+      "nextScreenLogic": "question_9"
+    },
+    {
+      "id": "question_9",
+      "type": "likert_scale",
+      "questionNumber": 9,
+      "progressFormat": "9 / 36",
+      "headline": "\"Sometimes I feel physically disgusted after, like I need to scrub it off\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "pattern_stage",
+      "nextScreenLogic": "question_10"
+    },
+    {
+      "id": "question_10",
+      "type": "likert_scale",
+      "questionNumber": 10,
+      "progressFormat": "10 / 36",
+      "headline": "\"I feel trapped in the same cycle: craving, watching, regretting, promising to stop, doing it again\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "pattern_stage",
+      "nextScreenLogic": "question_11"
+    },
+    {
+      "id": "question_11",
+      "type": "likert_scale",
+      "questionNumber": 11,
+      "progressFormat": "11 / 36",
+      "headline": "\"My thinking feels slow and foggy, like my brain is running at half capacity\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "physical_impact",
+      "nextScreenLogic": "question_12"
+    },
+    {
+      "id": "question_12",
+      "type": "likert_scale",
+      "questionNumber": 12,
+      "progressFormat": "12 / 36",
+      "headline": "\"My motivation disappears after watching\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "physical_impact",
+      "nextScreenLogic": "question_13"
+    },
+    {
+      "id": "question_13",
+      "type": "likert_scale",
+      "questionNumber": 13,
+      "progressFormat": "13 / 36",
+      "headline": "\"I feel drained and low-energy most days\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "physical_impact",
+      "nextScreenLogic": "question_14"
+    },
+    {
+      "id": "question_14",
+      "type": "likert_scale",
+      "questionNumber": 14,
+      "progressFormat": "14 / 36",
+      "headline": "\"I stay up way too late scrolling and wake up feeling like I barely slept\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "physical_impact",
+      "nextScreenLogic": "question_15"
+    },
+    {
+      "id": "question_15",
+      "type": "likert_scale",
+      "questionNumber": 15,
+      "progressFormat": "15 / 36",
+      "headline": "\"I feel disconnected from people I care about\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_16"
+    },
+    {
+      "id": "question_16",
+      "type": "likert_scale",
+      "questionNumber": 16,
+      "progressFormat": "16 / 36",
+      "headline": "\"I often have sexual thoughts, fantasies, or dreams\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_17"
+    },
+    {
+      "id": "question_17",
+      "type": "likert_scale",
+      "questionNumber": 17,
+      "progressFormat": "17 / 36",
+      "headline": "\"Porn has shaped most of what I know about sex and intimacy\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_18"
+    },
+    {
+      "id": "question_18",
+      "type": "likert_scale",
+      "questionNumber": 18,
+      "progressFormat": "18 / 36",
+      "headline": "\"I catch myself looking at real people through a sexualized lens\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_19"
+    },
+    {
+      "id": "question_19",
+      "type": "likert_scale",
+      "questionNumber": 19,
+      "progressFormat": "19 / 36",
+      "headline": "\"The person I am in private is not who I want to be\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_20"
+    },
+    {
+      "id": "question_20",
+      "type": "likert_scale",
+      "questionNumber": 20,
+      "progressFormat": "20 / 36",
+      "headline": "\"I feel like I'm unknowingly holding myself back from success\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_21"
+    },
+    {
+      "id": "question_21",
+      "type": "likert_scale",
+      "questionNumber": 21,
+      "progressFormat": "21 / 36",
+      "headline": "\"I feel like I'm not fully living the life I want\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_22"
+    },
+    {
+      "id": "question_22",
+      "type": "likert_scale",
+      "questionNumber": 22,
+      "progressFormat": "22 / 36",
+      "headline": "\"I carry constant tension in my body that I can't seem to release\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_23"
+    },
+    {
+      "id": "question_23",
+      "type": "likert_scale",
+      "questionNumber": 23,
+      "progressFormat": "23 / 36",
+      "headline": "\"I feel a low-level anxiety that never fully goes away\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_24"
+    },
+    {
+      "id": "question_24",
+      "type": "likert_scale",
+      "questionNumber": 24,
+      "progressFormat": "24 / 36",
+      "headline": "\"I often hide my use from people close to me\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_25"
+    },
+    {
+      "id": "question_25",
+      "type": "likert_scale",
+      "questionNumber": 25,
+      "progressFormat": "25 / 36",
+      "headline": "\"I feel like I would be judged if anyone knew\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_26"
+    },
+    {
+      "id": "question_26",
+      "type": "likert_scale",
+      "questionNumber": 26,
+      "progressFormat": "26 / 36",
+      "headline": "\"I avoid asking for help because of shame\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_27"
+    },
+    {
+      "id": "question_27",
+      "type": "likert_scale",
+      "questionNumber": 27,
+      "progressFormat": "27 / 36",
+      "headline": "\"I've tried willpower, cold showers, blockers, but I always end up back here\"",
+      "subheadline": "Do you agree with the following statement?",
+      "options": [
+        {"value": 1, "label": "Strongly disagree", "icon": "thumbs_down_x"},
+        {"value": 2, "icon": "thumbs_down"},
+        {"value": 3, "icon": "question"},
+        {"value": 4, "icon": "thumbs_up"},
+        {"value": 5, "label": "Strongly agree", "icon": "thumbs_up_star"}
+      ],
+      "optionStyle": "icon_scale",
+      "scoringCategory": "general",
+      "nextScreenLogic": "question_28"
+    },
+    {
+      "id": "question_28",
+      "type": "single_choice",
+      "questionNumber": 28,
+      "progressFormat": "28 / 36",
+      "headline": "When did you first notice this was becoming a problem?",
+      "options": [
+        {"label": "This week"},
+        {"label": "About the last month"},
+        {"label": "A few months ago"},
+        {"label": "Over 6 months ago"},
+        {"label": "Hard to say"}
+      ],
+      "optionStyle": "text_list",
+      "nextScreenLogic": "question_29"
+    },
+    {
+      "id": "question_29",
+      "type": "single_choice",
+      "questionNumber": 29,
+      "progressFormat": "29 / 36",
+      "headline": "Does your use increase during stressful or lonely periods?",
+      "options": [
+        {"label": "Yes", "icon": "checkmark"},
+        {"label": "Sometimes", "icon": "arrows"},
+        {"label": "No", "icon": "prohibited"},
+        {"label": "Hard to say", "icon": "question"}
+      ],
+      "optionStyle": "icon_list",
+      "nextScreenLogic": "question_30"
+    },
+    {
+      "id": "question_30",
+      "type": "multiple_choice",
+      "questionNumber": 30,
+      "progressFormat": "30 / 36",
+      "headline": "Are you going through any of these?",
+      "subheadline": "Choose all that apply",
+      "options": [
+        {"label": "Relationship problems"},
+        {"label": "Financial difficulties"},
+        {"label": "Loneliness or isolation"},
+        {"label": "Work stress"},
+        {"label": "Social anxiety"},
+        {"label": "Substance use"},
+        {"label": "None of the above"},
+        {"label": "Type your answer here...", "type": "text_input"}
+      ],
+      "optionStyle": "checkbox_list",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "question_31"
+    },
+    {
+      "id": "question_31",
+      "type": "multiple_choice",
+      "questionNumber": 31,
+      "progressFormat": "31 / 36",
+      "headline": "Do you experience any of these mental symptoms?",
+      "subheadline": "Choose all that apply",
+      "options": [
+        {"label": "Shame spirals"},
+        {"label": "Brain fog"},
+        {"label": "Self-criticism"},
+        {"label": "Low motivation"},
+        {"label": "Emotional numbness"},
+        {"label": "Anxiety"},
+        {"label": "Difficulty concentrating"},
+        {"label": "None of the above"},
+        {"label": "Type your answer here...", "type": "text_input"}
+      ],
+      "optionStyle": "checkbox_list",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "question_32"
+    },
+    {
+      "id": "question_32",
+      "type": "multiple_choice",
+      "questionNumber": 32,
+      "progressFormat": "32 / 36",
+      "headline": "Do you experience any of these physical symptoms?",
+      "subheadline": "Choose all that apply",
+      "options": [
+        {"label": "Low energy"},
+        {"label": "Erection difficulties"},
+        {"label": "Low sex drive"},
+        {"label": "Sleep issues"},
+        {"label": "None of the above"},
+        {"label": "Type your answer here...", "type": "text_input"}
+      ],
+      "optionStyle": "checkbox_list",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "question_33"
+    },
+    {
+      "id": "question_33",
+      "type": "multiple_choice",
+      "questionNumber": 33,
+      "progressFormat": "33 / 36",
+      "headline": "What areas would you like to improve?",
+      "subheadline": "Choose all that apply",
+      "options": [
+        {"label": "Relationships", "icon": "couple_emoji"},
+        {"label": "Confidence", "icon": "confident_emoji"},
+        {"label": "Self-control", "icon": "bicep_emoji"},
+        {"label": "Focus and productivity", "icon": "target_emoji"},
+        {"label": "General wellbeing", "icon": "heart_emoji"},
+        {"label": "Type your answer here...", "type": "text_input"}
+      ],
+      "optionStyle": "icon_checkbox_list",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "interstitial_university"
+    },
+    {
+      "id": "interstitial_university",
+      "type": "trust_building",
+      "screenType": "interstitial",
+      "headline": "Mind Compass was developed using evidence-based psychological practices",
+      "subheadline": "Your journey is based on decades of research",
+      "credibilityLogos": [
+        {"name": "Harvard University", "type": "university"},
+        {"name": "University of Oxford", "type": "university"},
+        {"name": "University of Cambridge", "type": "university"}
+      ],
+      "ctaButton": "Continue",
+      "nextScreenLogic": "question_34"
+    },
+    {
+      "id": "question_34",
+      "type": "multiple_choice",
+      "questionNumber": 34,
+      "progressFormat": "34 / 36",
+      "headline": "What do you want to feel like during your journey?",
+      "subheadline": "Choose all that apply",
+      "options": [
+        {"label": "Energized", "icon": "lightning_emoji"},
+        {"label": "In control", "icon": "bicep_emoji"},
+        {"label": "Calm", "icon": "meditation_emoji"},
+        {"label": "Motivated", "icon": "flame_emoji"},
+        {"label": "Clear-headed", "icon": "target_emoji"},
+        {"label": "Free", "icon": "bird_emoji"},
+        {"label": "Type your answer here...", "type": "text_input"}
+      ],
+      "optionStyle": "icon_checkbox_list",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "question_35"
+    },
+    {
+      "id": "question_35",
+      "type": "single_choice",
+      "questionNumber": 35,
+      "progressFormat": "35 / 36",
+      "headline": "How much do you know about Cognitive Behavioral Therapy?",
+      "options": [
+        {"label": "Nothing at all"},
+        {"label": "Not that much"},
+        {"label": "A lot"}
+      ],
+      "optionStyle": "text_list",
+      "nextScreenLogic": "question_36"
+    },
+    {
+      "id": "question_36",
+      "type": "single_choice",
+      "questionNumber": 36,
+      "progressFormat": "36 / 36",
+      "headline": "Did you hear about Mind Compass from a therapist?",
+      "options": [
+        {"label": "Yes", "icon": "checkmark"},
+        {"label": "No", "icon": "prohibited"}
+      ],
+      "optionStyle": "icon_list",
+      "nextScreenLogic": "interstitial_cbt"
+    },
+    {
+      "id": "interstitial_cbt",
+      "type": "trust_building",
+      "screenType": "interstitial",
+      "headline": "Your plan will be reviewed by a practicing therapist",
+      "content": {
+        "description": "Mind Compass meticulously incorporates the CBT model to deliver personalized content and resources to its users for enhanced emotional well-being",
+        "cbtModel": {
+          "elements": ["Thoughts", "Feelings", "Behavior"],
+          "diagram": "circular_connection"
+        },
+        "expertReview": {
+          "badge": "Content reviewed by an expert",
+          "name": "Tara Passaretti",
+          "title": "Licensed Mental Health Counselor"
+        }
+      },
+      "ctaButton": "Continue",
+      "nextScreenLogic": "interstitial_social_proof"
+    },
+    {
+      "id": "interstitial_social_proof",
+      "type": "social_proof",
+      "screenType": "interstitial",
+      "headline": "Join over 2,500,000 people",
+      "subheadline": "Become part of a growing worldwide community and achieve your goals with us!",
+      "visual": {
+        "type": "world_map",
+        "markers": "user_avatars",
+        "locations": ["North America", "Europe", "Asia", "Australia", "South America"]
+      },
+      "ctaButton": "Continue",
+      "nextScreenLogic": "email_capture"
+    },
+    {
+      "id": "email_capture",
+      "type": "lead_capture",
+      "screenType": "email_gate",
+      "headline": "Enter your email for",
+      "subheadline": "detailed test results",
+      "inputField": {
+        "type": "email",
+        "placeholder": "Enter your email",
+        "required": true
+      },
+      "privacyNote": "We respect your privacy and are committed to protecting your personal data. Your data will be processed according to our Privacy policy.",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "name_capture"
+    },
+    {
+      "id": "name_capture",
+      "type": "lead_capture",
+      "screenType": "name_gate",
+      "headline": "What's your first name?",
+      "subheadline": "Enter your name to get your plan",
+      "inputField": {
+        "type": "text",
+        "placeholder": "Enter your name",
+        "required": true
+      },
+      "ctaButton": "Continue",
+      "nextScreenLogic": "profile_summary"
+    },
+    {
+      "id": "profile_summary",
+      "type": "profile_summary",
+      "screenType": "personalized_results",
+      "headline": "Summary of your compulsive behavior profile",
+      "scoring": {
+        "overallLevel": {
+          "label": "Dopamine dysregulation level",
+          "scale": ["Low", "Normal", "Medium", "High"],
+          "gradient": ["#4CAF50", "#8BC34A", "#FFC107", "#F44336"]
+        },
+        "categories": {
+          "dopamine_sensitivity": {
+            "label": "Dopamine sensitivity",
+            "questions": [1, 2, 3, 4],
+            "levels": ["Low", "Moderate", "Elevated", "High"]
+          },
+          "emotional_regulation": {
+            "label": "Emotional regulation",
+            "questions": [5, 6, 7],
+            "levels": ["Stable", "Mild Distress", "Emotional Overload", "Severe Dysregulation"]
+          },
+          "pattern_stage": {
+            "label": "Pattern stage",
+            "questions": [8, 9, 10],
+            "levels": ["Emerging", "Recent", "Established", "Deeply Rooted"]
+          },
+          "physical_impact": {
+            "label": "Physical impact",
+            "questions": [11, 12, 13, 14],
+            "levels": ["Minimal", "Noticeable", "Circadian Disruption", "Severe Impact"]
+          }
+        },
+        "levelDescriptions": {
+          "Low": "Your responses suggest minimal dopamine dysregulation. Your reward system appears to be functioning within a healthy range.",
+          "Normal": "Your responses suggest some signs of dopamine pattern shifts. Early awareness is a powerful advantage.",
+          "Medium": "Your responses indicate moderate dopamine dysregulation. Your brain's reward system has adapted to high-intensity stimulation, which can affect motivation, focus, and emotional balance.",
+          "High": "Your responses indicate significant dopamine dysregulation. Your brain's reward system has been substantially rewired by high-intensity stimulation, impacting multiple areas of daily functioning."
+        }
+      },
+      "ctaButton": "Continue",
+      "nextScreenLogic": "goal_timeline"
+    },
+    {
+      "id": "goal_timeline",
+      "type": "goal_timeline",
+      "screenType": "timeline_chart",
+      "headline": "A plan designed for {gender} {ageGroup} to support your wellbeing journey",
+      "chartType": "bar_chart_decreasing",
+      "chartLabels": "dynamic_months",
+      "chartMonths": 3,
+      "disclaimer": "*Based on the data of users who log their progress in the app. The chart is a non-customized illustration and results may vary.",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "plan_creation"
+    },
+    {
+      "id": "plan_creation",
+      "type": "loading_with_engagement",
+      "screenType": "transition",
+      "headline": "Creating your",
+      "dynamicSubheadline": "Porn Addiction Recovery Plan for {gender} {ageGroup}",
+      "progressSteps": [
+        {"label": "Goals"},
+        {"label": "Growth areas"},
+        {"label": "Content"}
+      ],
+      "engagementModals": [
+        {
+          "trigger": "during_loading",
+          "question": "Are you inclined to finish what you start?",
+          "options": ["No", "Yes"],
+          "type": "commitment_question"
+        },
+        {
+          "trigger": "during_loading",
+          "question": "Are you familiar with dopamine regulation techniques?",
+          "options": ["No", "Yes"],
+          "type": "knowledge_question"
+        },
+        {
+          "trigger": "during_loading",
+          "question": "Are you open to additional support?",
+          "options": ["No", "Yes"],
+          "type": "interest_question"
+        }
+      ],
+      "testimonials": [
+        {
+          "rating": 5,
+          "source": "Trustpilot",
+          "title": "I love everything of this app...",
+          "content": "I love everything of this app as it helps me prioritize my emotional wellbeing, day and self-care routine.",
+          "author": "violet_martinez"
+        },
+        {
+          "rating": 5,
+          "source": "Trustpilot",
+          "title": "The app was a support for me during a period",
+          "content": "The app was a support for me during a period when I was feeling anxious and even depressed. In three months of using Mind Compass, I learned to understand myself better and my well-being improved significantly.",
+          "author": "J.Enderson"
+        },
+        {
+          "rating": 5,
+          "source": "Trustpilot",
+          "title": "The Mind Compass app is ...",
+          "content": "The Mind Compass app is like a personal wellbeing coach. It's convenient to have everything in one place and I don't have to look for other resources. Definitely worth using it.",
+          "author": "Paul Vizer"
+        }
+      ],
+      "ctaButton": "Continue",
+      "nextScreenLogic": "plan_ready"
+    },
+    {
+      "id": "plan_ready",
+      "type": "plan_ready",
+      "screenType": "recovery_curve",
+      "headline": "{name}, Your Porn Addiction Recovery Plan for {gender} {ageGroup} is ready!",
+      "chartTitle": "Your dopamine system's recovery level",
+      "chartType": "recovery_curve",
+      "chartLabels": ["WEEK 1", "WEEK 2", "WEEK 3", "WEEK 4"],
+      "chartPoints": [
+        {"week": 1, "value": 20, "label": "Today", "color": "#E57373"},
+        {"week": 2, "value": 45, "color": "#FFB74D"},
+        {"week": 3, "value": 70, "color": "#FFD54F"},
+        {"week": 4, "value": 90, "label": "After using Mind Compass", "color": "#66BB6A"}
+      ],
+      "disclaimer": "*Based on the data of users who log their progress in the app. The chart is a non-customized illustration and results may vary.",
+      "ctaButton": "Continue",
+      "nextScreenLogic": "scratch_card"
+    },
+    {
+      "id": "scratch_card",
+      "type": "scratch_card",
+      "screenType": "gamification",
+      "badge": "GET YOUR GIFT",
+      "headline": "{name}, Scratch & Save on your personal",
+      "subheadline": "Porn Addiction Recovery Plan",
+      "description": "A little support, right when you need it",
+      "scratchCard": {
+        "instruction": "Scratch your discount",
+        "revealedDiscount": "50%",
+        "revealedText": "off your personal Porn Addiction Recovery Plan"
+      },
+      "discountModal": {
+        "emoji": "party",
+        "headline": "Woo hoo!",
+        "text": "Your discount is",
+        "discount": "50% off",
+        "note": "Your promo code will be applied automatically in the next step"
+      },
+      "ctaButton": "Continue",
+      "nextScreenLogic": "paywall"
+    },
+    {
+      "id": "paywall",
+      "type": "paywall",
+      "screenType": "payment",
+      "headline": "Your Porn Addiction Recovery Plan for {gender} {ageGroup} is ready!",
+      "beforeAfter": {
+        "now": {
+          "label": "Now",
+          "image": "man_worried",
+          "metrics": [
+            {"label": "Dopamine system", "value": "Dysregulated"},
+            {"label": "Self-control", "value": "Hijacked", "progressLevel": 1},
+            {"label": "Mental clarity", "value": "Suppressed", "progressLevel": 1}
+          ]
+        },
+        "goal": {
+          "label": "Your Goal",
+          "image": "man_happy",
+          "metrics": [
+            {"label": "Dopamine system", "value": "Balanced"},
+            {"label": "Self-control", "value": "Restored", "progressLevel": 4},
+            {"label": "Mental clarity", "value": "Sharp", "progressLevel": 4}
+          ]
+        }
+      },
+      "personalizedInfo": {
+        "mainChallenge": {
+          "label": "Main challenge",
+          "icon": "brain",
+          "value": "dynamic"
+        },
+        "goal": {
+          "label": "Goal",
+          "icon": "target",
+          "value": "dynamic"
+        }
+      },
+      "pricingTiers": [
+        {
+          "id": "7_day",
+          "name": "7-DAY PLAN",
+          "price": "$39.99",
+          "pricePerDay": "$5.71",
+          "recommended": false
+        },
+        {
+          "id": "1_month",
+          "name": "1-MONTH PLAN",
+          "badge": "MOST POPULAR",
+          "price": "$39.99",
+          "pricePerDay": "$1.33",
+          "recommended": true
+        },
+        {
+          "id": "3_month",
+          "name": "3-MONTH PLAN",
+          "price": "$79.99",
+          "pricePerDay": "$0.89",
+          "recommended": false
+        }
+      ],
+      "ctaButton": {
+        "text": "GET MY PLAN",
+        "style": "primary_green"
+      },
+      "subscriptionNote": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is $39.99, then $39.99/month. Cancel via the app or email: support@mindcompass.com. See Subscription Policy for details.",
+      "trustElements": {
+        "paymentSecurity": {
+          "headline": "Pay Safe & Secure",
+          "icons": ["PayPal", "Apple Pay", "Visa", "Mastercard", "Maestro", "Discover", "Amex"]
+        },
+        "goals": {
+          "headline": "Our goals",
+          "items": [
+            "Build a healthier relationship with sexual desire",
+            "Reduce reliance on porn and strengthen real-world intimacy",
+            "Learn to understand and resist your urges",
+            "Reclaim your focus and energy",
+            "Take back control from your habits",
+            "Find healthy ways to cope with stress",
+            "Restore your natural motivation",
+            "Grow personal confidence"
+          ]
+        },
+        "statistics": [
+          {"percentage": "83%", "description": "of users were able to manage dopamine levels after just 6 weeks", "bold": "manage dopamine levels"},
+          {"percentage": "77%", "description": "of users started with similar level of dopamine dependence as you", "bold": "similar level of dopamine dependence"},
+          {"percentage": "45%", "description": "of users suffer from the same excessive dopamine trigger as you", "bold": "excessive dopamine trigger"}
+        ],
+        "lifeComparison": {
+          "without": {
+            "headline": "How life might be without Mind Compass",
+            "items": [
+              "Powerless over your habits and urges",
+              "Trapped in a cycle of escape and guilt",
+              "Neglecting responsibilities and goals",
+              "Losing interest in passions",
+              "Feeling mentally exhausted and numb",
+              "Stuck in routines with no real payoff",
+              "Hiding your struggles out of shame",
+              "Life on autopilot, driven by urges"
+            ]
+          },
+          "with": {
+            "headline": "How life might be with Mind Compass",
+            "items": [
+              "Finally feel in control of your choices",
+              "Wake up with a clear, guilt-free mind",
+              "Rediscover joy in everyday life",
+              "Build unshakable self-respect",
+              "Regain energy for your passions",
+              "Develop healthy coping skills",
+              "Be present with the people you love",
+              "Build a future you can be proud of"
+            ]
+          }
+        },
+        "moneyBackGuarantee": {
+          "duration": "30 days",
+          "headline": "30-Day Money-Back Guarantee",
+          "description": "Our plan is backed by a money-back guarantee. We believe that our plan will work for you, that we guarantee a full refund within 30 days after purchase if you don't see visible results in your ability to reduce negative effects despite following your plan as directed. Find more about applicable limitations in our money-back policy."
+        }
+      },
+      "faq": {
+        "headline": "People often ask",
+        "questions": [
+          {
+            "question": "What if my willpower is gone? I've tried to quit before and failed.",
+            "answer": "This plan isn't another test of willpower. Instead, it's designed to teach you the skills to manage urges and rebuild your brain's reward system from the ground up. We help you build new patterns gradually, so you don't have to rely on willpower alone to succeed."
+          },
+          {
+            "question": "What if my triggers are everywhere and I can't escape them?",
+            "answer": "Our plan focuses on helping you build resilience. You'll learn practical, in-the-moment strategies to identify your triggers, navigate cravings when they strike, and redirect your focus without feeling overwhelmed. The goal isn't to eliminate triggers, but to take away their power over you."
+          },
+          {
+            "question": "What if I'm afraid I'll just fail again?",
+            "answer": "Our plan is different because it breaks the journey into small, manageable daily steps that are easy to follow. You're not alone in this. We provide constant support and guidance to help you build momentum, celebrate small wins, and stay motivated even when it feels hard."
+          }
+        ]
+      },
+      "testimonials": [
+        {
+          "rating": 5,
+          "title": "Concise and easy",
+          "content": "Concise and easy. Those are the action words that are needed when you're trying to detox your dopamine dependence. Really glad to try this.",
+          "author": "skrupert"
+        },
+        {
+          "rating": 5,
+          "title": "Finally taking control of my screen time",
+          "content": "Before I started using this app, I used to procrastinate a lot by watching stuff like YouTube and Facebook. Now, with this app, I feel like I can finally start breaking away from media addiction.",
+          "author": "qzi"
+        },
+        {
+          "rating": 5,
+          "title": "The Mind Compass app is like ...",
+          "content": "The Mind Compass app is like a personal wellbeing coach. It's convenient to have everything in one place and I don't have to look for other resources. Definitely worth using it.",
+          "author": "Paul Vizer"
+        }
+      ],
+      "companyInfo": {
+        "name": "Chesmint Limited",
+        "address": "Flat/Office 102, Lekorpouzier 12a, Limassol, 3075, Cyprus",
+        "links": ["Terms of Use", "Privacy Policy", "Subscription Policy", "Cookie Policy"]
+      },
+      "nextScreenLogic": "checkout"
+    },
+    {
+      "id": "checkout",
+      "screenType": "checkout",
+      "headline": "Complete Your Order",
+      "nextScreenLogic": "thank_you"
+    },
+    {
+      "id": "thank_you",
+      "type": "confirmation",
+      "screenType": "confirmation",
+      "headline": "Thank You for Your Purchase!",
+      "subheadline": "Your personalized plan is being prepared",
+      "ctaButton": {
+        "text": "Create Your Account",
+        "style": "primary"
+      },
+      "nextScreenLogic": "create_account"
+    },
+    {
+      "id": "create_account",
+      "type": "account_creation",
+      "screenType": "account_creation",
+      "headline": "Create Your Account",
+      "subheadline": "Set a password to access your personalized plan anytime",
+      "fields": {
+        "email": {
+          "type": "email",
+          "label": "Email",
+          "prefilled": true,
+          "readonly": true,
+          "source": "email_capture"
+        },
+        "password": {
+          "type": "password",
+          "label": "Password",
+          "placeholder": "Enter your password",
+          "minLength": 8,
+          "requirements": [
+            "At least 8 characters",
+            "At least 1 number",
+            "At least 1 uppercase letter"
+          ]
+        },
+        "confirmPassword": {
+          "type": "password",
+          "label": "Confirm Password",
+          "placeholder": "Re-enter your password"
+        }
+      },
+      "ctaButton": {
+        "text": "Create Account",
+        "style": "primary"
+      },
+      "nextScreenLogic": "app_dashboard"
+    },
+    {
+      "id": "app_dashboard",
+      "type": "placeholder",
+      "screenType": "app_placeholder",
+      "headline": "Welcome to Mind Compass!",
+      "subheadline": "Your personalized well-being plan is ready",
+      "message": "This is where your main app experience will live. We're building something amazing for you."
+    }
+  ]
+}

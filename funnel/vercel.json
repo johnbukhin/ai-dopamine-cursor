@@ -1,4 +1,14 @@
 {
+  "rewrites": [
+    {
+      "source": "/liven-funnel-1",
+      "destination": "/liven-funnel-1/index.html"
+    },
+    {
+      "source": "/liven-funnel-2",
+      "destination": "/liven-funnel-2/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

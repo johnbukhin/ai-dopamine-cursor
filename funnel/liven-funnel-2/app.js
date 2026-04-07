@@ -7,13 +7,13 @@
 // Configuration
 // ========================================
 const CONFIG = {
-    brandName: 'Compass',
+    brandName: 'Mind Compass',
     // JSON data path (now in same directory for Vercel deployment)
     funnelDataPaths: [
-        'liven-funnel-analysis.json',
-        './liven-funnel-analysis.json'
+        'funnel-data.json',
+        './funnel-data.json'
     ],
-    storageKey: 'compass_funnel_state',
+    storageKey: 'compass_funnel_v2_state',
     debug: false, // Set to true for development debugging
     subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN',
     // Webapp URL for post-account-creation redirect.
@@ -48,6 +48,133 @@ const Security = {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    }
+};
+
+// ========================================
+// Scoring Engine — real scoring from likert answers
+// ========================================
+const Scoring = {
+    /**
+     * Calculate all scores from user's likert answers (Q1-Q27)
+     * @returns {Object} { overall, dopamine_sensitivity, emotional_regulation, pattern_stage, physical_impact }
+     */
+    calculate() {
+        const categories = {
+            dopamine_sensitivity: { questions: [1, 2, 3, 4], maxPerQ: 5 },
+            emotional_regulation: { questions: [5, 6, 7], maxPerQ: 5 },
+            pattern_stage:        { questions: [8, 9, 10], maxPerQ: 5 },
+            physical_impact:      { questions: [11, 12, 13, 14], maxPerQ: 5 }
+        };
+
+        const results = {};
+        let totalScore = 0;
+        let totalMax = 0;
+
+        for (const [key, cat] of Object.entries(categories)) {
+            let sum = 0;
+            for (const qNum of cat.questions) {
+                const answer = State.getAnswer(`question_${qNum}`);
+                sum += parseInt(answer) || 3; // default to middle if unanswered
+            }
+            const max = cat.questions.length * cat.maxPerQ;
+            const pct = sum / max; // 0.0 – 1.0
+            results[key] = { sum, max, pct };
+            totalScore += sum;
+            totalMax += max;
+        }
+
+        // Add general questions (Q15-Q27) to overall score only
+        for (let q = 15; q <= 27; q++) {
+            const answer = State.getAnswer(`question_${q}`);
+            totalScore += parseInt(answer) || 3;
+            totalMax += 5;
+        }
+
+        results.overall = { sum: totalScore, max: totalMax, pct: totalScore / totalMax };
+        return results;
+    },
+
+    /**
+     * Map a percentage score (0-1) to a level index (0-3)
+     */
+    toLevelIndex(pct) {
+        if (pct < 0.35) return 0;
+        if (pct < 0.55) return 1;
+        if (pct < 0.75) return 2;
+        return 3;
+    },
+
+    /**
+     * Get the overall level label
+     */
+    getOverallLevel(pct) {
+        return ['Low', 'Normal', 'Medium', 'High'][this.toLevelIndex(pct)];
+    },
+
+    /**
+     * Get category sublabel
+     */
+    getCategoryLevel(key, pct) {
+        const labels = {
+            dopamine_sensitivity: ['Low', 'Moderate', 'Elevated', 'High'],
+            emotional_regulation: ['Stable', 'Mild Distress', 'Emotional Overload', 'Severe Dysregulation'],
+            pattern_stage:        ['Emerging', 'Recent', 'Established', 'Deeply Rooted'],
+            physical_impact:      ['Minimal', 'Noticeable', 'Circadian Disruption', 'Severe Impact']
+        };
+        return (labels[key] || ['Low', 'Medium', 'High', 'Critical'])[this.toLevelIndex(pct)];
+    },
+
+    /**
+     * Get the main challenge label based on user's answers to Q30-Q33
+     */
+    getMainChallenge() {
+        const mentalSymptoms = State.getAnswer('question_31') || [];
+        if (Array.isArray(mentalSymptoms) && mentalSymptoms.length > 0) {
+            const first = mentalSymptoms[0];
+            if (first === 'Anxiety' || first === 'Shame spirals') return 'Worrier';
+            if (first === 'Brain fog' || first === 'Difficulty concentrating') return 'Foggy Thinker';
+            if (first === 'Low motivation') return 'Low Drive';
+            if (first === 'Self-criticism') return 'Inner Critic';
+        }
+        return 'Worrier';
+    },
+
+    /**
+     * Get the goal label based on user's answers to Q33
+     */
+    getGoal() {
+        const areas = State.getAnswer('question_33') || [];
+        if (Array.isArray(areas) && areas.length > 0) {
+            const first = areas[0];
+            if (first.includes('Focus')) return 'Focus levels';
+            if (first.includes('Confidence')) return 'Self-confidence';
+            if (first.includes('Self-control')) return 'Self-control';
+            if (first.includes('Relationships')) return 'Relationships';
+            if (first.includes('wellbeing')) return 'General wellbeing';
+        }
+        return 'Focus levels';
+    }
+};
+
+// ========================================
+// Personalized Text Helper
+// ========================================
+const PersonalizedText = {
+    /**
+     * Replace template placeholders with user data
+     * Supports: {name}, {gender}, {ageGroup}
+     */
+    replace(text) {
+        if (!text) return '';
+        const name = State.getAnswer('name_capture') || 'there';
+        const genderRaw = State.getAnswer('landing') || 'male';
+        const gender = genderRaw.toLowerCase() === 'male' ? 'men' : 'women';
+        const ageGroup = State.getAnswer('age_selection') || '25-34';
+        return text
+            .replace(/\{name\}/g, Security.escapeHtml(name))
+            .replace(/\{gender\}/g, gender)
+            .replace(/\{ageGroup\}/g, ageGroup);
     }
 };
 
@@ -156,6 +283,14 @@ const Icons = {
         prohibited: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <path d="m4.9 4.9 14.2 14.2"/>
+        </svg>`,
+
+        // Arrows icon - for "Sometimes" (bidirectional)
+        arrows: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m17 3 4 4-4 4"/>
+            <path d="M3 11h14.5a3.5 3.5 0 0 0 0-7h-.5"/>
+            <path d="m7 21-4-4 4-4"/>
+            <path d="M21 13H6.5a3.5 3.5 0 0 0 0 7h.5"/>
         </svg>`,
 
         // ========================================
@@ -365,7 +500,7 @@ const State = {
      * @returns {any} The recorded answer or null
      */
     getAnswer(screenId) {
-        return this.data.answers[screenId]?.value || null;
+        return this.data.answers[screenId]?.value ?? null;
     },
 
     /**
@@ -490,17 +625,20 @@ const Components = {
      * Render header with brand logo
      * @returns {string} HTML string
      */
-    header() {
+    header(ctaText) {
         return `
             <header class="header">
                 <div class="logo">${CONFIG.brandName}</div>
-                <button class="menu-button" aria-label="Menu">
-                    <div class="menu-icon">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </button>
+                ${ctaText
+                    ? `<button class="header-cta">${Security.escapeHtml(ctaText)}</button>`
+                    : `<button class="menu-button" aria-label="Menu">
+                        <div class="menu-icon">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>`
+                }
             </header>
         `;
     },
@@ -1069,7 +1207,6 @@ const Components = {
         // Sanitize the input text first
         let safeText = Security.escapeHtml(text);
         
-        // TODO: Replace placeholder URLs with actual policy page URLs when available
         const policyLinks = {
             'Terms of Use and Service': '#terms',
             'Privacy Policy': '#privacy',
@@ -1215,15 +1352,21 @@ const Components = {
      */
     pricingCard(tier, isSelected) {
         const safeName = Security.escapeHtml(tier.name);
-        const safeOriginalPrice = Security.escapeHtml(tier.originalPrice);
-        const safeDiscountedPrice = Security.escapeHtml(tier.discountedPrice);
-        const safePricePerDay = Security.escapeHtml(tier.pricePerDay);
-        const safeSavings = Security.escapeHtml(tier.savings);
         const safeId = Security.escapeHtml(tier.id);
-        
         const selectedClass = isSelected ? 'pricing-card--selected' : '';
         const recommendedClass = tier.recommended ? 'pricing-card--recommended' : '';
         const hasBadge = tier.badge;
+
+        // Support both old (originalPrice/discountedPrice) and new (price/pricePerDay) format
+        const price = tier.price || tier.originalPrice || '';
+        const perDay = tier.pricePerDay || '';
+        const safePrice = Security.escapeHtml(price);
+
+        // Parse perDay for split display (e.g. "$5.71" → "$5" + "71")
+        const perDayMatch = perDay.match(/^\$(\d+)\.(\d+)$/);
+        const perDayHtml = perDayMatch
+            ? `<div class="pricing-card__per-day-split"><span class="pricing-card__dollar">$</span><span class="pricing-card__dollars">${perDayMatch[1]}</span><span class="pricing-card__cents">${perDayMatch[2]}</span><span class="pricing-card__period">per day</span></div>`
+            : `<p class="pricing-card__per-day">${Security.escapeHtml(perDay)}</p>`;
 
         return `
             <div class="pricing-card ${selectedClass} ${recommendedClass}"
@@ -1231,14 +1374,17 @@ const Components = {
                  role="button"
                  tabindex="0"
                  aria-label="Select ${safeName}">
-                ${hasBadge ? this.mostPopularBadge() : ''}
-                <h3 class="pricing-card__name">${safeName}</h3>
-                <div class="pricing-card__prices">
-                    <span class="pricing-card__original-price">${safeOriginalPrice}</span>
-                    <span class="pricing-card__discounted-price">${safeDiscountedPrice}</span>
+                ${hasBadge ? `<div class="most-popular-badge"><span>&#9733;</span> MOST POPULAR</div>` : ''}
+                <div class="pricing-card__content">
+                    <div class="pricing-card__left">
+                        <div class="pricing-card__radio ${isSelected ? 'pricing-card__radio--selected' : ''}"></div>
+                        <div>
+                            <h3 class="pricing-card__name">${safeName}</h3>
+                            <p class="pricing-card__price">${safePrice}</p>
+                        </div>
+                    </div>
+                    ${perDayHtml}
                 </div>
-                <p class="pricing-card__per-day">${safePricePerDay}</p>
-                <span class="pricing-card__savings">${safeSavings}</span>
             </div>
         `;
     },
@@ -1454,8 +1600,8 @@ const Screens = {
                     <span class="badge">${safeSubheadline}</span>
                     
                     <div class="gender-cards">
-                        ${Components.genderCard('Male', 'assets/male.png')}
-                        ${Components.genderCard('Female', 'assets/female.png')}
+                        ${Components.genderCard('Male', '../assets/male.png')}
+                        ${Components.genderCard('Female', '../assets/female.png')}
                     </div>
                 </main>
                 
@@ -1471,7 +1617,8 @@ const Screens = {
      */
     singleChoice(screenData) {
         const safeHeadline = Security.escapeHtml(screenData.headline);
-        const questionNumber = screenData.questionNumber || 1;
+        const questionNumber = screenData.questionNumber;
+        const showProgress = screenData.hasProgressIndicator !== false && questionNumber;
 
         // Determine previous screen for back button
         const previousScreen = State.data.history.length > 0
@@ -1491,7 +1638,7 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                ${Components.progressBar(questionNumber)}
+                ${showProgress ? Components.progressBar(questionNumber) : ''}
 
                 <main class="content content--left">
                     <h1 class="headline headline--question">${safeHeadline}</h1>
@@ -1630,9 +1777,9 @@ const Screens = {
             // Variant: interstitial_4 — CBT diagram + therapist
             bodyHtml = `
                 ${Components.cbtDiagram(screenData.content.cbtModel)}
-                <p class="interstitial__description">${Security.escapeHtml(screenData.content.description)}</p>
-                ${Components.expertBadge(screenData.content.expertReview)}
-                ${Components.therapistCard(screenData.content.expertReview)}
+                <p class="interstitial__description">${Security.escapeHtml(screenData.content.description || '')}</p>
+                ${screenData.content.expertReview ? Components.expertBadge(screenData.content.expertReview) : ''}
+                ${screenData.content.expertReview ? Components.therapistCard(screenData.content.expertReview) : ''}
             `;
         } else if (screenData.content) {
             // Variant: interstitial_1 — info card + checkmark bullets
@@ -1782,7 +1929,10 @@ const Screens = {
      */
     loadingEngagement(screenData) {
         const safeHeadline = Security.escapeHtml(screenData.headline || '');
-        const safeSubheadline = Security.escapeHtml(screenData.subheadline || '');
+        const dynamicSub = screenData.dynamicSubheadline
+            ? PersonalizedText.replace(screenData.dynamicSubheadline)
+            : '';
+        const safeSubheadline = dynamicSub || Security.escapeHtml(screenData.subheadline || '');
 
         // Render progress checklist
         const checklistHtml = screenData.progressSteps
@@ -1925,10 +2075,8 @@ const Screens = {
     },
 
     /**
-     * Render personalized profile summary screen
-     * Dynamically pulls user's quiz answers to build profile
-     * @param {Object} screenData - Screen data from JSON
-     * @returns {string} HTML string
+     * Render profile summary with REAL scoring from quiz answers
+     * Shows dopamine dysregulation level gradient bar + 4 sub-metrics
      */
     profileSummary(screenData) {
         const safeId = Security.escapeHtml(screenData.id);
@@ -1938,41 +2086,23 @@ const Screens = {
             ? State.data.history[State.data.history.length - 1]
             : 'landing';
 
-        // Pull user's name from name_capture answer, fallback to email username or 'there'
-        let userName = State.getAnswer('name_capture');
-        if (!userName) {
-            const email = State.getAnswer('email_capture');
-            userName = email ? email.split('@')[0] : 'there';
-        }
-        const safeName = Security.escapeHtml(userName);
+        // Calculate real scores from likert answers
+        const scores = Scoring.calculate();
+        const overallLevel = Scoring.getOverallLevel(scores.overall.pct);
+        const overallPct = Math.round(scores.overall.pct * 100);
 
-        // Build sections from JSON data + dynamic content
-        const sectionsHtml = (screenData.sections || []).map(section => {
-            const safeTitle = Security.escapeHtml(section.title || '');
+        // Level description from JSON data
+        const levelDesc = screenData.scoring?.levelDescriptions?.[overallLevel] || '';
 
-            if (section.items) {
-                // List-based section (e.g., "Recommended Focus Areas")
-                const itemsHtml = section.items
-                    .map(item => `
-                        <li class="profile-summary__focus-item">
-                            <span class="profile-summary__focus-icon">${Icons.get('checkmark')}</span>
-                            ${Security.escapeHtml(item)}
-                        </li>
-                    `).join('');
-                return `
-                    <div class="profile-summary__section">
-                        <h3 class="profile-summary__section-title">${safeTitle}</h3>
-                        <ul class="profile-summary__focus-list">${itemsHtml}</ul>
-                    </div>
-                `;
-            }
-
-            // Description-based section (e.g., "Your Patterns")
-            const safeDesc = Security.escapeHtml(section.description || '');
+        // Sub-category metrics
+        const categories = screenData.scoring?.categories || {};
+        const metricsHtml = Object.entries(categories).map(([key, cat]) => {
+            const catScore = scores[key];
+            const level = catScore ? Scoring.getCategoryLevel(key, catScore.pct) : 'Unknown';
             return `
-                <div class="profile-summary__section">
-                    <h3 class="profile-summary__section-title">${safeTitle}</h3>
-                    <p class="profile-summary__description">${safeDesc}</p>
+                <div class="profile-metric">
+                    <div class="profile-metric__label">${Security.escapeHtml(cat.label)}</div>
+                    <div class="profile-metric__value">${Security.escapeHtml(level)}</div>
                 </div>
             `;
         }).join('');
@@ -1987,14 +2117,36 @@ const Screens = {
 
                 <main class="content">
                     <div class="profile-summary">
-                        <div class="profile-summary__greeting">
-                            <span class="profile-summary__avatar">${Icons.get('smile')}</span>
-                            <span class="profile-summary__name">${safeName}</span>
-                        </div>
-
                         <h1 class="headline">${safeHeadline}</h1>
 
-                        ${sectionsHtml}
+                        <!-- Overall dysregulation level -->
+                        <div class="dysregulation-bar">
+                            <div class="dysregulation-bar__label">Dopamine dysregulation level</div>
+                            <div class="dysregulation-bar__track">
+                                <div class="dysregulation-bar__gradient"></div>
+                                <div class="dysregulation-bar__marker" style="left: ${overallPct}%">
+                                    <div class="dysregulation-bar__marker-dot"></div>
+                                    <div class="dysregulation-bar__marker-label">Your level</div>
+                                </div>
+                            </div>
+                            <div class="dysregulation-bar__scale">
+                                <span>Low</span>
+                                <span>Normal</span>
+                                <span>Medium</span>
+                                <span>High</span>
+                            </div>
+                        </div>
+
+                        <!-- Level explanation -->
+                        <div class="profile-summary__level-card">
+                            <h3 class="profile-summary__level-title">${Security.escapeHtml(overallLevel)} level</h3>
+                            <p class="profile-summary__level-desc">${Security.escapeHtml(levelDesc)}</p>
+                        </div>
+
+                        <!-- 4 sub-metrics grid -->
+                        <div class="profile-metrics-grid">
+                            ${metricsHtml}
+                        </div>
                     </div>
 
                     ${Components.continueButton(false, safeId)}
@@ -2004,37 +2156,36 @@ const Screens = {
     },
 
     /**
-     * Render goal timeline selection screen
-     * Single-choice text_list with "Recommended" badge, auto-advance on tap
-     * @param {Object} screenData - Screen data from JSON
-     * @returns {string} HTML string
+     * Render goal timeline with decreasing bar chart
+     * Shows personalized headline + 3-month bar chart
      */
     goalTimeline(screenData) {
         const safeId = Security.escapeHtml(screenData.id);
-        const safeHeadline = Security.escapeHtml(screenData.headline || '');
+        const headline = PersonalizedText.replace(screenData.headline || '');
 
         const previousScreen = State.data.history.length > 0
             ? State.data.history[State.data.history.length - 1]
             : 'landing';
 
-        // Render options as answer cards (reuse existing single-choice pattern)
-        const optionsHtml = (screenData.options || []).map(option => {
-            const safeLabel = Security.escapeHtml(option.label);
-            const recommendedBadge = option.recommended
-                ? '<span class="recommended-badge">Recommended</span>'
-                : '';
-            return `
-                <div class="answer-card"
-                     data-screen="${safeId}"
-                     data-answer="${safeLabel}"
-                     tabindex="0"
-                     role="button"
-                     aria-label="${safeLabel}">
-                    <span class="answer-card__label">${safeLabel}</span>
-                    ${recommendedBadge}
-                </div>
-            `;
-        }).join('');
+        // Generate dynamic month labels from current date
+        const now = new Date();
+        const months = [];
+        for (let i = 0; i < (screenData.chartMonths || 3); i++) {
+            const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+            months.push(d.toLocaleString('en', { month: 'long' }));
+        }
+
+        // Decreasing bar heights
+        const barHeights = [90, 55, 25];
+
+        const barsHtml = months.map((month, i) => `
+            <div class="bar-chart__bar-wrapper">
+                <div class="bar-chart__bar" style="height: ${barHeights[i]}%"></div>
+                <div class="bar-chart__label">${Security.escapeHtml(month)}</div>
+            </div>
+        `).join('');
+
+        const disclaimer = Security.escapeHtml(screenData.disclaimer || '');
 
         return `
             <div class="screen" data-screen="${safeId}">
@@ -2044,12 +2195,18 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content content--left">
-                    <h1 class="headline headline--question">${safeHeadline}</h1>
+                <main class="content">
+                    <h1 class="headline">${headline}</h1>
 
-                    <div class="answer-cards">
-                        ${optionsHtml}
+                    <div class="bar-chart">
+                        <div class="bar-chart__bars">
+                            ${barsHtml}
+                        </div>
                     </div>
+
+                    ${disclaimer ? `<p class="chart-disclaimer">${disclaimer}</p>` : ''}
+
+                    ${Components.continueButton(false, safeId)}
                 </main>
             </div>
         `;
@@ -2060,20 +2217,53 @@ const Screens = {
     // ========================================
 
     /**
-     * Render value proposition screen (plan_ready)
-     * Shows personalized plan features before paywall
-     * @param {Object} screenData - Screen data from JSON
-     * @returns {string} HTML string
+     * Render plan ready screen with recovery curve SVG chart
      */
-    valueProp(screenData) {
+    planReady(screenData) {
         const safeId = Security.escapeHtml(screenData.id);
-        const safeHeadline = Security.escapeHtml(screenData.headline || '');
-        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
-        const ctaText = screenData.ctaButton || 'Get my plan';
+        const headline = PersonalizedText.replace(screenData.headline || '');
+        const chartTitle = Security.escapeHtml(screenData.chartTitle || '');
+        const ctaText = screenData.ctaButton || 'Continue';
+        const disclaimer = Security.escapeHtml(screenData.disclaimer || '');
 
         const previousScreen = State.data.history.length > 0
             ? State.data.history[State.data.history.length - 1]
             : 'landing';
+
+        // Build SVG recovery curve
+        const points = screenData.chartPoints || [];
+        const labels = screenData.chartLabels || [];
+
+        // SVG dimensions
+        const svgW = 320, svgH = 200, padX = 40, padY = 30;
+        const plotW = svgW - 2 * padX, plotH = svgH - 2 * padY;
+
+        // Map points to SVG coordinates
+        const coords = points.map((p, i) => ({
+            x: padX + (i / (points.length - 1)) * plotW,
+            y: padY + plotH - (p.value / 100) * plotH,
+            ...p
+        }));
+
+        // Build smooth curve path
+        let pathD = `M ${coords[0].x} ${coords[0].y}`;
+        for (let i = 1; i < coords.length; i++) {
+            const cpx = (coords[i - 1].x + coords[i].x) / 2;
+            pathD += ` C ${cpx} ${coords[i - 1].y}, ${cpx} ${coords[i].y}, ${coords[i].x} ${coords[i].y}`;
+        }
+
+        // Build gradient area path (fill below curve)
+        const areaD = pathD + ` L ${coords[coords.length - 1].x} ${padY + plotH} L ${coords[0].x} ${padY + plotH} Z`;
+
+        const dotsHtml = coords.map(c => `
+            <circle cx="${c.x}" cy="${c.y}" r="6" fill="${c.color}" stroke="white" stroke-width="2"/>
+            ${c.label ? `<text x="${c.x}" y="${c.y - 15}" text-anchor="middle" class="recovery-chart__label" fill="${c.color}">${Security.escapeHtml(c.label)}</text>` : ''}
+        `).join('');
+
+        const xLabelsHtml = labels.map((l, i) => {
+            const x = padX + (i / (labels.length - 1)) * plotW;
+            return `<text x="${x}" y="${svgH - 5}" text-anchor="middle" class="recovery-chart__x-label">${Security.escapeHtml(l)}</text>`;
+        }).join('');
 
         return `
             <div class="screen" data-screen="${safeId}">
@@ -2083,16 +2273,99 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content value-prop">
-                    <h1 class="headline">${safeHeadline}</h1>
-                    ${safeSubheadline ? `<p class="subheadline">${safeSubheadline}</p>` : ''}
+                <main class="content">
+                    <h1 class="headline headline--plan-ready">${headline}</h1>
 
-                    ${screenData.planFeatures ? Components.featureList(screenData.planFeatures) : ''}
+                    <h3 class="recovery-chart__title">${chartTitle}</h3>
 
-                    <div class="cta-container">
-                        ${Components.ctaButton(ctaText, safeId)}
+                    <div class="recovery-chart">
+                        <svg viewBox="0 0 ${svgW} ${svgH}" class="recovery-chart__svg">
+                            <defs>
+                                <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#E57373" stop-opacity="0.3"/>
+                                    <stop offset="50%" stop-color="#FFD54F" stop-opacity="0.3"/>
+                                    <stop offset="100%" stop-color="#66BB6A" stop-opacity="0.3"/>
+                                </linearGradient>
+                                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#E57373"/>
+                                    <stop offset="50%" stop-color="#FFB74D"/>
+                                    <stop offset="100%" stop-color="#66BB6A"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Grid lines -->
+                            <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${padY + plotH}" stroke="#e0e0e0" stroke-width="1"/>
+                            <line x1="${padX}" y1="${padY + plotH}" x2="${padX + plotW}" y2="${padY + plotH}" stroke="#e0e0e0" stroke-width="1"/>
+                            <!-- Gradient fill -->
+                            <path d="${areaD}" fill="url(#curveGrad)"/>
+                            <!-- Curve line -->
+                            <path d="${pathD}" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round"/>
+                            <!-- Data points -->
+                            ${dotsHtml}
+                            <!-- X-axis labels -->
+                            ${xLabelsHtml}
+                        </svg>
+                    </div>
+
+                    ${disclaimer ? `<p class="chart-disclaimer">${disclaimer}</p>` : ''}
+
+                    ${Components.continueButton(false, safeId)}
+                </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render scratch card gamification screen
+     */
+    scratchCard(screenData) {
+        const safeId = Security.escapeHtml(screenData.id);
+        const headline = PersonalizedText.replace(screenData.headline || '');
+        const badge = Security.escapeHtml(screenData.badge || '');
+        const subheadline = Security.escapeHtml(screenData.subheadline || '');
+        const description = Security.escapeHtml(screenData.description || '');
+        const discount = screenData.scratchCard?.revealedDiscount || '50%';
+        const revealedText = Security.escapeHtml(screenData.scratchCard?.revealedText || '');
+        const modalData = screenData.discountModal || {};
+
+        return `
+            <div class="screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <main class="content scratch-screen">
+                    ${badge ? `<div class="scratch-badge">${badge}</div>` : ''}
+
+                    <h1 class="headline headline--personalized">
+                        <span class="headline--accent">${PersonalizedText.replace('{name}')},</span><br/>
+                        ${headline.replace(PersonalizedText.replace('{name}') + ',', '').trim()}
+                    </h1>
+                    <p class="scratch-subheadline accent-text">${subheadline}</p>
+                    <p class="scratch-description">${description}</p>
+
+                    <!-- Scratch card -->
+                    <div class="scratch-card" id="scratch-card">
+                        <div class="scratch-card__revealed">
+                            <div class="scratch-card__discount-text">Your discount is</div>
+                            <div class="scratch-card__discount-value">${Security.escapeHtml(discount)}</div>
+                            <div class="scratch-card__discount-sub">${revealedText}</div>
+                        </div>
+                        <canvas class="scratch-card__overlay" id="scratch-canvas" width="340" height="200"></canvas>
+                        <div class="scratch-card__instruction">Scratch your discount</div>
                     </div>
                 </main>
+
+                <!-- Discount reveal modal (hidden until scratched enough) -->
+                <div class="discount-modal" id="discount-modal" style="display:none;">
+                    <div class="discount-modal__overlay"></div>
+                    <div class="discount-modal__card">
+                        <div class="discount-modal__confetti"></div>
+                        <div class="discount-modal__emoji">&#129395;</div>
+                        <h2 class="discount-modal__title">${Security.escapeHtml(modalData.headline || 'Woo hoo!')}</h2>
+                        <p class="discount-modal__text">${Security.escapeHtml(modalData.text || 'Your discount is')}</p>
+                        <p class="discount-modal__discount">${Security.escapeHtml(modalData.discount || '50% off')}</p>
+                        <button class="cta-button discount-modal__cta" data-screen="${safeId}" data-action="cta">Continue</button>
+                        <p class="discount-modal__note">${Security.escapeHtml(modalData.note || '')}</p>
+                    </div>
+                </div>
             </div>
         `;
     },
@@ -2113,7 +2386,7 @@ const Screens = {
         const selectedTier = paywall?.pricingTiers?.find(t => t.id === selectedTierId);
 
         const tierName = selectedTier ? Security.escapeHtml(selectedTier.name) : 'Selected Plan';
-        const tierPrice = selectedTier ? Security.escapeHtml(selectedTier.discountedPrice) : '';
+        const tierPrice = selectedTier ? Security.escapeHtml(selectedTier.discountedPrice || selectedTier.price) : '';
 
         const userName = State.getAnswer('name_capture');
         const promoCode = Components.generatePromoCode(userName, 50);
@@ -2351,8 +2624,8 @@ const Screens = {
 
         // Display labels — fall back to generic strings if paywall data missing
         const tierName    = Security.escapeHtml(tier?.name || 'Personalized Plan');
-        const origPrice   = Security.escapeHtml(tier?.originalPrice || '');
-        const introPrice  = Security.escapeHtml(tier?.discountedPrice || '');
+        const origPrice   = Security.escapeHtml(tier?.originalPrice || tier?.price || '');
+        const introPrice  = Security.escapeHtml(tier?.discountedPrice || tier?.price || '');
         const savingsText = Security.escapeHtml(tier?.savings || '');
 
         // Promo code (cosmetic display only — discount is applied server-side)
@@ -2431,102 +2704,192 @@ const Screens = {
     },
 
     /**
-     * Render paywall screen with all trust elements
-     * Full interactive paywall with countdown, pricing tiers, FAQ, etc.
-     * @param {Object} screenData - Screen data from JSON
-     * @returns {string} HTML string
+     * Render paywall screen with before/after, pricing, goals, FAQ, testimonials
      */
     paywall(screenData) {
         const safeId = Security.escapeHtml(screenData.id);
-        const safeHeadline = Security.escapeHtml(screenData.headline || 'Choose Your Plan');
-
-        // Generate personalized promo code
-        const userName = State.getAnswer('name_capture');
-        const promoCode = Components.generatePromoCode(userName, 50);
-
-        // Get currently selected tier from state
+        const headline = PersonalizedText.replace(screenData.headline || 'Choose Your Plan');
         const selectedTierId = State.data.selectedTier || '1_month';
-
-        // Get current FAQ open index from state
         const openFaqIndex = State.data.openFaqIndex;
+        const mainChallenge = Scoring.getMainChallenge();
+        const goal = Scoring.getGoal();
 
-        // Build paywall sections in order (as per JSON structure)
+        // Before/After comparison section
+        const ba = screenData.beforeAfter || {};
+        const beforeAfterHtml = ba.now ? `
+            <div class="before-after">
+                <div class="before-after__side before-after__side--now">
+                    <span class="before-after__badge before-after__badge--now">${Security.escapeHtml(ba.now.label || 'Now')}</span>
+                    <div class="before-after__image before-after__image--worried"></div>
+                    ${(ba.now.metrics || []).map(m => `
+                        <div class="before-after__metric">
+                            <div class="before-after__metric-label">${Security.escapeHtml(m.label)}</div>
+                            <div class="before-after__metric-value before-after__metric-value--negative">${Security.escapeHtml(m.value)}</div>
+                            ${m.progressLevel != null ? `<div class="progress-bar-mini"><div class="progress-bar-mini__fill progress-bar-mini__fill--low" style="width: ${m.progressLevel * 25}%"></div></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="before-after__side before-after__side--goal">
+                    <span class="before-after__badge before-after__badge--goal">${Security.escapeHtml(ba.goal?.label || 'Your Goal')}</span>
+                    <div class="before-after__image before-after__image--happy"></div>
+                    ${(ba.goal?.metrics || []).map(m => `
+                        <div class="before-after__metric">
+                            <div class="before-after__metric-label">${Security.escapeHtml(m.label)}</div>
+                            <div class="before-after__metric-value before-after__metric-value--positive">${Security.escapeHtml(m.value)}</div>
+                            ${m.progressLevel != null ? `<div class="progress-bar-mini"><div class="progress-bar-mini__fill progress-bar-mini__fill--high" style="width: ${m.progressLevel * 25}%"></div></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        ` : '';
+
+        // Goals list
+        const goalsData = screenData.trustElements?.goals;
+        const goalsHtml = goalsData ? `
+            <div class="paywall-goals">
+                <h2 class="paywall-goals__title">${Security.escapeHtml(goalsData.headline)}</h2>
+                <ul class="paywall-goals__list">
+                    ${goalsData.items.map(item => `
+                        <li class="paywall-goals__item">
+                            <span class="paywall-goals__check">${Icons.get('checkmark')}</span>
+                            ${Security.escapeHtml(item)}
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        ` : '';
+
+        // Statistics
+        const statsData = screenData.trustElements?.statistics;
+        const statsHtml = statsData ? `
+            <div class="paywall-stats">
+                <h2 class="paywall-stats__title">People just like you achieved great results using our<br/><span class="accent-text">Porn Addiction Recovery Plan!</span></h2>
+                <div class="paywall-stats__gauge"></div>
+                ${statsData.map(s => `
+                    <div class="paywall-stat">
+                        <div class="paywall-stat__pct accent-text">${Security.escapeHtml(s.percentage)}</div>
+                        <div class="paywall-stat__desc">${Security.escapeHtml(s.description)}</div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '';
+
+        // Life comparison
+        const lifeComp = screenData.trustElements?.lifeComparison;
+        const lifeCompHtml = lifeComp ? `
+            <div class="life-comparison">
+                <div class="life-comparison__card life-comparison__card--without">
+                    <h3>${Security.escapeHtml(lifeComp.without.headline)}</h3>
+                    <ul>${lifeComp.without.items.map(i => `<li><span class="life-x">&#10006;</span> ${Security.escapeHtml(i)}</li>`).join('')}</ul>
+                </div>
+                <div class="life-comparison__card life-comparison__card--with">
+                    <h3>${Security.escapeHtml(lifeComp.with.headline)}</h3>
+                    <ul>${lifeComp.with.items.map(i => `<li><span class="life-check">${Icons.get('checkmark')}</span> ${Security.escapeHtml(i)}</li>`).join('')}</ul>
+                </div>
+            </div>
+        ` : '';
+
         return `
             <div class="screen paywall-screen" data-screen="${safeId}">
-                ${Components.header()}
+                ${Components.header('GET MY PLAN')}
 
                 <main class="content paywall">
-                    <h1 class="headline">${safeHeadline}</h1>
+                    <!-- Before/After -->
+                    ${beforeAfterHtml}
 
-                    <!-- 1. Countdown Timer -->
-                    ${screenData.urgencyElements?.countdownTimer ? 
-                        Components.countdownTimer(
-                            screenData.urgencyElements.countdownTimer.headline,
-                            screenData.urgencyElements.countdownTimer.initialMinutes
-                        ) : ''}
+                    <!-- Countdown Timer -->
+                    ${Components.countdownTimer(screenData.urgencyElements?.countdownTimer?.headline)}
 
-                    <!-- 2. Promo Code Badge -->
-                    ${screenData.urgencyElements?.promoCode ? 
-                        Components.promoCodeBadge(
-                            screenData.urgencyElements.promoCode.label,
-                            promoCode,
-                            screenData.urgencyElements.promoCode.discount
-                        ) : ''}
+                    <!-- Plan headline -->
+                    <h1 class="headline paywall__headline">${headline}</h1>
 
-                    <!-- 3. Pricing Tiers -->
-                    ${screenData.pricingTiers ? 
-                        Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
-
-                    <!-- 4. CTA Button -->
-                    <div class="paywall__cta">
-                        ${Components.ctaButton(
-                            screenData.ctaButton?.text || 'Get my plan',
-                            safeId
-                        )}
+                    <!-- Personalized challenge/goal -->
+                    <div class="paywall__personalized">
+                        <div class="paywall__info-item">
+                            <span class="paywall__info-icon">${Icons.get('question')}</span>
+                            <div><small>Main challenge</small><strong>${Security.escapeHtml(mainChallenge)}</strong></div>
+                        </div>
+                        <div class="paywall__info-divider"></div>
+                        <div class="paywall__info-item">
+                            <span class="paywall__info-icon">${Icons.get('checkmark')}</span>
+                            <div><small>Goal</small><strong>${Security.escapeHtml(goal)}</strong></div>
+                        </div>
                     </div>
 
-                    <!-- 5. Payment Security -->
-                    ${screenData.trustElements?.paymentSecurity ? 
+                    <!-- Pricing Tiers -->
+                    ${screenData.pricingTiers ? Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
+
+                    <!-- CTA Button -->
+                    <div class="paywall__cta">
+                        ${Components.ctaButton(screenData.ctaButton?.text || 'GET MY PLAN', safeId)}
+                    </div>
+
+                    <!-- Subscription note -->
+                    ${screenData.subscriptionNote ? `<p class="paywall__sub-note">${Security.escapeHtml(screenData.subscriptionNote)}</p>` : ''}
+
+                    <!-- Payment Security -->
+                    ${screenData.trustElements?.paymentSecurity ?
                         Components.paymentIcons(
                             screenData.trustElements.paymentSecurity.headline,
                             screenData.trustElements.paymentSecurity.icons
                         ) : ''}
 
-                    <!-- 6. Media Features -->
-                    ${screenData.trustElements?.mediaFeatures ? 
-                        Components.mediaLogos(
-                            screenData.trustElements.mediaFeatures.headline,
-                            screenData.trustElements.mediaFeatures.logos
-                        ) : ''}
+                    <!-- Goals -->
+                    ${goalsHtml}
 
-                    <!-- 7. Statistics Block -->
-                    ${screenData.trustElements?.statistics ? 
-                        Components.statisticsBlock(screenData.trustElements.statistics) : ''}
+                    <!-- Statistics -->
+                    ${statsHtml}
 
-                    <!-- 8. Award Badge -->
-                    ${screenData.trustElements?.award ? 
-                        Components.awardBadge(screenData.trustElements.award) : ''}
+                    <!-- Life comparison -->
+                    ${lifeCompHtml}
 
-                    <!-- 9. Money-Back Guarantee -->
-                    ${screenData.trustElements?.moneyBackGuarantee ? 
-                        Components.moneyBackGuarantee(screenData.trustElements.moneyBackGuarantee) : ''}
+                    <!-- FAQ -->
+                    ${screenData.faq ? Components.faqAccordion(
+                        screenData.faq.headline,
+                        screenData.faq.questions || [],
+                        openFaqIndex
+                    ) : ''}
 
-                    <!-- 10. FAQ Accordion -->
-                    ${screenData.faq ? 
-                        Components.faqAccordion(
-                            screenData.faq.headline,
-                            screenData.faq.questions || [],
-                            openFaqIndex
-                        ) : ''}
-
-                    <!-- 11. Testimonials -->
+                    <!-- Testimonials -->
                     ${screenData.testimonials ? `
-                        <div class="testimonial-cards">
-                            ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
+                        <div class="paywall-testimonials">
+                            <h2 class="paywall-testimonials__title">Users love our plans</h2>
+                            <p class="paywall-testimonials__sub">Here's what people are saying about ${CONFIG.brandName}</p>
+                            <div class="testimonial-cards">
+                                ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
+                            </div>
                         </div>
                     ` : ''}
 
-                    <!-- 12. Company Footer -->
+                    <!-- Repeated pricing + CTA -->
+                    <h2 class="headline paywall__headline">${headline}</h2>
+                    <div class="paywall__personalized">
+                        <div class="paywall__info-item">
+                            <span class="paywall__info-icon">${Icons.get('question')}</span>
+                            <div><small>Main challenge</small><strong>${Security.escapeHtml(mainChallenge)}</strong></div>
+                        </div>
+                        <div class="paywall__info-divider"></div>
+                        <div class="paywall__info-item">
+                            <span class="paywall__info-icon">${Icons.get('checkmark')}</span>
+                            <div><small>Goal</small><strong>${Security.escapeHtml(goal)}</strong></div>
+                        </div>
+                    </div>
+                    ${screenData.pricingTiers ? Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
+                    <div class="paywall__cta">
+                        ${Components.ctaButton(screenData.ctaButton?.text || 'GET MY PLAN', safeId)}
+                    </div>
+                    ${screenData.subscriptionNote ? `<p class="paywall__sub-note">${Security.escapeHtml(screenData.subscriptionNote)}</p>` : ''}
+                    ${screenData.trustElements?.paymentSecurity ?
+                        Components.paymentIcons(
+                            screenData.trustElements.paymentSecurity.headline,
+                            screenData.trustElements.paymentSecurity.icons
+                        ) : ''}
+
+                    <!-- Money-Back Guarantee -->
+                    ${screenData.trustElements?.moneyBackGuarantee ?
+                        Components.moneyBackGuarantee(screenData.trustElements.moneyBackGuarantee) : ''}
+
+                    <!-- Company Footer -->
                     ${screenData.companyInfo ? Components.companyFooter(screenData.companyInfo) : ''}
                 </main>
             </div>
@@ -3234,7 +3597,9 @@ const Events = {
             screenData.screenType === 'interstitial' ||
             screenData.screenType === 'transition' ||
             screenData.screenType === 'personalized_results' ||
-            screenData.screenType === 'value_proposition'
+            screenData.screenType === 'value_proposition' ||
+            screenData.screenType === 'timeline_chart' ||
+            screenData.screenType === 'recovery_curve'
         );
 
         // For form capture screens, store input value before navigating
@@ -3284,9 +3649,10 @@ const Events = {
         const screenId = button.dataset.screen;
         log.info(`[User Action] CTA clicked on ${screenId}`);
 
-        // For value_proposition, navigate to paywall
+        // Generic CTA: navigate to next screen for known screen types
         const screenData = Router.getScreen(screenId);
-        if (screenData?.screenType === 'value_proposition') {
+        const sType = screenData?.screenType;
+        if (['value_proposition', 'recovery_curve', 'gamification', 'scratch_card', 'timeline_chart'].includes(sType)) {
             State.pushHistory(screenId);
             const nextScreen = Router.getNextScreen(screenId);
             if (nextScreen) {
@@ -3410,7 +3776,7 @@ const Events = {
         const promoCode = Components.generatePromoCode(userName, 50);
 
         try {
-            const response = await fetch('/api/create-user', {
+            const response = await fetch('../api/create-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3508,6 +3874,8 @@ const Events = {
         document.querySelectorAll('.pricing-card').forEach(c => {
             const isSelected = c.dataset.tierId === tierId;
             c.classList.toggle('pricing-card--selected', isSelected);
+            const radio = c.querySelector('.pricing-card__radio');
+            if (radio) radio.classList.toggle('pricing-card__radio--selected', isSelected);
         });
     },
 
@@ -3598,6 +3966,8 @@ const App = {
      * @param {Object} screenData - Checkout screen data from JSON
      */
     async initStripe(screenData) {
+        if (this._stripeInitializing) return;
+        this._stripeInitializing = true;
         const tierId = State.data.selectedTier || '1_month';
         const email  = State.getAnswer('email_capture') || '';
 
@@ -3623,7 +3993,7 @@ const App = {
 
         try {
             // ── Step 1: create Stripe Customer + Subscription Schedule ──────
-            const response = await fetch('/api/create-checkout', {
+            const response = await fetch('../api/create-checkout', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ tierId, email }),
@@ -3672,9 +4042,7 @@ const App = {
             });
 
             // ── Step 3: wire up submit button ───────────────────────────────
-            // Use { once: true } so the listener is removed after first click,
-            // preventing duplicate confirmPayment() calls if initStripe() is
-            // ever invoked more than once on the same DOM node.
+            // Guard against double-click via payBtn.disabled check.
             if (payBtn) {
                 payBtn.addEventListener('click', async () => {
                     if (payBtn.disabled) return;
@@ -3712,12 +4080,13 @@ const App = {
                     if (nextScreen) {
                         Router.navigate(nextScreen);
                     }
-                }, { once: true });
+                });
             }
 
         } catch (err) {
             log.error('[Checkout] initStripe error:', err.message);
             showCheckoutError('An unexpected error occurred. Please refresh and try again.');
+            this._stripeInitializing = false;
         }
     },
 
@@ -3759,6 +4128,83 @@ const App = {
         this.render();
         
         log.info('[App] Initialization complete');
+    },
+
+    /**
+     * Initialize scratch card canvas with gold overlay
+     */
+    initScratchCard() {
+        const canvas = document.getElementById('scratch-canvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * 2;
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
+
+        // Draw gold overlay
+        ctx.fillStyle = '#D4A853';
+        const w = rect.width, h = rect.height;
+        // Rounded rectangle
+        const r = 12;
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(w - r, 0);
+        ctx.quadraticCurveTo(w, 0, w, r);
+        ctx.lineTo(w, h - r);
+        ctx.quadraticCurveTo(w, h, w - r, h);
+        ctx.lineTo(r, h);
+        ctx.quadraticCurveTo(0, h, 0, h - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.fill();
+
+        // Add "Scratch your discount" text
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Scratch your discount', w / 2, h / 2 + 6);
+
+        // Scratch logic
+        let isDrawing = false;
+        let scratched = 0;
+        const totalPixels = w * h;
+
+        const scratch = (x, y) => {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            scratched += Math.PI * 20 * 20;
+
+            // Check if enough scratched (>40%)
+            if (scratched / totalPixels > 0.4) {
+                canvas.style.opacity = '0';
+                setTimeout(() => {
+                    canvas.style.display = 'none';
+                    const instruction = document.querySelector('.scratch-card__instruction');
+                    if (instruction) instruction.style.display = 'none';
+                    // Show discount modal
+                    const modal = document.getElementById('discount-modal');
+                    if (modal) modal.style.display = 'flex';
+                }, 300);
+            }
+        };
+
+        const getPos = (e) => {
+            const touch = e.touches ? e.touches[0] : e;
+            const brect = canvas.getBoundingClientRect();
+            return { x: touch.clientX - brect.left, y: touch.clientY - brect.top };
+        };
+
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(getPos(e).x, getPos(e).y); });
+        canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratch(getPos(e).x, getPos(e).y); });
+        canvas.addEventListener('mouseup', () => { isDrawing = false; });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; scratch(getPos(e).x, getPos(e).y); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) scratch(getPos(e).x, getPos(e).y); }, { passive: false });
+        canvas.addEventListener('touchend', () => { isDrawing = false; });
     },
 
     /**
@@ -3845,6 +4291,10 @@ const App = {
             case 'gender_selection':
                 html = Screens.landing(screenData);
                 break;
+            case 'age':
+            case 'age_selection':
+                html = Screens.singleChoice(screenData);
+                break;
             case 'single_choice':
                 html = Screens.singleChoice(screenData);
                 break;
@@ -3884,10 +4334,18 @@ const App = {
                 html = Screens.profileSummary(screenData);
                 break;
             case 'timeline_selection':
+            case 'timeline_chart':
                 html = Screens.goalTimeline(screenData);
                 break;
+            case 'recovery_curve':
+                html = Screens.planReady(screenData);
+                break;
+            case 'gamification':
+            case 'scratch_card':
+                html = Screens.scratchCard(screenData);
+                break;
             case 'value_proposition':
-                html = Screens.valueProp(screenData);
+                html = Screens.planReady(screenData);
                 break;
             case 'checkout':
                 html = Screens.checkout(screenData);
@@ -3911,6 +4369,7 @@ const App = {
         // Clean up any running controllers before DOM swap
         LoadingController.cleanup();
         CountdownTimer.cleanup(); // Phase 3c
+        this._stripeInitializing = false;
 
         // Update DOM
         document.getElementById('app').innerHTML = html;
@@ -3924,6 +4383,12 @@ const App = {
         if ((screenData.screenType || screenData.type) === 'payment') {
             const initialMinutes = screenData.urgencyElements?.countdownTimer?.initialMinutes || 10;
             CountdownTimer.start(initialMinutes);
+        }
+
+        // Initialize scratch card canvas for gamification screen
+        if ((screenData.screenType || screenData.type) === 'gamification' ||
+            (screenData.screenType || screenData.type) === 'scratch_card') {
+            this.initScratchCard();
         }
 
         // Bootstrap Stripe Payment Element after DOM is ready for checkout screen

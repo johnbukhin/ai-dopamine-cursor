@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Mind Compass funnel v2** (Issue #16, `funnel/liven-funnel-2/`)
+  - Complete quiz-to-paywall funnel: 54 screens, 36 questions (27 likert + 9 mixed type)
+  - Real scoring engine: 4 sub-metrics (dopamine_sensitivity, emotional_regulation, pattern_stage, physical_impact) calculated from user answers Q1-Q14, overall score from Q1-Q27
+  - Personalized text system: `{name}`, `{gender}`, `{ageGroup}` placeholders dynamically replaced throughout the funnel
+  - New screen types: `age_selection`, `timeline_chart` (bar chart with dynamic months), `recovery_curve` (SVG bezier chart with gradient), `scratch_card` (HTML5 Canvas scratch-to-reveal + discount modal)
+  - Paywall with before/after comparison, personalized challenge/goal from quiz answers, countdown timer, life comparison cards, FAQ accordion, testimonials, 3 pricing tiers
+  - Data-driven architecture: all content in `funnel-data.json`, single `app.js` renders dynamically
+
+### Changed
+- **Funnel directory restructure** — moved original funnel to `funnel/liven-funnel-1/`, new funnel in `funnel/liven-funnel-2/`
+- **Vercel routing** — `funnel/vercel.json` updated with rewrites for `/liven-funnel-1` and `/liven-funnel-2`
+- `webapp/App.tsx` — reverted dev shortcut; login required again
+
+### Fixed
+- **Gender personalization bug** — gender comparison was case-sensitive (`'male' === 'Male'` → always "women"); fixed with `.toLowerCase()`
+- **Pay button retry** — removed `{ once: true }` from Stripe pay button listener; failed payments can now retry without page refresh
+- **Thank-you screen price** — `selectedTier.discountedPrice` didn't exist in JSON; added `|| price` fallback
+- **Pricing card radio** — `handlePricingCardClick` now toggles `pricing-card__radio--selected` on inner radio element
+- **Stripe double-init** — added `_stripeInitializing` guard with reset on error and navigation
+- **Countdown timer** — `Components.countdownTimer()` was never called in paywall renderer; now renders before pricing
+- **Goal timeline / recovery curve navigation** — added `timeline_chart` and `recovery_curve` to `isNonQuestion` list in `handleContinueClick`
+- **CBT interstitial crash** — guarded `screenData.content.expertReview` access with null check
+- **`getAnswer()` falsy values** — changed `|| null` to `?? null` to preserve valid falsy answers
+- **CSS variables** — defined 7 missing aliases (`--color-text`, `--color-card-bg`, `--color-bg`, `--color-primary-dark`, `--shadow-md`, `--radius-full`, `--font-size-base`); removed duplicate `--color-success`
+- **Typos** — "by practicing therapist" → "by a practicing therapist"; pricePerDay `$0.88` → `$0.89`
+
+### Added
 - **Stripe checkout screen** (Issue #11)
   - New `checkout` screen inserted between paywall and `thank_you` — custom branded order summary + embedded Stripe Payment Element (cards, Apple Pay, Google Pay, PayPal)
   - `funnel/api/create-checkout.js`: serverless function creates Stripe Customer (deduped by email) + 2-phase Subscription Schedule (intro price × 1 period → regular price forever), finalizes draft invoice to obtain PaymentIntent `client_secret`
