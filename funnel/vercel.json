@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/funnel-v1",
-      "destination": "/funnel-v1/index.html"
+      "destination": "/funnels/v1/index.html"
     },
     {
       "source": "/funnel-v2",
-      "destination": "/funnel-v2/index.html"
+      "destination": "/funnels/v2/index.html"
     }
   ],
   "headers": [

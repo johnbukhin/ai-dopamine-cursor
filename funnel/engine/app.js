@@ -8,11 +8,6 @@
 // ========================================
 const CONFIG = {
     brandName: 'Mind Compass',
-    // JSON data path (now in same directory for Vercel deployment)
-    funnelDataPaths: [
-        'funnel-data.json',
-        './funnel-data.json'
-    ],
     storageKey: 'compass_funnel_v2_state',
     debug: false, // Set to true for development debugging
     subheadline: 'IMPROVE YOUR WELL-BEING WITH OUR PERSONALIZED PLAN',
@@ -583,9 +578,14 @@ const State = {
 // ========================================
 const Router = {
     /**
-     * Funnel screens data (loaded from JSON)
+     * Funnel screens data (all screens from registry + local, flat array)
      */
     screens: [],
+
+    /**
+     * Ordered sequence of screen IDs for this funnel (from config.json)
+     */
+    sequence: [],
 
     /**
      * Navigate to a specific screen
@@ -612,6 +612,14 @@ const Router = {
      * @returns {string|null} Next screen ID or null
      */
     getNextScreen(currentScreenId) {
+        // Sequence-driven navigation (primary)
+        if (this.sequence.length > 0) {
+            const idx = this.sequence.indexOf(currentScreenId);
+            if (idx >= 0 && idx < this.sequence.length - 1) {
+                return this.sequence[idx + 1];
+            }
+        }
+        // Fallback: nextScreenLogic in screen data
         const screen = this.getScreen(currentScreenId);
         return screen?.nextScreenLogic || null;
     }
@@ -1521,7 +1529,7 @@ const Components = {
 
         return `
             <div class="money-back-card">
-                <img src="../assets/guarantee_badge.png" alt="30-day money-back guarantee" class="guarantee-medal">
+                <img src="../../assets/guarantee_badge.png" alt="30-day money-back guarantee" class="guarantee-medal">
                 <h3 class="money-back-card__headline">${safeHeadline}</h3>
                 <p class="money-back-card__description">${safeDescription}</p>
                 <a href="#money-back-policy" class="money-back-card__link">${safeLinkText}</a>
@@ -1934,8 +1942,8 @@ const Screens = {
                     <span class="badge">${safeSubheadline}</span>
                     
                     <div class="gender-cards">
-                        ${Components.genderCard('Male', '../assets/male.png')}
-                        ${Components.genderCard('Female', '../assets/female.png')}
+                        ${Components.genderCard('Male', '../../assets/male.png')}
+                        ${Components.genderCard('Female', '../../assets/female.png')}
                     </div>
                 </main>
                 
@@ -4469,33 +4477,58 @@ const App = {
     },
 
     /**
-     * Load funnel data from JSON file
-     * Tries multiple paths to handle different server configurations
+     * Load funnel config (sequence) + screen data from registry and local screens.json
+     * config.json   — this funnel's sequence of screen IDs
+     * ../../screens/registry.json — globally shared screens (checkout, paywall variants, etc.)
+     * screens.json  — screens specific to this funnel
      */
     async loadFunnelData() {
-        // Try each path until one works
-        for (const path of CONFIG.funnelDataPaths) {
+        try {
+            // 1. Load funnel sequence config
+            const configResp = await fetch('config.json');
+            const config = configResp.ok ? await configResp.json() : {};
+            Router.sequence = config.sequence || [];
+            log.info(`[App] Loaded sequence: ${Router.sequence.length} screens`);
+
+            // 2. Load global shared screen registry (non-fatal if missing)
+            let registryScreens = [];
             try {
-                log.info(`[App] Trying to load JSON from: ${path}`);
-                const response = await fetch(path);
-                if (!response.ok) {
-                    log.warn(`[App] Path ${path} returned ${response.status}`);
-                    continue;
+                const regResp = await fetch('../../screens/registry.json');
+                if (regResp.ok) {
+                    registryScreens = await regResp.json();
+                    log.info(`[App] Loaded ${registryScreens.length} screens from registry`);
                 }
-
-                const data = await response.json();
-                Router.screens = data.screens || [];
-
-                log.info(`[App] Successfully loaded ${Router.screens.length} screens from ${path}`);
-                return; // Success - exit the function
-            } catch (error) {
-                log.warn(`[App] Failed to load from ${path}:`, error.message);
+            } catch (e) {
+                log.warn('[App] Registry not found or failed to load, continuing without it');
             }
-        }
 
-        // All paths failed - use fallback
-        log.error('[App] All JSON paths failed, using fallback data');
-        Router.screens = this.getFallbackData();
+            // 3. Load funnel-specific screens (local screens.json)
+            let localScreens = [];
+            try {
+                const localResp = await fetch('screens.json');
+                if (localResp.ok) {
+                    localScreens = await localResp.json();
+                    log.info(`[App] Loaded ${localScreens.length} local screens`);
+                }
+            } catch (e) {
+                log.warn('[App] screens.json failed to load');
+            }
+
+            // 4. Merge: local screens override registry screens with the same id
+            const screenMap = {};
+            [...registryScreens, ...localScreens].forEach(s => { screenMap[s.id] = s; });
+            Router.screens = Object.values(screenMap);
+
+            log.info(`[App] Total screens available: ${Router.screens.length}`);
+
+            if (Router.screens.length === 0) {
+                log.error('[App] No screen data loaded, using fallback');
+                Router.screens = this.getFallbackData();
+            }
+        } catch (error) {
+            log.error('[App] Fatal error loading funnel data:', error.message);
+            Router.screens = this.getFallbackData();
+        }
     },
 
     /**

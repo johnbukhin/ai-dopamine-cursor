@@ -1,0 +1,1809 @@
+[
+  {
+    "id": "landing",
+    "type": "gender_selection",
+    "screenType": "landing",
+    "headline": "DISCOVER HOW DOPAMINE DRIVES PORN ADDICTION AND BREAK A TOXIC CYCLE",
+    "subheadline": "3-MINUTE QUIZ",
+    "options": [
+      "Male",
+      "Female"
+    ],
+    "optionStyle": "image_cards",
+    "hasProgressIndicator": false,
+    "nextScreenLogic": "question_age",
+    "uiComponents": [
+      "AppHeader",
+      "GenderCard",
+      "ImageButton",
+      "LegalDisclaimer"
+    ],
+    "legalText": "By clicking 'Male' or 'Female' you agree with the Terms of Use and Service, Privacy Policy, Subscription Policy and Cookie Policy"
+  },
+  {
+    "id": "question_age",
+    "type": "single_choice",
+    "screenType": "single_choice",
+    "questionNumber": 0,
+    "headline": "What is your age group?",
+    "options": [
+      {
+        "label": "18\u201324"
+      },
+      {
+        "label": "25\u201334"
+      },
+      {
+        "label": "35\u201344"
+      },
+      {
+        "label": "45\u201354"
+      },
+      {
+        "label": "55+"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "question_1",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "question_1",
+    "type": "single_choice",
+    "questionNumber": 1,
+    "progressFormat": "1 / 33",
+    "headline": "What is your current relationship status?",
+    "options": [
+      {
+        "label": "Single",
+        "icon": "people"
+      },
+      {
+        "label": "In a relationship",
+        "icon": "heart"
+      },
+      {
+        "label": "Engaged",
+        "icon": "rings"
+      },
+      {
+        "label": "Married",
+        "icon": "link"
+      },
+      {
+        "label": "Civil partnership",
+        "icon": "handshake"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_2",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_2",
+    "type": "single_choice",
+    "questionNumber": 2,
+    "progressFormat": "2 / 33",
+    "headline": "Overall how satisfied are you with sex and intimacy?",
+    "options": [
+      {
+        "label": "Disconnected and unfulfilled",
+        "icon": "broken_heart"
+      },
+      {
+        "label": "Something feels missing",
+        "icon": "puzzle"
+      },
+      {
+        "label": "Mostly fine with a few improvements",
+        "icon": "thumbs_up"
+      },
+      {
+        "label": "Comfortable and present",
+        "icon": "smile"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_3",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_3",
+    "type": "single_choice",
+    "questionNumber": 3,
+    "progressFormat": "3 / 33",
+    "headline": "Right now how does porn fit into your life?",
+    "options": [
+      {
+        "label": "I struggle to control it",
+        "icon": "lightning"
+      },
+      {
+        "label": "It often gets in the way",
+        "icon": "hand_stop"
+      },
+      {
+        "label": "It is a regular habit I manage",
+        "icon": "thumbs_up"
+      },
+      {
+        "label": "I haven't used it recently",
+        "icon": "thumbs_down"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "interstitial_1",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "interstitial_1",
+    "type": "trust_building",
+    "screenType": "interstitial",
+    "headline": "You're in the right place",
+    "content": {
+      "title": "Everything at Liven is science based",
+      "description": "The following questions were created in collaboration with certified therapists and sexologists",
+      "bulletPoints": [
+        "Each question helps us understand how dopamine-driven habits show up for you, so we can suggest simple routines to regain control, support healthy desire, and improve focus and sleep",
+        "Please share what feels true for you \u2014 there are no right or wrong answers"
+      ]
+    },
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_4",
+    "uiComponents": [
+      "InfoCard",
+      "HeartIcon",
+      "CheckmarkBullets",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_4",
+    "type": "single_choice",
+    "questionNumber": 4,
+    "progressFormat": "4 / 33",
+    "headline": "How often do you use porn or masturbation to cope with difficult emotions?",
+    "options": [
+      {
+        "label": "Often",
+        "icon": "checkmark"
+      },
+      {
+        "label": "Sometimes",
+        "icon": "question"
+      },
+      {
+        "label": "Rarely",
+        "icon": "prohibited"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_5",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_5",
+    "type": "multiple_choice",
+    "questionNumber": 5,
+    "progressFormat": "5 / 33",
+    "headline": "What usually triggers your porn use?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "Stress"
+      },
+      {
+        "label": "Boredom"
+      },
+      {
+        "label": "Loneliness"
+      },
+      {
+        "label": "Anxiety"
+      },
+      {
+        "label": "Curiosity"
+      },
+      {
+        "label": "Type your answer here...",
+        "type": "text_input"
+      }
+    ],
+    "optionStyle": "checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_6",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "CheckboxAnswer",
+      "TextInput",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_6",
+    "type": "multiple_choice",
+    "questionNumber": 6,
+    "progressFormat": "6 / 33",
+    "headline": "How do you usually feel after using porn?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "Satisfied or fine"
+      },
+      {
+        "label": "Guilty or ashamed"
+      },
+      {
+        "label": "Disappointed in myself"
+      },
+      {
+        "label": "Anxious"
+      },
+      {
+        "label": "Empty or disconnected"
+      },
+      {
+        "label": "Regretful"
+      },
+      {
+        "label": "Type your answer here...",
+        "type": "text_input"
+      }
+    ],
+    "optionStyle": "checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_7",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "CheckboxAnswer",
+      "TextInput",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_7",
+    "type": "single_choice",
+    "questionNumber": 7,
+    "progressFormat": "7 / 33",
+    "headline": "When did you first notice this?",
+    "options": [
+      {
+        "label": "Today"
+      },
+      {
+        "label": "This week"
+      },
+      {
+        "label": "About the last month"
+      },
+      {
+        "label": "A few months ago"
+      },
+      {
+        "label": "Over 6 months ago"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "question_8",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "question_8",
+    "type": "single_choice",
+    "questionNumber": 8,
+    "progressFormat": "8 / 33",
+    "headline": "How much is this affecting you right now?",
+    "options": [
+      {
+        "label": "Mild"
+      },
+      {
+        "label": "Moderate"
+      },
+      {
+        "label": "Major"
+      },
+      {
+        "label": "I'm not sure"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "question_9",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "question_9",
+    "type": "single_choice",
+    "questionNumber": 9,
+    "progressFormat": "9 / 33",
+    "headline": "How often do you currently view pornography?",
+    "options": [
+      {
+        "label": "Multiple times per day"
+      },
+      {
+        "label": "Daily"
+      },
+      {
+        "label": "Several times per week"
+      },
+      {
+        "label": "Weekly to monthly"
+      },
+      {
+        "label": "Rarely or none"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "question_10",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "question_10",
+    "type": "single_choice",
+    "questionNumber": 10,
+    "progressFormat": "10 / 33",
+    "headline": "How often do you have sexual thoughts, fantasies, or dreams?",
+    "options": [
+      {
+        "label": "Often",
+        "icon": "checkmark"
+      },
+      {
+        "label": "Sometimes",
+        "icon": "question"
+      },
+      {
+        "label": "Rarely",
+        "icon": "prohibited"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_11",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_11",
+    "type": "single_choice",
+    "questionNumber": 11,
+    "progressFormat": "11 / 33",
+    "headline": "How often do sexual images break your focus while you work or study?",
+    "options": [
+      {
+        "label": "Often",
+        "icon": "checkmark"
+      },
+      {
+        "label": "Sometimes",
+        "icon": "question"
+      },
+      {
+        "label": "Rarely",
+        "icon": "prohibited"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_12",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_12",
+    "type": "single_choice",
+    "questionNumber": 12,
+    "progressFormat": "12 / 33",
+    "headline": "How often do you miss work or study deadlines because of porn?",
+    "options": [
+      {
+        "label": "Often",
+        "icon": "checkmark"
+      },
+      {
+        "label": "Sometimes",
+        "icon": "question"
+      },
+      {
+        "label": "Rarely",
+        "icon": "prohibited"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_13",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_13",
+    "type": "single_choice",
+    "questionNumber": 13,
+    "progressFormat": "13 / 33",
+    "headline": "Do you struggle to get into deep work or study after binges?",
+    "options": [
+      {
+        "label": "Often",
+        "icon": "checkmark"
+      },
+      {
+        "label": "Sometimes",
+        "icon": "question"
+      },
+      {
+        "label": "Rarely",
+        "icon": "prohibited"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "interstitial_2",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "interstitial_2",
+    "type": "educational",
+    "screenType": "interstitial",
+    "headline": "Your attention is not weak. Your reward system is overloaded",
+    "content": {
+      "description": "Repeated high-intensity sexual cues can train the brain to chase quick rewards. Studies from the University of Cambridge link this pattern with poorer focus and more compulsive sexual behavior",
+      "citation": {
+        "author": "Voon V, et al.",
+        "year": 2014,
+        "title": "Neural Correlates of Sexual Cue Reactivity in Individuals with and without Compulsive Sexual Behaviours."
+      }
+    },
+    "image": "man_at_laptop",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "loading_1",
+    "uiComponents": [
+      "EducationalCard",
+      "ResearchCitation",
+      "ImageBlock",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "loading_1",
+    "type": "loading_with_social_proof",
+    "screenType": "transition",
+    "headline": "Over 534,568 people your age",
+    "content": "learned to manage sexual cues that spike dopamine and control their urges.",
+    "subheadline": "Let's find what works for you!",
+    "progressIndicator": "circular_percentage",
+    "loadingText": "Connecting to database...",
+    "nextScreenLogic": "question_14",
+    "uiComponents": [
+      "CircularProgress",
+      "SocialProofText"
+    ]
+  },
+  {
+    "id": "question_14",
+    "type": "multiple_choice",
+    "questionNumber": 14,
+    "progressFormat": "14 / 33",
+    "headline": "Which of these best describes your current relationship with porn?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "I feel I watch it too frequently"
+      },
+      {
+        "label": "I feel unable to control my use"
+      },
+      {
+        "label": "It affects my real-life sex or relationships"
+      },
+      {
+        "label": "It affects my work or daily life"
+      },
+      {
+        "label": "I feel shame or guilt after use"
+      },
+      {
+        "label": "Type your answer here...",
+        "type": "text_input"
+      }
+    ],
+    "optionStyle": "checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_15",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "CheckboxAnswer",
+      "TextInput",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_15",
+    "type": "multiple_choice",
+    "questionNumber": 15,
+    "progressFormat": "15 / 33",
+    "headline": "How does your porn use affect your sexual experiences?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "Erection or arousal issues without porn"
+      },
+      {
+        "label": "Need porn or visuals to enjoy sex"
+      },
+      {
+        "label": "Prefer masturbation over partnered sex"
+      },
+      {
+        "label": "Unrealistic views of sex or bodies"
+      },
+      {
+        "label": "Feel disconnected from myself or my partner"
+      },
+      {
+        "label": "Lower sex drive lately"
+      },
+      {
+        "label": "Type your answer here...",
+        "type": "text_input"
+      }
+    ],
+    "optionStyle": "checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_16",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "CheckboxAnswer",
+      "TextInput",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_16",
+    "type": "single_choice",
+    "questionNumber": 16,
+    "progressFormat": "16 / 33",
+    "headline": "\"Recently my sex drive is...\"",
+    "options": [
+      {
+        "label": "Sky high"
+      },
+      {
+        "label": "Just right"
+      },
+      {
+        "label": "A bit low"
+      },
+      {
+        "label": "Non-existent"
+      },
+      {
+        "label": "I'm not sure"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "question_17",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "question_17",
+    "type": "likert_scale",
+    "questionNumber": 17,
+    "progressFormat": "17 / 33",
+    "headline": "\"I feel like porn is the fastest way to numb out\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "label": "",
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "label": "",
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "label": "",
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_18",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_18",
+    "type": "likert_scale",
+    "questionNumber": 18,
+    "progressFormat": "18 / 33",
+    "headline": "\"I often feel dirty or wrong afterward\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_19",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_19",
+    "type": "likert_scale",
+    "questionNumber": 19,
+    "progressFormat": "19 / 33",
+    "headline": "\"I tend to judge myself harshly after using\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_20",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_20",
+    "type": "likert_scale",
+    "questionNumber": 20,
+    "progressFormat": "20 / 33",
+    "headline": "\"I often hide my use from people close to me\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_21",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_21",
+    "type": "likert_scale",
+    "questionNumber": 21,
+    "progressFormat": "21 / 33",
+    "headline": "\"I feel like I would be judged if anyone knew\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_22",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_22",
+    "type": "likert_scale",
+    "questionNumber": 22,
+    "progressFormat": "22 / 33",
+    "headline": "\"I avoid asking for help because of shame\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_23",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_23",
+    "type": "likert_scale",
+    "questionNumber": 23,
+    "progressFormat": "23 / 33",
+    "headline": "\"I feel like my motivation drops after watching\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_24",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_24",
+    "type": "likert_scale",
+    "questionNumber": 24,
+    "progressFormat": "24 / 33",
+    "headline": "\"I feel like I'm unknowingly holding myself back from success\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_25",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_25",
+    "type": "likert_scale",
+    "questionNumber": 25,
+    "progressFormat": "25 / 33",
+    "headline": "\"I feel like I'm not fully living the life I want\"",
+    "subheadline": "Do you agree with the following statement?",
+    "options": [
+      {
+        "value": 1,
+        "label": "Strongly disagree",
+        "icon": "thumbs_down_x"
+      },
+      {
+        "value": 2,
+        "icon": "thumbs_down"
+      },
+      {
+        "value": 3,
+        "icon": "question"
+      },
+      {
+        "value": 4,
+        "icon": "thumbs_up"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree",
+        "icon": "thumbs_up_star"
+      }
+    ],
+    "optionStyle": "icon_scale",
+    "nextScreenLogic": "question_26",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "LikertScale",
+      "QuizIconItem"
+    ]
+  },
+  {
+    "id": "question_26",
+    "type": "multiple_choice",
+    "questionNumber": 26,
+    "progressFormat": "26 / 33",
+    "headline": "Are there aspects of your wellbeing you'd like to address?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "Stress",
+        "icon": "stressed_emoji"
+      },
+      {
+        "label": "Mood fluctuations",
+        "icon": "mood_emoji"
+      },
+      {
+        "label": "Worry",
+        "icon": "worry_emoji"
+      },
+      {
+        "label": "Low mood",
+        "icon": "sad_emoji"
+      },
+      {
+        "label": "Low energy",
+        "icon": "battery_emoji"
+      },
+      {
+        "label": "Poor self-image",
+        "icon": "mirror_emoji"
+      },
+      {
+        "label": "I'm totally fine",
+        "icon": "thumbs_up_emoji"
+      }
+    ],
+    "optionStyle": "icon_checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_27",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "IconCheckboxAnswer",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_27",
+    "type": "multiple_choice",
+    "questionNumber": 27,
+    "progressFormat": "27 / 33",
+    "headline": "What would you like to address in your sexual wellbeing today?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "Porn use that feels hard to control"
+      },
+      {
+        "label": "Connection with my partner"
+      },
+      {
+        "label": "Compulsive sexual behaviors"
+      },
+      {
+        "label": "Low desire or libido"
+      },
+      {
+        "label": "Performance anxiety or low confidence"
+      },
+      {
+        "label": "Erection difficulties or staying hard"
+      },
+      {
+        "label": "I'm totally fine"
+      }
+    ],
+    "optionStyle": "checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "interstitial_3",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "CheckboxAnswer",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "interstitial_3",
+    "type": "trust_building",
+    "screenType": "interstitial",
+    "headline": "Liven was developed using evidence-based psychological practices",
+    "subheadline": "Your journey is based on decades of research",
+    "credibilityLogos": [
+      {
+        "name": "Harvard University",
+        "type": "university"
+      },
+      {
+        "name": "University of Oxford",
+        "type": "university"
+      },
+      {
+        "name": "University of Cambridge",
+        "type": "university"
+      }
+    ],
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_28",
+    "uiComponents": [
+      "CredibilityCard",
+      "UniversityLogos",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_28",
+    "type": "multiple_choice",
+    "questionNumber": 28,
+    "progressFormat": "28 / 33",
+    "headline": "To live a better life, what areas do you feel you need to improve?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "My state of calm",
+        "icon": "meditation_emoji"
+      },
+      {
+        "label": "My focus levels",
+        "icon": "target_emoji"
+      },
+      {
+        "label": "My willpower",
+        "icon": "flame_emoji"
+      },
+      {
+        "label": "My energy levels",
+        "icon": "lightning_emoji"
+      },
+      {
+        "label": "My inner strength",
+        "icon": "bicep_emoji"
+      }
+    ],
+    "optionStyle": "icon_checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_29",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "IconCheckboxAnswer",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_29",
+    "type": "single_choice",
+    "questionNumber": 29,
+    "progressFormat": "29 / 33",
+    "headline": "Did you learn about Liven from a therapist?",
+    "options": [
+      {
+        "label": "Yes",
+        "icon": "checkmark"
+      },
+      {
+        "label": "No",
+        "icon": "prohibited"
+      }
+    ],
+    "optionStyle": "icon_list",
+    "nextScreenLogic": "question_30",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard",
+      "IconEmoji"
+    ]
+  },
+  {
+    "id": "question_30",
+    "type": "single_choice",
+    "questionNumber": 30,
+    "progressFormat": "30 / 33",
+    "headline": "How much do you know about Cognitive Behavioral Techniques?",
+    "options": [
+      {
+        "label": "Nothing at all"
+      },
+      {
+        "label": "Not that much"
+      },
+      {
+        "label": "A fair amount"
+      },
+      {
+        "label": "A lot"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "interstitial_4",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "interstitial_4",
+    "type": "trust_building",
+    "screenType": "interstitial",
+    "headline": "Your plan will be reviewed by practicing therapist",
+    "content": {
+      "description": "Liven meticulously incorporates the CBT model to deliver personalized content and resources to its users for enhanced emotional well-being",
+      "cbtModel": {
+        "elements": [
+          "Thoughts",
+          "Feelings",
+          "Behavior"
+        ],
+        "diagram": "circular_connection"
+      },
+      "expertReview": {
+        "badge": "Content reviewed by an expert",
+        "name": "Tara Passaretti",
+        "title": "Licensed Mental Health Counselor"
+      }
+    },
+    "ctaButton": "Continue",
+    "nextScreenLogic": "question_31",
+    "uiComponents": [
+      "CBTDiagram",
+      "ExpertBadge",
+      "TherapistCard",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "question_31",
+    "type": "multiple_choice",
+    "questionNumber": 31,
+    "progressFormat": "31 / 33",
+    "headline": "What would regaining control over sexual urges mean for you?",
+    "subheadline": "Choose all that apply",
+    "options": [
+      {
+        "label": "Better relationships and intimacy",
+        "icon": "couple_emoji"
+      },
+      {
+        "label": "More confidence and self-respect",
+        "icon": "confident_emoji"
+      },
+      {
+        "label": "More motivation for things that matter",
+        "icon": "heart_emoji"
+      },
+      {
+        "label": "More productivity and success",
+        "icon": "trophy_emoji"
+      },
+      {
+        "label": "Type your answer here...",
+        "type": "text_input"
+      }
+    ],
+    "optionStyle": "icon_checkbox_list",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "interstitial_5",
+    "uiComponents": [
+      "ProgressBar",
+      "BackButton",
+      "StepCounter",
+      "IconCheckboxAnswer",
+      "TextInput",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "interstitial_5",
+    "type": "social_proof",
+    "screenType": "interstitial",
+    "headline": "Join over 2,500,000 people",
+    "subheadline": "Become part of a growing worldwide community and achieve your goals with us!",
+    "visual": {
+      "type": "world_map",
+      "markers": "user_avatars",
+      "locations": [
+        "North America",
+        "Europe",
+        "Asia",
+        "Australia",
+        "South America"
+      ]
+    },
+    "ctaButton": "Continue",
+    "nextScreenLogic": "profile_creation",
+    "uiComponents": [
+      "WorldMap",
+      "UserAvatarMarkers",
+      "SocialProofText",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "profile_creation",
+    "type": "loading_with_engagement",
+    "screenType": "transition",
+    "headline": "Creating your",
+    "subheadline": "Dopamine Profile Summary",
+    "progressSteps": [
+      {
+        "label": "Answers analyzed",
+        "status": "completed"
+      },
+      {
+        "label": "Pattern mapped",
+        "status": "completed"
+      },
+      {
+        "label": "Profile ready",
+        "status": "completed"
+      }
+    ],
+    "engagementModals": [
+      {
+        "trigger": "during_loading",
+        "question": "Are you inclined to finish what you start?",
+        "options": [
+          "No",
+          "Yes"
+        ],
+        "type": "commitment_question"
+      },
+      {
+        "trigger": "during_loading",
+        "question": "Are you familiar with dopamine detox technique?",
+        "options": [
+          "No",
+          "Yes"
+        ],
+        "type": "knowledge_question"
+      },
+      {
+        "trigger": "during_loading",
+        "question": "Do you want to learn how to build strong habits?",
+        "options": [
+          "No",
+          "Yes"
+        ],
+        "type": "interest_question"
+      }
+    ],
+    "testimonials": [
+      {
+        "rating": 5,
+        "source": "Trustpilot",
+        "title": "I love everything of this app...",
+        "content": "I love everything of this app as it helps me prioritize my emotional wellbeing, day and self-care routine.",
+        "author": "violet_martinez"
+      },
+      {
+        "rating": 5,
+        "source": "Trustpilot",
+        "title": "The Liven app is ...",
+        "content": "The Liven app is like a personal wellbeing coach. It's convenient to have everything in one place and I don't have to look for other resources. Definitely worth using it.",
+        "author": "Paul Vizer"
+      }
+    ],
+    "ctaButton": "Continue",
+    "nextScreenLogic": "email_capture",
+    "uiComponents": [
+      "ProgressChecklist",
+      "CircularProgress",
+      "CommitmentModal",
+      "TestimonialCard",
+      "TrustpilotRating",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "email_capture",
+    "type": "lead_capture",
+    "screenType": "email_gate",
+    "headline": "Enter your email to see your personal",
+    "subheadline": "Profile Summary",
+    "inputField": {
+      "type": "email",
+      "placeholder": "Enter your email",
+      "required": true
+    },
+    "privacyNote": "We respect your privacy and are committed to protecting your personal data. Your data will be processed according to our Privacy policy.",
+    "ctaButton": "Continue",
+    "nextScreenLogic": "name_capture",
+    "uiComponents": [
+      "EmailInput",
+      "PrivacyNote",
+      "LockIcon",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "name_capture",
+    "type": "lead_capture",
+    "screenType": "name_gate",
+    "headline": "Enter your name to personalize your plan",
+    "inputField": {
+      "type": "text",
+      "placeholder": "Enter your name",
+      "required": true
+    },
+    "ctaButton": "Continue",
+    "nextScreenLogic": "profile_summary",
+    "uiComponents": [
+      "TextInput",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "profile_summary",
+    "type": "results_summary",
+    "screenType": "personalized_results",
+    "headline": "Your Dopamine Profile Summary",
+    "sections": [
+      {
+        "title": "Your Patterns",
+        "description": "Based on your answers, we identified key dopamine-driven patterns affecting your daily life"
+      },
+      {
+        "title": "Recommended Focus Areas",
+        "items": [
+          "Urge management",
+          "Focus restoration",
+          "Emotional regulation"
+        ]
+      }
+    ],
+    "ctaButton": "Continue",
+    "nextScreenLogic": "goal_timeline",
+    "uiComponents": [
+      "ProfileCard",
+      "ResultsSummary",
+      "FocusAreaList",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "goal_timeline",
+    "type": "goal_setting",
+    "screenType": "timeline_selection",
+    "headline": "When do you want to achieve your goal?",
+    "options": [
+      {
+        "label": "As soon as possible",
+        "recommended": true
+      },
+      {
+        "label": "Within 1 month"
+      },
+      {
+        "label": "Within 3 months"
+      },
+      {
+        "label": "No rush"
+      }
+    ],
+    "optionStyle": "text_list",
+    "nextScreenLogic": "plan_creation_v2",
+    "uiComponents": [
+      "TimelineSelector",
+      "AnswerCard"
+    ]
+  },
+  {
+    "id": "plan_creation_v2",
+    "type": "loading_with_engagement",
+    "screenType": "transition",
+    "headline": "Creating your personalized plan",
+    "progressSteps": [
+      {
+        "label": "Analyzing your profile",
+        "status": "completed"
+      },
+      {
+        "label": "Matching techniques",
+        "status": "completed"
+      },
+      {
+        "label": "Building your plan",
+        "status": "completed"
+      }
+    ],
+    "engagementModals": [
+      {
+        "trigger": "during_loading",
+        "question": "Do you believe you can change your habits?",
+        "options": [
+          "No",
+          "Yes"
+        ],
+        "type": "commitment_question"
+      }
+    ],
+    "ctaButton": "Continue",
+    "nextScreenLogic": "plan_ready",
+    "uiComponents": [
+      "ProgressChecklist",
+      "CircularProgress",
+      "CommitmentModal",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "plan_ready",
+    "type": "plan_preview",
+    "screenType": "value_proposition",
+    "headline": "Your personalized plan is ready!",
+    "subheadline": "Based on your Dopamine Profile, we've created a customized program for you",
+    "planFeatures": [
+      "Daily exercises tailored to your patterns",
+      "Progress tracking and milestones",
+      "Expert-backed techniques",
+      "Community support"
+    ],
+    "ctaButton": "Get my plan",
+    "nextScreenLogic": "paywall",
+    "uiComponents": [
+      "PlanPreviewCard",
+      "FeatureList",
+      "ContinueButton"
+    ]
+  },
+  {
+    "id": "paywall",
+    "type": "paywall",
+    "screenType": "payment",
+    "headline": "Choose Your Plan",
+    "urgencyElements": {
+      "countdownTimer": {
+        "format": "MM:SS",
+        "headline": "Discount is reserved for:",
+        "initialMinutes": 10
+      },
+      "promoCode": {
+        "label": "Your personal promo code",
+        "format": "personalized",
+        "discount": "Activated"
+      }
+    },
+    "pricingTiers": [
+      {
+        "id": "7_day",
+        "name": "7-DAY PLAN",
+        "originalPrice": "\u20ac49.99",
+        "discountedPrice": "\u20ac10.50",
+        "pricePerDay": "\u20ac1.50/day",
+        "recommended": false,
+        "savings": "79% OFF"
+      },
+      {
+        "id": "1_month",
+        "name": "1-MONTH PLAN",
+        "badge": "MOST POPULAR",
+        "originalPrice": "\u20ac49.99",
+        "discountedPrice": "\u20ac19.99",
+        "pricePerDay": "\u20ac0.66/day",
+        "recommended": true,
+        "savings": "60% OFF"
+      },
+      {
+        "id": "3_month",
+        "name": "3-MONTH PLAN",
+        "originalPrice": "\u20ac99.99",
+        "discountedPrice": "\u20ac34.99",
+        "pricePerDay": "\u20ac0.38/day",
+        "recommended": false,
+        "savings": "65% OFF"
+      }
+    ],
+    "ctaButton": {
+      "text": "Get my plan",
+      "style": "primary_green"
+    },
+    "trustElements": {
+      "paymentSecurity": {
+        "headline": "Pay Safe & Secure",
+        "icons": [
+          "PayPal",
+          "Apple Pay",
+          "Visa",
+          "Mastercard",
+          "Maestro",
+          "Discover",
+          "American Express"
+        ]
+      },
+      "mediaFeatures": {
+        "headline": "As featured in",
+        "logos": [
+          "Hello!",
+          "TechTimes",
+          "Woman's World",
+          "Cosmopolitan",
+          "BuzzFeed",
+          "Refinery29"
+        ]
+      },
+      "statistics": [
+        {
+          "percentage": "83%",
+          "description": "of users were able to <strong>manage dopamine levels</strong> after just 6 weeks"
+        },
+        {
+          "percentage": "77%",
+          "description": "of users started with <strong>similar level of dopamine dependence</strong> as you"
+        },
+        {
+          "percentage": "45%",
+          "description": "of users suffer from the same <strong>excessive dopamine trigger</strong> as you"
+        }
+      ],
+      "award": {
+        "badge": "2025 Best Mobile App Award winner",
+        "source": "App Excellence Awards"
+      },
+      "moneyBackGuarantee": {
+        "duration": "30 days",
+        "headline": "30-Day Money-Back Guarantee",
+        "description": "Our plan is backed by a money-back guarantee. We believe that our plan will work for you, so we guarantee a full refund within 30 days after purchase if you don't see visible results in your ability to manage dopamine-driven habits despite following your plan as directed.",
+        "linkText": "Learn more"
+      }
+    },
+    "faq": {
+      "headline": "People often ask",
+      "questions": [
+        {
+          "question": "What if my willpower is gone? I've tried to quit before and failed.",
+          "answer": "This plan isn't another test of willpower. Instead, it's designed to teach you the skills to manage urges and rebuild your brain's reward system from the ground up. We help you build new patterns gradually, so you don't have to rely on willpower alone to succeed."
+        },
+        {
+          "question": "What if my triggers are everywhere and I can't escape them?",
+          "answer": "Compass focuses on helping you build resilience. You'll learn practical, in-the-moment strategies to identify your triggers, navigate cravings when they strike, and redirect your focus without feeling overwhelmed. The goal isn't to eliminate triggers, but to take away their power over you."
+        },
+        {
+          "question": "What if I'm afraid I'll just fail again?",
+          "answer": "Compass is different because it breaks the journey into small, manageable daily steps that are easy to follow. You're not alone in this. We provide constant support and guidance to help you build momentum, celebrate small wins, and stay motivated even when it feels hard."
+        },
+        {
+          "question": "Is my data private?",
+          "answer": "Yes, we take your privacy seriously. All data is encrypted with 256-bit SSL and is never shared with third parties. Your personal information stays completely confidential."
+        }
+      ]
+    },
+    "testimonials": [
+      {
+        "rating": 5,
+        "title": "Concise and easy",
+        "content": "Concise and easy. Those are the action words that are needed when you're trying to detox your dopamine dependence. Really glad to try this.",
+        "author": "Michael T.",
+        "handle": "skrupert",
+        "verified": true
+      },
+      {
+        "rating": 5,
+        "title": "Finally taking control of my screen time",
+        "content": "Before I started using Compass, I used to procrastinate a lot. Now I feel like I can finally start breaking away from bad habits. The daily check-ins are a game changer.",
+        "author": "James R.",
+        "handle": "qzi",
+        "verified": true
+      },
+      {
+        "rating": 5,
+        "title": "Compass is like a personal coach",
+        "content": "It's convenient to have everything in one place and I don't have to look for other resources. The personalized approach made all the difference. Definitely worth it.",
+        "author": "David K.",
+        "handle": "Paul Vizer",
+        "verified": true
+      }
+    ],
+    "companyInfo": {
+      "name": "Mind Compass Ltd",
+      "address": "123 Wellness Street, London, EC1A 1BB, United Kingdom",
+      "email": "support@mind-compass.app",
+      "links": [
+        "Terms of Use",
+        "Privacy Policy",
+        "Subscription Policy",
+        "Cookie Policy"
+      ]
+    },
+    "uiComponents": [
+      "CountdownTimer",
+      "PromoCodeBadge",
+      "PricingCard",
+      "MostPopularBadge",
+      "StrikethroughPrice",
+      "PricePerDay",
+      "PrimaryButton",
+      "PaymentIcons",
+      "MediaLogos",
+      "StatisticsBlock",
+      "AwardBadge",
+      "MoneyBackGuarantee",
+      "FAQAccordion",
+      "TestimonialCard",
+      "FooterLinks"
+    ],
+    "nextScreenLogic": "checkout",
+    "beforeAfter": {
+      "nowLabel": "Now",
+      "goalLabel": "Your Goal",
+      "nowImage": "../assets/before_state.png",
+      "goalImage": "../assets/after_state.png",
+      "metrics": [
+        {
+          "label": "Dopamine system",
+          "nowState": "Dysregulated",
+          "goalState": "Balanced",
+          "nowFill": 0.3,
+          "goalFill": 1.0
+        },
+        {
+          "label": "Self-control",
+          "nowState": "Hijacked",
+          "goalState": "Restored",
+          "nowFill": 0.35,
+          "goalFill": 1.0
+        },
+        {
+          "label": "Mental clarity",
+          "nowState": "Suppressed",
+          "goalState": "Sharp",
+          "nowFill": 0.25,
+          "goalFill": 1.0
+        }
+      ]
+    },
+    "goalsList": [
+      "Reclaim control over urges and impulses",
+      "Rebuild your focus and mental clarity",
+      "Restore natural motivation and drive",
+      "Strengthen real-world relationships",
+      "Develop healthy coping strategies",
+      "Break the cycle of shame and guilt",
+      "Rediscover joy in everyday activities",
+      "Build lasting self-respect and confidence"
+    ],
+    "contrastLists": {
+      "withoutHeadline": "How life might be without Compass",
+      "withoutItems": [
+        "Powerless over your habits and urges",
+        "Trapped in a cycle of escape and guilt",
+        "Neglecting responsibilities and goals",
+        "Losing interest in passions",
+        "Feeling mentally exhausted and numb",
+        "Hiding your struggles out of shame",
+        "Life on autopilot, driven by urges"
+      ],
+      "withHeadline": "How life might be with Compass",
+      "withItems": [
+        "Finally feel in control of your choices",
+        "Wake up with a clear, guilt-free mind",
+        "Rediscover joy in everyday life",
+        "Build unshakable self-respect",
+        "Regain energy for your passions",
+        "Develop healthy coping skills",
+        "Build a future you can be proud of"
+      ]
+    },
+    "legalDisclaimer": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is \u20ac19.99, then \u20ac49.99/month (prices incl. VAT). Cancel via the app or email: support@mind-compass.app. See our Subscription Policy for details."
+  }
+]

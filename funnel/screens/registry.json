@@ -1,0 +1,65 @@
+[
+  {
+    "id": "checkout",
+    "screenType": "checkout",
+    "headline": "Complete Your Order",
+    "nextScreenLogic": "thank_you"
+  },
+  {
+    "id": "thank_you",
+    "type": "confirmation",
+    "screenType": "confirmation",
+    "headline": "Thank You for Your Purchase!",
+    "subheadline": "Your personalized plan is being prepared",
+    "ctaButton": {
+      "text": "Create Your Account",
+      "style": "primary"
+    },
+    "nextScreenLogic": "create_account"
+  },
+  {
+    "id": "create_account",
+    "type": "account_creation",
+    "screenType": "account_creation",
+    "headline": "Create Your Account",
+    "subheadline": "Set a password to access your personalized plan anytime",
+    "fields": {
+      "email": {
+        "type": "email",
+        "label": "Email",
+        "prefilled": true,
+        "readonly": true,
+        "source": "email_capture"
+      },
+      "password": {
+        "type": "password",
+        "label": "Password",
+        "placeholder": "Enter your password",
+        "minLength": 8,
+        "requirements": [
+          "At least 8 characters",
+          "At least 1 number",
+          "At least 1 uppercase letter"
+        ]
+      },
+      "confirmPassword": {
+        "type": "password",
+        "label": "Confirm Password",
+        "placeholder": "Re-enter your password"
+      }
+    },
+    "ctaButton": {
+      "text": "Create Account",
+      "style": "primary"
+    },
+    "nextScreenLogic": "app_dashboard"
+  },
+  {
+    "id": "app_dashboard",
+    "type": "placeholder",
+    "screenType": "app_placeholder",
+    "headline": "Welcome to Mind Compass!",
+    "subheadline": "Your personalized well-being plan is ready",
+    "message": "This is where your main app experience will live. We're building something amazing for you."
+  }
+]
