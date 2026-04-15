@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/liven-funnel-1",
-      "destination": "/liven-funnel-1/index.html"
+      "source": "/funnel-v1",
+      "destination": "/funnel-v1/index.html"
     },
     {
-      "source": "/liven-funnel-2",
-      "destination": "/liven-funnel-2/index.html"
+      "source": "/funnel-v2",
+      "destination": "/funnel-v2/index.html"
     }
   ],
   "headers": [
