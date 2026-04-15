@@ -1180,7 +1180,7 @@ const Components = {
      * @returns {string} HTML string
      */
     testimonialCard(testimonial) {
-        // Generate star icons
+        // Orange stars matching the reference design
         const stars = Array.from({ length: Math.min(testimonial.rating || 5, 5) }, () =>
             `<span class="testimonial-card__star">★</span>`
         ).join('');
@@ -1189,11 +1189,10 @@ const Components = {
             <div class="testimonial-card">
                 <div class="testimonial-card__header">
                     <div class="testimonial-card__stars">${stars}</div>
-                    ${testimonial.source ? `<span class="testimonial-card__source">${Security.escapeHtml(testimonial.source)}</span>` : ''}
+                    ${testimonial.handle ? `<span class="testimonial-card__handle">${Security.escapeHtml(testimonial.handle)}</span>` : ''}
                 </div>
                 <h4 class="testimonial-card__title">${Security.escapeHtml(testimonial.title || '')}</h4>
                 <p class="testimonial-card__content">${Security.escapeHtml(testimonial.content || '')}</p>
-                <span class="testimonial-card__author">— ${Security.escapeHtml(testimonial.author || '')}</span>
             </div>
         `;
     },
@@ -1292,25 +1291,26 @@ const Components = {
 
     /**
      * Generate personalized promo code
-     * Format: {NAME}_{MONTH}_{DISCOUNT}
-     * Example: "JOHN_FEB_50"
+     * Format: {Name}_{Mon}{Year}
+     * Example: "John_Apr2026"
      * @param {string} name - User's name (from state)
-     * @param {number} discount - Discount percentage
      * @returns {string} Promo code string
      */
-    generatePromoCode(name, discount) {
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-        const currentMonth = months[new Date().getMonth()];
-        
-        // Sanitize name: uppercase, remove non-letters, use fallback if empty
-        let userName = (name || '').toUpperCase().replace(/[^A-Z]/g, '');
-        if (!userName) {
-            // Fallback: try email username
-            const email = State.getAnswer('email_capture');
-            userName = email ? email.split('@')[0].toUpperCase().replace(/[^A-Z]/g, '') : 'USER';
-        }
+    generatePromoCode(name) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const now = new Date();
+        const currentMonth = months[now.getMonth()];
+        const currentYear  = now.getFullYear();
 
-        return `${userName}_${currentMonth}_${discount}`;
+        // Title-case first name (letters only); fallback to email username or 'User'
+        let raw = (name || '').replace(/[^a-zA-Z]/g, '');
+        if (!raw) {
+            const email = State.getAnswer('email_capture');
+            raw = email ? email.split('@')[0].replace(/[^a-zA-Z]/g, '') : 'User';
+        }
+        const userName = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+
+        return `${userName}_${currentMonth}${currentYear}`;
     },
 
     /**
@@ -1351,39 +1351,47 @@ const Components = {
      * @returns {string} HTML string
      */
     pricingCard(tier, isSelected) {
-        const safeName = Security.escapeHtml(tier.name);
-        const safeId = Security.escapeHtml(tier.id);
-        const selectedClass = isSelected ? 'pricing-card--selected' : '';
-        const recommendedClass = tier.recommended ? 'pricing-card--recommended' : '';
-        const hasBadge = tier.badge;
+        const safeName            = Security.escapeHtml(tier.name);
+        const safeOriginalPrice   = Security.escapeHtml(tier.originalPrice);
+        const safeDiscountedPrice = Security.escapeHtml(tier.discountedPrice);
+        const safeId              = Security.escapeHtml(tier.id);
+        const selectedClass       = isSelected ? 'pricing-card--selected' : '';
 
-        // Support both old (originalPrice/discountedPrice) and new (price/pricePerDay) format
-        const price = tier.price || tier.originalPrice || '';
-        const perDay = tier.pricePerDay || '';
-        const safePrice = Security.escapeHtml(price);
-
-        // Parse perDay for split display (e.g. "$5.71" → "$5" + "71")
-        const perDayMatch = perDay.match(/^\$(\d+)\.(\d+)$/);
-        const perDayHtml = perDayMatch
-            ? `<div class="pricing-card__per-day-split"><span class="pricing-card__dollar">$</span><span class="pricing-card__dollars">${perDayMatch[1]}</span><span class="pricing-card__cents">${perDayMatch[2]}</span><span class="pricing-card__period">per day</span></div>`
-            : `<p class="pricing-card__per-day">${Security.escapeHtml(perDay)}</p>`;
+        // Per-day price badge: parse "$5.71/day" → currency symbol + integer + decimal
+        const currencyMatch = (tier.pricePerDay || '').match(/[€$£¥]/);
+        const currency = currencyMatch ? currencyMatch[0] : '$';
+        const perDayRaw = (tier.pricePerDay || '').replace(/[€$£¥]/g, '').replace('/day', '').trim();
+        const [perDayInt, perDayDec] = perDayRaw.split('.');
 
         return `
-            <div class="pricing-card ${selectedClass} ${recommendedClass}"
-                 data-tier-id="${safeId}"
-                 role="button"
-                 tabindex="0"
-                 aria-label="Select ${safeName}">
-                ${hasBadge ? `<div class="most-popular-badge"><span>&#9733;</span> MOST POPULAR</div>` : ''}
-                <div class="pricing-card__content">
-                    <div class="pricing-card__left">
-                        <div class="pricing-card__radio ${isSelected ? 'pricing-card__radio--selected' : ''}"></div>
-                        <div>
-                            <h3 class="pricing-card__name">${safeName}</h3>
-                            <p class="pricing-card__price">${safePrice}</p>
-                        </div>
+            <div class="pricing-card-group">
+                ${tier.badge ? `<div class="pricing-card__popular-bar">★ ${Security.escapeHtml(tier.badge)}</div>` : ''}
+                <div class="pricing-card ${selectedClass}${tier.badge ? ' pricing-card--has-bar' : ''}"
+                     data-tier-id="${safeId}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="Select ${safeName}">
+                    <!-- Radio indicator -->
+                    <div class="pricing-card__radio ${isSelected ? 'pricing-card__radio--selected' : ''}"></div>
+
+                    <!-- Plan name + prices -->
+                    <div class="pricing-card__info">
+                        <p class="pricing-card__name">${safeName}</p>
+                        <p class="pricing-card__prices">
+                            <del class="pricing-card__original">${safeOriginalPrice}</del>
+                            <span class="pricing-card__discounted">${safeDiscountedPrice}</span>
+                        </p>
                     </div>
-                    ${perDayHtml}
+
+                    <!-- Per-day price badge (grey pill right side) -->
+                    <div class="pricing-card__per-day-badge">
+                        <div class="per-day__top">
+                            <span class="per-day__currency">${Security.escapeHtml(currency)}</span>
+                            <span class="per-day__integer">${Security.escapeHtml(perDayInt || '0')}</span>
+                            <span class="per-day__decimal">${Security.escapeHtml(perDayDec || '00')}</span>
+                        </div>
+                        <span class="per-day__label">per day</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -1415,14 +1423,22 @@ const Components = {
      */
     paymentIcons(headline, icons) {
         const safeHeadline = Security.escapeHtml(headline || 'Pay Safe & Secure');
+        const iconKeyMap = { 'americanexpress': 'amex', 'applepay': 'applepay', 'maestro': 'maestro', 'discover': 'discover' };
         const iconsHtml = icons.map(iconName => {
-            const iconKey = iconName.toLowerCase().replace(/\s+/g, '');
+            const raw = iconName.toLowerCase().replace(/\s+/g, '');
+            const iconKey = iconKeyMap[raw] || raw;
             return `<div class="payment-icon">${Icons.get(iconKey)}</div>`;
         }).join('');
 
         return `
             <div class="payment-icons-section">
-                <h3 class="payment-icons__headline">${safeHeadline}</h3>
+                <div class="payment-icons__secure-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <polyline points="9 12 11 14 15 10"/>
+                    </svg>
+                    ${safeHeadline}
+                </div>
                 <div class="payment-icons">
                     ${iconsHtml}
                 </div>
@@ -1499,16 +1515,16 @@ const Components = {
      * @returns {string} HTML string
      */
     moneyBackGuarantee(guarantee) {
-        const safeHeadline = Security.escapeHtml(guarantee.headline || '30-Day Money-Back Guarantee');
+        const safeHeadline    = Security.escapeHtml(guarantee.headline || '30-Day Money-Back Guarantee');
         const safeDescription = Security.escapeHtml(guarantee.description || '');
-        
+        const safeLinkText    = Security.escapeHtml(guarantee.linkText || 'Learn more');
+
         return `
-            <div class="money-back-guarantee">
-                <div class="guarantee-icon">✓</div>
-                <div class="guarantee-content">
-                    <h3 class="guarantee-headline">${safeHeadline}</h3>
-                    <p class="guarantee-description">${safeDescription}</p>
-                </div>
+            <div class="money-back-card">
+                <img src="../assets/guarantee_badge.png" alt="30-day money-back guarantee" class="guarantee-medal">
+                <h3 class="money-back-card__headline">${safeHeadline}</h3>
+                <p class="money-back-card__description">${safeDescription}</p>
+                <a href="#money-back-policy" class="money-back-card__link">${safeLinkText}</a>
             </div>
         `;
     },
@@ -1522,17 +1538,21 @@ const Components = {
      * @returns {string} HTML string
      */
     faqAccordion(headline, questions, openIndex) {
-        const safeHeadline = Security.escapeHtml(headline || 'Frequently Asked Questions');
-        
+        const safeHeadline = Security.escapeHtml(headline || 'People often ask');
+
+        // Question-mark circle icon badge used by the reference design
+        const qIcon = `<span class="faq-q-icon">?</span>`;
+
         const questionsHtml = questions.map((item, index) => {
             const isOpen = index === openIndex;
             const safeQuestion = Security.escapeHtml(item.question);
-            const safeAnswer = Security.escapeHtml(item.answer);
+            const safeAnswer   = Security.escapeHtml(item.answer);
 
             return `
                 <div class="faq-item ${isOpen ? 'faq-item--open' : ''}" data-faq-index="${index}">
                     <button class="faq-question" aria-expanded="${isOpen}">
-                        <span>${safeQuestion}</span>
+                        ${qIcon}
+                        <span class="faq-question__text">${safeQuestion}</span>
                         <span class="faq-chevron">${Icons.get('chevron_down')}</span>
                     </button>
                     <div class="faq-answer">
@@ -1548,6 +1568,320 @@ const Components = {
                 <div class="faq-accordion">
                     ${questionsHtml}
                 </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render before/after comparison section.
+     * @param {Object} data - beforeAfter object from JSON
+     * @returns {string} HTML string
+     */
+    beforeAfter(data) {
+        const makeSegments = (fill, variant) => {
+            const total = 5;
+            const filled = Math.max(1, Math.round(fill * total));
+            return Array.from({ length: total }, (_, i) =>
+                `<span class="ba-seg ba-seg--${variant}${i < filled ? ' ba-seg--on' : ''}"></span>`
+            ).join('');
+        };
+
+        const metricsHtml = data.metrics.map(m => `
+            <div class="ba-metric">
+                <div class="ba-metric__row">
+                    <div class="ba-metric__col">
+                        <p class="ba-metric__label">${Security.escapeHtml(m.label)}</p>
+                        <p class="ba-metric__state ba-metric__state--now">${Security.escapeHtml(m.nowState)}</p>
+                        <div class="ba-segs">${makeSegments(m.nowFill, 'now')}</div>
+                    </div>
+                    <div class="ba-metric__col">
+                        <p class="ba-metric__label">${Security.escapeHtml(m.label)}</p>
+                        <p class="ba-metric__state ba-metric__state--goal">${Security.escapeHtml(m.goalState)}</p>
+                        <div class="ba-segs">${makeSegments(m.goalFill, 'goal')}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="before-after">
+                <div class="ba-images">
+                    <div class="ba-image-col">
+                        <img src="${Security.escapeHtml(data.nowImage)}" alt="Current state" class="ba-image">
+                        <span class="ba-label">${Security.escapeHtml(data.nowLabel || 'Now')}</span>
+                    </div>
+                    <div class="ba-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 40 100" xmlns="http://www.w3.org/2000/svg" fill="none">
+                            <polyline points="8,20 28,50 8,80" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="20,20 40,50 20,80" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="ba-image-col">
+                        <div class="ba-image ba-image--after"
+                             style="background-image: url('${Security.escapeHtml(data.goalImage)}');"
+                             role="img" aria-label="Goal state"></div>
+                        <span class="ba-label ba-label--goal">${Security.escapeHtml(data.goalLabel || 'Your Goal')}</span>
+                    </div>
+                </div>
+                <div class="ba-metrics">
+                    ${metricsHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render minimal sticky header for the paywall screen.
+     * @param {string} ctaText   - CTA button label
+     * @param {string} screenId  - data-screen attribute for CTA delegation
+     * @param {number} initialMinutes - Starting MM:SS value to display
+     * @returns {string} HTML string
+     */
+    paywallHeader(ctaText, screenId, initialMinutes = 10) {
+        const mins = String(Math.floor(initialMinutes)).padStart(2, '0');
+        const secs = '00';
+        const safeCta = Security.escapeHtml(ctaText || 'GET MY PLAN');
+        const safeId  = Security.escapeHtml(screenId);
+
+        return `
+            <header class="paywall-header">
+                <span class="countdown-timer__digits paywall-header__timer">${mins}:${secs}</span>
+                <button class="cta-button paywall-header__cta" data-screen="${safeId}">${safeCta}</button>
+            </header>
+        `;
+    },
+
+    /**
+     * Render ticket-style promo code card with embedded live timer.
+     * @param {string} promoCode - Generated promo code (e.g. "John_Apr2026")
+     * @param {number} initialMinutes - Countdown start value for initial render
+     * @returns {string} HTML string
+     */
+    promoTicket(promoCode, initialMinutes = 10) {
+        const safeCode = Security.escapeHtml(promoCode);
+        const mins = String(Math.floor(initialMinutes)).padStart(2, '0');
+
+        return `
+            <div class="promo-ticket">
+                <div class="promo-ticket__top">
+                    <svg class="promo-ticket__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                        <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    <span class="promo-ticket__applied">Your promo code applied!</span>
+                </div>
+                <div class="promo-ticket__bottom">
+                    <div class="promo-ticket__code-pill">
+                        <svg class="promo-ticket__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        <span class="promo-ticket__code">${safeCode}</span>
+                    </div>
+                    <div class="promo-ticket__timer-col">
+                        <div class="promo-ticket__timer-display">
+                            <div class="promo-ticket__digit-col">
+                                <span class="countdown-mins">${mins}</span>
+                                <span class="promo-ticket__digit-label">min</span>
+                            </div>
+                            <span class="pt-sep"> : </span>
+                            <div class="promo-ticket__digit-col">
+                                <span class="countdown-secs">00</span>
+                                <span class="promo-ticket__digit-label">sec</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render context tags row: Main challenge + Goal chips.
+     * @param {string} mainChallenge - e.g. "Stress & anxiety"
+     * @param {string} goal         - e.g. "Healthy intimacy"
+     * @returns {string} HTML string
+     */
+    contextTags(mainChallenge, goal) {
+        const safeChallenge = Security.escapeHtml(mainChallenge || 'Dopamine depletion');
+        const safeGoal      = Security.escapeHtml(goal || 'Healthy habits');
+
+        return `
+            <div class="context-tags">
+                <div class="context-tag">
+                    <span class="context-tag__emoji" style="font-size: 20px; flex-shrink: 0;">🧠</span>
+                    <div>
+                        <p class="context-tag__label">Main challenge</p>
+                        <p class="context-tag__value">${safeChallenge}</p>
+                    </div>
+                </div>
+                <div class="context-tag">
+                    <span class="context-tag__emoji" style="font-size: 20px; flex-shrink: 0;">🎯</span>
+                    <div>
+                        <p class="context-tag__label">Goal</p>
+                        <p class="context-tag__value">${safeGoal}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render personalized headline for paywall.
+     * @returns {string} HTML string
+     */
+    personalizedHeadline() {
+        const genderRaw = State.getAnswer('landing') || 'male';
+        const gender = genderRaw.toLowerCase() === 'male' ? 'men' : 'women';
+        const ageGroup = State.getAnswer('age_selection') || '25-34';
+        return `
+            <h2 class="paywall-headline">
+                Your <span class="paywall-headline__highlight">Porn Addiction Recovery Plan</span> for ${Security.escapeHtml(gender)} ${Security.escapeHtml(ageGroup)} is ready!
+            </h2>
+        `;
+    },
+
+    /**
+     * Render "Our goals" checklist section.
+     * @param {Array<string>} items - List of goal strings from JSON
+     * @returns {string} HTML string
+     */
+    goalsList(items) {
+        const itemsHtml = items.map(item => `
+            <li class="goals-list__item">
+                <span class="goals-list__check">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span>${Security.escapeHtml(item)}</span>
+            </li>
+        `).join('');
+
+        return `
+            <div class="goals-list-section">
+                <h3 class="goals-list__headline">Our goals</h3>
+                <ul class="goals-list">
+                    ${itemsHtml}
+                </ul>
+            </div>
+        `;
+    },
+
+    /**
+     * Render stats section with SVG semicircle arc chart + 3 stat callouts.
+     * @param {Array<Object>} stats - [{percentage, description}, ...]
+     * @returns {string} HTML string
+     */
+    statsWithChart(stats) {
+        const statsHtml = stats.map(stat => `
+            <div class="stat-callout">
+                <span class="stat-callout__pct">${Security.escapeHtml(stat.percentage)}</span>
+                <p class="stat-callout__desc">${stat.description}</p>
+            </div>
+        `).join('');
+
+        const cx = 130, cy = 130, viewW = 260, viewH = 168;
+        const arcs = [
+            { r: 110, pct: 0.83, stroke: '#5B5BD6', label: '83%',
+              lx: 234, ly: 38, linex1: 218, liney1: 50, linex2: 231, liney2: 41 },
+            { r:  84, pct: 0.77, stroke: '#8B8BE8', label: '77%',
+              lx: 26,  ly: 56, linex1: 50,  liney1: 66, linex2: 36,  liney2: 59 },
+            { r:  58, pct: 0.45, stroke: '#A5B4FC', label: '45%',
+              lx: 72,  ly: 155, linex1: 72,  liney1: 149, linex2: 72,  liney2: 133 },
+        ];
+        const arcPaths = arcs.map(a => {
+            const halfCirc = Math.PI * a.r;
+            const filled = halfCirc * a.pct;
+            return `
+                <circle cx="${cx}" cy="${cy}" r="${a.r}"
+                    fill="none" stroke="#e5e7eb" stroke-width="13"
+                    stroke-dasharray="${halfCirc} ${halfCirc}"
+                    transform="rotate(180 ${cx} ${cy})"/>
+                <circle cx="${cx}" cy="${cy}" r="${a.r}"
+                    fill="none" stroke="${a.stroke}" stroke-width="13" stroke-linecap="round"
+                    stroke-dasharray="${filled} ${2 * Math.PI * a.r}"
+                    transform="rotate(180 ${cx} ${cy})"/>
+                <line x1="${a.linex1}" y1="${a.liney1}" x2="${a.linex2}" y2="${a.liney2}"
+                    stroke="#9ca3af" stroke-width="1" stroke-dasharray="2,2"/>
+                <text x="${a.lx}" y="${a.ly}" font-size="12" font-weight="800"
+                    fill="#1A1A2E" text-anchor="middle">${a.label}</text>
+            `;
+        }).join('');
+
+        return `
+            <div class="stats-section">
+                <h3 class="stats-section__headline">People just like you achieved great results using our <span class="stats-section__brand">Porn Addiction Recovery Plan!</span></h3>
+                <div class="stats-chart" aria-hidden="true">
+                    <svg viewBox="0 0 ${viewW} ${viewH}" xmlns="http://www.w3.org/2000/svg">
+                        ${arcPaths}
+                    </svg>
+                </div>
+                <div class="stat-callouts">
+                    ${statsHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render "without/with Compass" contrast lists.
+     * @param {Object} data - contrastLists from JSON
+     * @returns {string} HTML string
+     */
+    contrastLists(data) {
+        const xIcon = `<svg class="contrast-list__svg contrast-list__svg--x" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="9" stroke="#9ca3af" stroke-width="1.5"/>
+            <line x1="7" y1="7" x2="13" y2="13" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="13" y1="7" x2="7" y2="13" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>`;
+
+        const withoutItems = (data.withoutItems || []).map(item => `
+            <li class="contrast-list__item contrast-list__item--x">
+                <span class="contrast-list__icon contrast-list__icon--x">${xIcon}</span>
+                <span>${Security.escapeHtml(item)}</span>
+            </li>
+        `).join('');
+
+        const withItems = (data.withItems || []).map(item => `
+            <li class="contrast-list__item contrast-list__item--check">
+                <span class="contrast-list__icon contrast-list__icon--check">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span>${Security.escapeHtml(item)}</span>
+            </li>
+        `).join('');
+
+        return `
+            <div class="contrast-lists">
+                <div class="contrast-card contrast-card--without">
+                    <h4 class="contrast-card__title">${Security.escapeHtml(data.withoutHeadline || 'How life might be without Compass')}</h4>
+                    <ul class="contrast-list">${withoutItems}</ul>
+                </div>
+                <div class="contrast-card contrast-card--with">
+                    <h4 class="contrast-card__title">${Security.escapeHtml(data.withHeadline || 'How life might be with Compass')}</h4>
+                    <ul class="contrast-list">${withItems}</ul>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Second CTA block renders the full purchase flow again.
+     */
+    secondCtaBlock(tiers, selectedTierId, ctaText, screenId, headlineHtml, promoTicketHtml, contextTagsHtml, legalHtml, paymentHtml) {
+        return `
+            <div class="second-cta-block">
+                ${headlineHtml || ''}
+                ${promoTicketHtml || ''}
+                ${contextTagsHtml || ''}
+                ${this.pricingTiers(tiers, selectedTierId)}
+                <div class="paywall__cta">
+                    ${this.ctaButton(ctaText, screenId)}
+                </div>
+                ${legalHtml || ''}
+                ${paymentHtml || ''}
             </div>
         `;
     },
@@ -2707,190 +3041,113 @@ const Screens = {
      * Render paywall screen with before/after, pricing, goals, FAQ, testimonials
      */
     paywall(screenData) {
-        const safeId = Security.escapeHtml(screenData.id);
-        const headline = PersonalizedText.replace(screenData.headline || 'Choose Your Plan');
+        const safeId         = Security.escapeHtml(screenData.id);
         const selectedTierId = State.data.selectedTier || '1_month';
-        const openFaqIndex = State.data.openFaqIndex;
+        const openFaqIndex   = State.data.openFaqIndex;
+        const initialMins    = screenData.urgencyElements?.countdownTimer?.initialMinutes || 10;
+        const ctaText        = screenData.ctaButton?.text || 'GET MY PLAN';
+
+        // ── Promo code ─────────────────────────────────────────────────────────
+        const userName = State.getAnswer('name_capture');
+        const promoCode = Components.generatePromoCode(userName);
+
+        // ── Personalization: challenge + goal from v2 scoring engine ───────────
         const mainChallenge = Scoring.getMainChallenge();
         const goal = Scoring.getGoal();
 
-        // Before/After comparison section
-        const ba = screenData.beforeAfter || {};
-        const beforeAfterHtml = ba.now ? `
-            <div class="before-after">
-                <div class="before-after__side before-after__side--now">
-                    <span class="before-after__badge before-after__badge--now">${Security.escapeHtml(ba.now.label || 'Now')}</span>
-                    <div class="before-after__image before-after__image--worried"></div>
-                    ${(ba.now.metrics || []).map(m => `
-                        <div class="before-after__metric">
-                            <div class="before-after__metric-label">${Security.escapeHtml(m.label)}</div>
-                            <div class="before-after__metric-value before-after__metric-value--negative">${Security.escapeHtml(m.value)}</div>
-                            ${m.progressLevel != null ? `<div class="progress-bar-mini"><div class="progress-bar-mini__fill progress-bar-mini__fill--low" style="width: ${m.progressLevel * 25}%"></div></div>` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="before-after__side before-after__side--goal">
-                    <span class="before-after__badge before-after__badge--goal">${Security.escapeHtml(ba.goal?.label || 'Your Goal')}</span>
-                    <div class="before-after__image before-after__image--happy"></div>
-                    ${(ba.goal?.metrics || []).map(m => `
-                        <div class="before-after__metric">
-                            <div class="before-after__metric-label">${Security.escapeHtml(m.label)}</div>
-                            <div class="before-after__metric-value before-after__metric-value--positive">${Security.escapeHtml(m.value)}</div>
-                            ${m.progressLevel != null ? `<div class="progress-bar-mini"><div class="progress-bar-mini__fill progress-bar-mini__fill--high" style="width: ${m.progressLevel * 25}%"></div></div>` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        ` : '';
-
-        // Goals list
-        const goalsData = screenData.trustElements?.goals;
-        const goalsHtml = goalsData ? `
-            <div class="paywall-goals">
-                <h2 class="paywall-goals__title">${Security.escapeHtml(goalsData.headline)}</h2>
-                <ul class="paywall-goals__list">
-                    ${goalsData.items.map(item => `
-                        <li class="paywall-goals__item">
-                            <span class="paywall-goals__check">${Icons.get('checkmark')}</span>
-                            ${Security.escapeHtml(item)}
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>
-        ` : '';
-
-        // Statistics
-        const statsData = screenData.trustElements?.statistics;
-        const statsHtml = statsData ? `
-            <div class="paywall-stats">
-                <h2 class="paywall-stats__title">People just like you achieved great results using our<br/><span class="accent-text">Porn Addiction Recovery Plan!</span></h2>
-                <div class="paywall-stats__gauge"></div>
-                ${statsData.map(s => `
-                    <div class="paywall-stat">
-                        <div class="paywall-stat__pct accent-text">${Security.escapeHtml(s.percentage)}</div>
-                        <div class="paywall-stat__desc">${Security.escapeHtml(s.description)}</div>
-                    </div>
-                `).join('')}
-            </div>
-        ` : '';
-
-        // Life comparison
-        const lifeComp = screenData.trustElements?.lifeComparison;
-        const lifeCompHtml = lifeComp ? `
-            <div class="life-comparison">
-                <div class="life-comparison__card life-comparison__card--without">
-                    <h3>${Security.escapeHtml(lifeComp.without.headline)}</h3>
-                    <ul>${lifeComp.without.items.map(i => `<li><span class="life-x">&#10006;</span> ${Security.escapeHtml(i)}</li>`).join('')}</ul>
-                </div>
-                <div class="life-comparison__card life-comparison__card--with">
-                    <h3>${Security.escapeHtml(lifeComp.with.headline)}</h3>
-                    <ul>${lifeComp.with.items.map(i => `<li><span class="life-check">${Icons.get('checkmark')}</span> ${Security.escapeHtml(i)}</li>`).join('')}</ul>
-                </div>
-            </div>
-        ` : '';
-
         return `
             <div class="screen paywall-screen" data-screen="${safeId}">
-                ${Components.header('GET MY PLAN')}
+
+                <!-- 1. Sticky minimal header (timer + CTA) -->
+                ${Components.paywallHeader(ctaText, safeId, initialMins)}
 
                 <main class="content paywall">
-                    <!-- Before/After -->
-                    ${beforeAfterHtml}
 
-                    <!-- Countdown Timer -->
-                    ${Components.countdownTimer(screenData.urgencyElements?.countdownTimer?.headline)}
+                    <!-- 2. Before / After comparison -->
+                    ${screenData.beforeAfter ? Components.beforeAfter(screenData.beforeAfter) : ''}
 
-                    <!-- Plan headline -->
-                    <h1 class="headline paywall__headline">${headline}</h1>
+                    <!-- 3. Personalized headline -->
+                    ${Components.personalizedHeadline()}
 
-                    <!-- Personalized challenge/goal -->
-                    <div class="paywall__personalized">
-                        <div class="paywall__info-item">
-                            <span class="paywall__info-icon">${Icons.get('question')}</span>
-                            <div><small>Main challenge</small><strong>${Security.escapeHtml(mainChallenge)}</strong></div>
-                        </div>
-                        <div class="paywall__info-divider"></div>
-                        <div class="paywall__info-item">
-                            <span class="paywall__info-icon">${Icons.get('checkmark')}</span>
-                            <div><small>Goal</small><strong>${Security.escapeHtml(goal)}</strong></div>
-                        </div>
-                    </div>
+                    <!-- 4. Promo ticket (with embedded live timer) -->
+                    ${Components.promoTicket(promoCode, initialMins)}
 
-                    <!-- Pricing Tiers -->
-                    ${screenData.pricingTiers ? Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
+                    <!-- 5. Context tags: main challenge + goal -->
+                    ${Components.contextTags(mainChallenge, goal)}
 
-                    <!-- CTA Button -->
+                    <!-- 6. Pricing tiers -->
+                    ${screenData.pricingTiers ?
+                        Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
+
+                    <!-- 7. Primary CTA -->
                     <div class="paywall__cta">
-                        ${Components.ctaButton(screenData.ctaButton?.text || 'GET MY PLAN', safeId)}
+                        ${Components.ctaButton(ctaText, safeId)}
                     </div>
 
-                    <!-- Subscription note -->
-                    ${screenData.subscriptionNote ? `<p class="paywall__sub-note">${Security.escapeHtml(screenData.subscriptionNote)}</p>` : ''}
+                    <!-- 8. Legal disclaimer -->
+                    ${screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : ''}
 
-                    <!-- Payment Security -->
+                    <!-- 9. Payment security + icons -->
                     ${screenData.trustElements?.paymentSecurity ?
                         Components.paymentIcons(
                             screenData.trustElements.paymentSecurity.headline,
                             screenData.trustElements.paymentSecurity.icons
                         ) : ''}
 
-                    <!-- Goals -->
-                    ${goalsHtml}
+                    <!-- 10. Our goals checklist -->
+                    ${screenData.goalsList ? Components.goalsList(screenData.goalsList) : ''}
 
-                    <!-- Statistics -->
-                    ${statsHtml}
+                    <!-- 11. Stats section with arc chart -->
+                    ${screenData.trustElements?.statistics ?
+                        Components.statsWithChart(screenData.trustElements.statistics) : ''}
 
-                    <!-- Life comparison -->
-                    ${lifeCompHtml}
+                    <!-- 12. Without / With contrast lists -->
+                    ${screenData.contrastLists ? Components.contrastLists(screenData.contrastLists) : ''}
 
-                    <!-- FAQ -->
-                    ${screenData.faq ? Components.faqAccordion(
-                        screenData.faq.headline,
-                        screenData.faq.questions || [],
-                        openFaqIndex
-                    ) : ''}
+                    <!-- 13. FAQ accordion -->
+                    ${screenData.faq ?
+                        Components.faqAccordion(
+                            screenData.faq.headline,
+                            screenData.faq.questions || [],
+                            openFaqIndex
+                        ) : ''}
 
-                    <!-- Testimonials -->
+                    <!-- 14. Testimonials -->
                     ${screenData.testimonials ? `
-                        <div class="paywall-testimonials">
-                            <h2 class="paywall-testimonials__title">Users love our plans</h2>
-                            <p class="paywall-testimonials__sub">Here's what people are saying about ${CONFIG.brandName}</p>
+                        <div class="testimonials-section">
+                            <h3 class="testimonials-section__headline">Users love our plans</h3>
+                            <p class="testimonials-section__sub">Here's what people are saying about ${CONFIG.brandName}</p>
                             <div class="testimonial-cards">
                                 ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
                             </div>
                         </div>
                     ` : ''}
 
-                    <!-- Repeated pricing + CTA -->
-                    <h2 class="headline paywall__headline">${headline}</h2>
-                    <div class="paywall__personalized">
-                        <div class="paywall__info-item">
-                            <span class="paywall__info-icon">${Icons.get('question')}</span>
-                            <div><small>Main challenge</small><strong>${Security.escapeHtml(mainChallenge)}</strong></div>
-                        </div>
-                        <div class="paywall__info-divider"></div>
-                        <div class="paywall__info-item">
-                            <span class="paywall__info-icon">${Icons.get('checkmark')}</span>
-                            <div><small>Goal</small><strong>${Security.escapeHtml(goal)}</strong></div>
-                        </div>
-                    </div>
-                    ${screenData.pricingTiers ? Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
-                    <div class="paywall__cta">
-                        ${Components.ctaButton(screenData.ctaButton?.text || 'GET MY PLAN', safeId)}
-                    </div>
-                    ${screenData.subscriptionNote ? `<p class="paywall__sub-note">${Security.escapeHtml(screenData.subscriptionNote)}</p>` : ''}
-                    ${screenData.trustElements?.paymentSecurity ?
-                        Components.paymentIcons(
-                            screenData.trustElements.paymentSecurity.headline,
-                            screenData.trustElements.paymentSecurity.icons
+                    <!-- 15. Second CTA block: full repeat -->
+                    ${screenData.pricingTiers ?
+                        Components.secondCtaBlock(
+                            screenData.pricingTiers,
+                            selectedTierId,
+                            ctaText,
+                            safeId,
+                            Components.personalizedHeadline(),
+                            Components.promoTicket(promoCode, initialMins),
+                            Components.contextTags(mainChallenge, goal),
+                            screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : '',
+                            screenData.trustElements?.paymentSecurity ?
+                                Components.paymentIcons(
+                                    screenData.trustElements.paymentSecurity.headline,
+                                    screenData.trustElements.paymentSecurity.icons
+                                ) : ''
                         ) : ''}
 
-                    <!-- Money-Back Guarantee -->
+                    <!-- 16. Money-back guarantee card -->
                     ${screenData.trustElements?.moneyBackGuarantee ?
                         Components.moneyBackGuarantee(screenData.trustElements.moneyBackGuarantee) : ''}
 
-                    <!-- Company Footer -->
+                    <!-- 17. Company footer -->
                     ${screenData.companyInfo ? Components.companyFooter(screenData.companyInfo) : ''}
+
                 </main>
             </div>
         `;
@@ -2960,17 +3217,21 @@ const CountdownTimer = {
 
     /**
      * Update timer display in DOM
+     * Updates .countdown-timer__digits (header), .countdown-mins and .countdown-secs (promo ticket)
      */
     updateDisplay() {
-        const timerEl = document.querySelector('.countdown-timer__digits');
-        if (!timerEl) return;
-
         const minutes = Math.floor(this.remainingSeconds / 60);
         const seconds = this.remainingSeconds % 60;
-        
-        // Format as MM:SS with leading zeros
-        const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        timerEl.textContent = display;
+
+        const mm = String(minutes).padStart(2, '0');
+        const ss = String(seconds).padStart(2, '0');
+        const display = `${mm}:${ss}`;
+
+        // Update header timer digits
+        document.querySelectorAll('.countdown-timer__digits').forEach(el => { el.textContent = display; });
+        // Update promo ticket split display
+        document.querySelectorAll('.countdown-mins').forEach(el => { el.textContent = mm; });
+        document.querySelectorAll('.countdown-secs').forEach(el => { el.textContent = ss; });
     },
 
     /**

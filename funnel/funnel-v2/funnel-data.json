@@ -932,24 +932,15 @@
       "screenType": "payment",
       "headline": "Your Porn Addiction Recovery Plan for {gender} {ageGroup} is ready!",
       "beforeAfter": {
-        "now": {
-          "label": "Now",
-          "image": "man_worried",
-          "metrics": [
-            {"label": "Dopamine system", "value": "Dysregulated"},
-            {"label": "Self-control", "value": "Hijacked", "progressLevel": 1},
-            {"label": "Mental clarity", "value": "Suppressed", "progressLevel": 1}
-          ]
-        },
-        "goal": {
-          "label": "Your Goal",
-          "image": "man_happy",
-          "metrics": [
-            {"label": "Dopamine system", "value": "Balanced"},
-            {"label": "Self-control", "value": "Restored", "progressLevel": 4},
-            {"label": "Mental clarity", "value": "Sharp", "progressLevel": 4}
-          ]
-        }
+        "nowLabel": "Now",
+        "goalLabel": "Your Goal",
+        "nowImage": "../assets/before_state.png",
+        "goalImage": "../assets/after_state.png",
+        "metrics": [
+          {"label": "Dopamine system", "nowState": "Dysregulated", "goalState": "Balanced", "nowFill": 0.2, "goalFill": 0.9},
+          {"label": "Self-control", "nowState": "Hijacked", "goalState": "Restored", "nowFill": 0.2, "goalFill": 0.9},
+          {"label": "Mental clarity", "nowState": "Suppressed", "goalState": "Sharp", "nowFill": 0.2, "goalFill": 0.9}
+        ]
       },
       "personalizedInfo": {
         "mainChallenge": {
@@ -964,34 +955,50 @@
         }
       },
       "pricingTiers": [
-        {
-          "id": "7_day",
-          "name": "7-DAY PLAN",
-          "price": "$39.99",
-          "pricePerDay": "$5.71",
-          "recommended": false
-        },
-        {
-          "id": "1_month",
-          "name": "1-MONTH PLAN",
-          "badge": "MOST POPULAR",
-          "price": "$39.99",
-          "pricePerDay": "$1.33",
-          "recommended": true
-        },
-        {
-          "id": "3_month",
-          "name": "3-MONTH PLAN",
-          "price": "$79.99",
-          "pricePerDay": "$0.89",
-          "recommended": false
-        }
+        {"id": "7_day", "name": "7-DAY PLAN", "originalPrice": "$79.99", "discountedPrice": "$39.99", "price": "$39.99", "pricePerDay": "$5.71/day", "recommended": false},
+        {"id": "1_month", "name": "1-MONTH PLAN", "badge": "MOST POPULAR", "originalPrice": "$59.99", "discountedPrice": "$39.99", "price": "$39.99", "pricePerDay": "$1.33/day", "recommended": true},
+        {"id": "3_month", "name": "3-MONTH PLAN", "originalPrice": "$119.99", "discountedPrice": "$79.99", "price": "$79.99", "pricePerDay": "$0.89/day", "recommended": false}
       ],
       "ctaButton": {
         "text": "GET MY PLAN",
         "style": "primary_green"
       },
       "subscriptionNote": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is $39.99, then $39.99/month. Cancel via the app or email: support@mindcompass.com. See Subscription Policy for details.",
+      "legalDisclaimer": "By clicking 'GET MY PLAN', you agree to automatic subscription renewal. First month is $39.99, then $39.99/month. Cancel via the app or email: support@mindcompass.com. See Subscription Policy for details.",
+      "goalsList": [
+        "Build a healthier relationship with sexual desire",
+        "Reduce reliance on porn and strengthen real-world intimacy",
+        "Learn to understand and resist your urges",
+        "Reclaim your focus and energy",
+        "Take back control from your habits",
+        "Find healthy ways to cope with stress",
+        "Restore your natural motivation",
+        "Grow personal confidence"
+      ],
+      "contrastLists": {
+        "withoutHeadline": "How life might be without Mind Compass",
+        "withoutItems": [
+          "Powerless over your habits and urges",
+          "Trapped in a cycle of escape and guilt",
+          "Neglecting responsibilities and goals",
+          "Losing interest in passions",
+          "Feeling mentally exhausted and numb",
+          "Stuck in routines with no real payoff",
+          "Hiding your struggles out of shame",
+          "Life on autopilot, driven by urges"
+        ],
+        "withHeadline": "How life might be with Mind Compass",
+        "withItems": [
+          "Finally feel in control of your choices",
+          "Wake up with a clear, guilt-free mind",
+          "Rediscover joy in everyday life",
+          "Build unshakable self-respect",
+          "Regain energy for your passions",
+          "Develop healthy coping skills",
+          "Be present with the people you love",
+          "Build a future you can be proud of"
+        ]
+      },
       "trustElements": {
         "paymentSecurity": {
           "headline": "Pay Safe & Secure",
@@ -1071,19 +1078,22 @@
           "rating": 5,
           "title": "Concise and easy",
           "content": "Concise and easy. Those are the action words that are needed when you're trying to detox your dopamine dependence. Really glad to try this.",
-          "author": "skrupert"
+          "author": "skrupert",
+          "handle": "@skrupert"
         },
         {
           "rating": 5,
           "title": "Finally taking control of my screen time",
           "content": "Before I started using this app, I used to procrastinate a lot by watching stuff like YouTube and Facebook. Now, with this app, I feel like I can finally start breaking away from media addiction.",
-          "author": "qzi"
+          "author": "qzi",
+          "handle": "@qzi"
         },
         {
           "rating": 5,
           "title": "The Mind Compass app is like ...",
           "content": "The Mind Compass app is like a personal wellbeing coach. It's convenient to have everything in one place and I don't have to look for other resources. Definitely worth using it.",
-          "author": "Paul Vizer"
+          "author": "Paul Vizer",
+          "handle": "@Paul Vizer"
         }
       ],
       "companyInfo": {
