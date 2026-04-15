@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Mind Compass funnel v2** (Issue #16, `funnel/liven-funnel-2/`)
+  - Complete quiz-to-paywall funnel: 54 screens, 36 questions (27 likert + 9 mixed type)
+  - Real scoring engine: 4 sub-metrics (dopamine_sensitivity, emotional_regulation, pattern_stage, physical_impact) calculated from user answers Q1-Q14, overall score from Q1-Q27
+  - Personalized text system: `{name}`, `{gender}`, `{ageGroup}` placeholders dynamically replaced throughout the funnel
+  - New screen types: `age_selection`, `timeline_chart` (bar chart with dynamic months), `recovery_curve` (SVG bezier chart with gradient), `scratch_card` (HTML5 Canvas scratch-to-reveal + discount modal)
+  - Paywall with before/after comparison, personalized challenge/goal from quiz answers, countdown timer, life comparison cards, FAQ accordion, testimonials, 3 pricing tiers
+  - Data-driven architecture: all content in `funnel-data.json`, single `app.js` renders dynamically
 - **Paywall UI redesign** (Issue #17)
   - New sticky minimal paywall header (timer + CTA only) — replaces generic header; `Components.paywallHeader()` renders `.paywall-header` fixed bar; `CountdownTimer.updateDisplay()` now uses `querySelectorAll` to sync both header timer and promo ticket timer simultaneously
   - New `question_age` screen (single-choice: 18–24, 25–34, 35–44, 45–54, 55+) inserted as second screen after landing
@@ -26,7 +33,23 @@ All notable changes to this project will be documented in this file.
   - New CSS sections: `.paywall-header`, `.before-after`/`.ba-*`, `.paywall-headline`, `.promo-ticket`, `.context-tags`, `.pricing-card` (radio redesign), `.goals-list-section`, `.stats-section`/`.stats-chart`, `.contrast-lists`, `.money-back-card`, `.ba-image--after` (background-image zoom variant), updated FAQ/testimonial styles
   - `paywall-audit.md` — mobile layout audit documenting per-section issues and recommended fixes for 375–429px and sub-375px breakpoints
 
+### Changed
+- **Funnel directory restructure** (Issue #16) — moved original funnel to `funnel/liven-funnel-1/`, new funnel in `funnel/liven-funnel-2/`
+- **Vercel routing** (Issue #16) — `funnel/vercel.json` updated with rewrites for `/liven-funnel-1` and `/liven-funnel-2`
+- `webapp/App.tsx` — reverted dev shortcut; login required again
+
 ### Fixed
+- **Gender personalization bug** (Issue #16) — gender comparison was case-sensitive (`'male' === 'Male'` → always "women"); fixed with `.toLowerCase()`
+- **Pay button retry** (Issue #16) — removed `{ once: true }` from Stripe pay button listener; failed payments can now retry without page refresh
+- **Thank-you screen price** (Issue #16) — `selectedTier.discountedPrice` didn't exist in JSON; added `|| price` fallback
+- **Pricing card radio** (Issue #16) — `handlePricingCardClick` now toggles `pricing-card__radio--selected` on inner radio element
+- **Stripe double-init** (Issue #16) — added `_stripeInitializing` guard with reset on error and navigation
+- **Countdown timer** (Issue #16) — `Components.countdownTimer()` was never called in paywall renderer; now renders before pricing
+- **Goal timeline / recovery curve navigation** (Issue #16) — added `timeline_chart` and `recovery_curve` to `isNonQuestion` list in `handleContinueClick`
+- **CBT interstitial crash** (Issue #16) — guarded `screenData.content.expertReview` access with null check
+- **`getAnswer()` falsy values** (Issue #16) — changed `|| null` to `?? null` to preserve valid falsy answers
+- **CSS variables** (Issue #16) — defined 7 missing aliases (`--color-text`, `--color-card-bg`, `--color-bg`, `--color-primary-dark`, `--shadow-md`, `--radius-full`, `--font-size-base`); removed duplicate `--color-success`
+- **Typos** (Issue #16) — "by practicing therapist" → "by a practicing therapist"; pricePerDay `$0.88` → `$0.89`
 - **Paywall header timer color** (Issue #17) — timer digits appeared grey because `.paywall-header__timer .countdown-timer__digits` descendant selector never matched (both classes on same element); fixed by applying `color: var(--color-primary); font-size: 28px` directly to `.paywall-header__timer`
 - **Legal disclaimer raw HTML** (Issue #17) — `legalDisclaimer` JSON field contained raw `<a>` HTML that was escaped by `Security.escapeHtml()` and rendered as visible text; fixed by storing plain text in JSON and generating links in `Components.legalDisclaimer()`
 - **XSS in legal disclaimer** (Issue #17) — `${screenData.legalDisclaimer}` was interpolated raw into DOM; routed through `Components.legalDisclaimer()` which escapes input before link injection
