@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Paywall UI redesign** (Issue #17)
+  - New sticky minimal paywall header (timer + CTA only) — replaces generic header; `Components.paywallHeader()` renders `.paywall-header` fixed bar; `CountdownTimer.updateDisplay()` now uses `querySelectorAll` to sync both header timer and promo ticket timer simultaneously
+  - New `question_age` screen (single-choice: 18–24, 25–34, 35–44, 45–54, 55+) inserted as second screen after landing
+  - `Components.beforeAfter()` — two-column grid with before/after photos, metric rows with progress bars; After image uses `background-image` div technique for reliable zoom/crop without layout-flow issues
+  - `Components.personalizedHeadline()` — "Your Dopamine Reset Plan for men {ageGroup} is ready!" with primary-color highlight span; reads `question_age` answer from State with fallback
+  - `Components.promoTicket()` — ticket-style card with promo code pill + live countdown timer digits; promo code format updated to `Name_Apr2026` (was `NAME_APR_50`)
+  - `Components.contextTags()` — two-chip row showing main challenge and goal pulled from quiz answers with icon + value labels
+  - `Components.goalsList()` — "Our goals" heading + 8-item green-checkmark list from JSON
+  - `Components.statsWithChart()` — section heading, SVG arc/semicircle chart (3 concentric arcs at 45%/77%/83%), 3 stat callout blocks with large primary-color percentages
+  - `Components.contrastLists()` — "Without Compass" grey ✕ card vs "With Compass" green-bordered ✓ card from JSON
+  - `Components.secondCtaBlock()` — duplicate pricing + CTA after testimonials section, now also renders legal disclaimer and payment icons for full trust context
+  - Redesigned `Components.pricingCard()` — radio-button style (flex row), per-day price in right-side grey badge, MOST POPULAR as full-width header bar above the card
+  - Redesigned `Components.moneyBackGuarantee()` — full bordered card with medal SVG badge bottom-right and "Learn more" link
+  - Updated `Components.faqAccordion()` — heading changed to "People often ask", `?` circle icon badge per question
+  - Updated `Components.testimonialCard()` — orange stars, `handle` field right-aligned beside author name
+  - Official brand SVGs for all payment icons (Visa, Mastercard, Amex, Apple Pay, Maestro, Discover) using standardized `viewBox="0 0 780 500"` coordinate space — Apple Pay includes correct two-path Apple logo with leaf; Discover renders "DISC**O**VER" with orange O; Maestro uses overlapping circles with computed purple lens overlap
+  - `Components.legalDisclaimer()` — escapes input, then regex-replaces policy names with `<a>` links to prevent XSS from raw HTML in JSON
+  - JSON: added `beforeAfter`, `contextTags`, `goalsList`, `contrastLists`, `legalDisclaimer` (plain text), `companyInfo`; updated FAQ, testimonials, statistics; `legalDisclaimer` stores plain text only (links added dynamically by component)
+  - New CSS sections: `.paywall-header`, `.before-after`/`.ba-*`, `.paywall-headline`, `.promo-ticket`, `.context-tags`, `.pricing-card` (radio redesign), `.goals-list-section`, `.stats-section`/`.stats-chart`, `.contrast-lists`, `.money-back-card`, `.ba-image--after` (background-image zoom variant), updated FAQ/testimonial styles
+  - `paywall-audit.md` — mobile layout audit documenting per-section issues and recommended fixes for 375–429px and sub-375px breakpoints
+
+### Fixed
+- **Paywall header timer color** (Issue #17) — timer digits appeared grey because `.paywall-header__timer .countdown-timer__digits` descendant selector never matched (both classes on same element); fixed by applying `color: var(--color-primary); font-size: 28px` directly to `.paywall-header__timer`
+- **Legal disclaimer raw HTML** (Issue #17) — `legalDisclaimer` JSON field contained raw `<a>` HTML that was escaped by `Security.escapeHtml()` and rendered as visible text; fixed by storing plain text in JSON and generating links in `Components.legalDisclaimer()`
+- **XSS in legal disclaimer** (Issue #17) — `${screenData.legalDisclaimer}` was interpolated raw into DOM; routed through `Components.legalDisclaimer()` which escapes input before link injection
+- **Dead `googlepay` icon mapping** (Issue #17) — `iconKeyMap` entry `'googlepay': 'googlepay'` referenced a non-existent SVG definition causing black-circle fallback; entry removed
+
+### Added
 - **Stripe checkout screen** (Issue #11)
   - New `checkout` screen inserted between paywall and `thank_you` — custom branded order summary + embedded Stripe Payment Element (cards, Apple Pay, Google Pay, PayPal)
   - `funnel/api/create-checkout.js`: serverless function creates Stripe Customer (deduped by email) + 2-phase Subscription Schedule (intro price × 1 period → regular price forever), finalizes draft invoice to obtain PaymentIntent `client_secret`

@@ -1700,15 +1700,22 @@ body {
     margin-top: var(--spacing-xl);
 }
 
+/* Button (2): tighten gap between pricing cards and primary CTA */
+.paywall > .paywall__cta {
+    margin-top: var(--spacing-sm);
+}
+
 .cta-button {
     width: 100%;
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-primary);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     font-size: var(--font-size-lg);
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
     transition: background 0.2s ease, transform 0.1s ease;
 }
@@ -1735,7 +1742,9 @@ body {
 .paywall {
     max-width: 800px;
     margin: 0 auto;
-    padding-bottom: var(--spacing-xl);
+    padding: 0 8px var(--spacing-xl);
+    /* Override .content's align-items: center — paywall children must stretch to full width */
+    align-items: stretch;
 }
 
 .paywall > * {
@@ -1922,13 +1931,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
 }
 
 .payment-icon {
-    width: 48px;
-    height: 32px;
+    width: 31px;
+    height: 20px;
+    flex-shrink: 1;
+    min-width: 22px;
 }
 
 .payment-icon svg {
@@ -2728,4 +2739,1317 @@ body {
     .pricing-card__discounted-price {
         font-size: 1.75rem;
     }
+}
+
+/* ========================================
+   Paywall Mobile Breakpoints
+   Excluded from quiz-screen queries above due to .screen:not(.paywall-screen)
+   ======================================== */
+
+/* Paywall: iPhone 12/13/14 standard (375–429px) */
+@media (min-width: 375px) and (max-width: 429px) {
+    .paywall-header {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+
+    .paywall-header__cta {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .paywall-header__timer {
+        font-size: 22px;
+    }
+
+    .paywall-screen .content {
+        padding-top: 60px;
+    }
+
+    .paywall-headline {
+        font-size: 18px;
+    }
+
+    .pricing-card {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .pricing-card__name {
+        font-size: 14px;
+    }
+
+    .pricing-card__per-day-badge {
+        min-width: 64px;
+        padding: 4px 8px;
+    }
+
+    .per-day__integer {
+        font-size: 20px;
+    }
+
+    .per-day__currency,
+    .per-day__decimal {
+        font-size: 10px;
+    }
+
+    .context-tag {
+        padding: 9px 12px;
+        min-width: 130px;
+    }
+
+    .promo-ticket__code {
+        font-size: 14px;
+    }
+
+    .ba-image {
+        max-width: 130px;
+    }
+
+    .stat-callout__pct {
+        font-size: 24px;
+        min-width: 50px;
+    }
+}
+
+/* Paywall: iPhone SE, compact Android (320–374px) */
+@media (max-width: 374px) {
+    .paywall {
+        padding: 0 6px var(--spacing-lg);
+    }
+
+    .paywall-header {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .paywall-header__cta {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .paywall-header__timer {
+        font-size: 20px;
+    }
+
+    .paywall-screen .content {
+        padding-top: 56px;
+    }
+
+    .paywall-headline {
+        font-size: 17px;
+        margin-bottom: 16px;
+    }
+
+    .pricing-card {
+        padding: 12px 12px;
+        gap: 8px;
+    }
+
+    .pricing-card__name {
+        font-size: 13px;
+        margin: 0 0 2px;
+    }
+
+    .pricing-card__per-day-badge {
+        min-width: 60px;
+        padding: 3px 6px;
+    }
+
+    .per-day__integer {
+        font-size: 18px;
+    }
+
+    .per-day__label {
+        font-size: 9px;
+    }
+
+    .context-tag {
+        flex: 0 0 100%;
+        padding: 8px 10px;
+    }
+
+    .promo-ticket__top {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .promo-ticket__code {
+        font-size: 13px;
+    }
+
+    .countdown-mins,
+    .countdown-secs {
+        font-size: 18px;
+    }
+
+    .ba-image {
+        max-width: 100px;
+    }
+
+    .ba-metric__row {
+        gap: 8px;
+    }
+
+    .stat-callout__pct {
+        font-size: 22px;
+        min-width: 45px;
+    }
+}
+
+/* ========================================
+   Paywall Redesign — Issue #17
+   All class names match the actual HTML output from Components in app.js
+   ======================================== */
+
+/* ---- Paywall Sticky Header ---- */
+.paywall-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.paywall-header__timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-right: auto;   /* push CTA button to far right */
+    font-variant-numeric: tabular-nums;
+}
+
+@keyframes cta-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(91, 91, 214, 0.55); }
+    70%  { box-shadow: 0 0 0 10px rgba(91, 91, 214, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(91, 91, 214, 0); }
+}
+
+/* Pulse animation on all paywall CTA buttons; ensure both scroll CTAs are full width */
+.paywall-screen .cta-button {
+    animation: cta-pulse 2s ease-in-out infinite;
+}
+
+.paywall-screen .paywall__cta .cta-button {
+    width: 100%;
+}
+
+.paywall-screen .cta-button:hover {
+    animation: none;
+}
+
+.paywall-header__cta {
+    /* Override cta-button width: 100% — header CTA is auto-width */
+    width: auto;
+    white-space: nowrap;
+    /* Match the height of full CTAs; 50% wider via extra horizontal padding */
+    padding: var(--spacing-md) 36px;
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    animation: cta-pulse 2s ease-in-out infinite;
+}
+
+.paywall-header__cta:hover {
+    animation: none;
+}
+
+/* Push paywall content below the fixed sticky header */
+.paywall-screen .content {
+    padding-top: 68px;
+}
+
+/* ---- Before/After Comparison Section ---- */
+.before-after {
+    padding: var(--spacing-lg) var(--spacing-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.ba-heading {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Two images side by side */
+.ba-images {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    margin-bottom: var(--spacing-md);
+    align-items: center;
+}
+
+.ba-image-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.ba-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 12px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    color: var(--color-text-primary);
+}
+
+.ba-label--goal {
+    background: #f3f4f6;
+    color: var(--color-text-primary);
+}
+
+.ba-image {
+    width: 100%;
+    max-width: 150px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: center center;
+    border-radius: var(--radius-md);
+    background: #f3f4f6;
+}
+
+/* .ba-image--after is a <div> with same layout as .ba-image (width/aspect-ratio/border-radius
+   all inherited). Background-image set via inline style. */
+.ba-image--after {
+    background-size: auto 175%;
+    background-repeat: no-repeat;
+    background-position: center -30px;
+}
+
+/* Metric rows: label + state text + progress bar for each column */
+.ba-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: var(--spacing-md);
+    position: relative;
+}
+
+/* Continuous vertical divider between before and after columns */
+.ba-metrics::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--color-border);
+    transform: translateX(-50%);
+}
+
+.ba-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Side-by-side now/goal columns per metric */
+.ba-metric__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ba-metric__col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ba-metric__label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-transform: capitalize;
+}
+
+.ba-metric__state {
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.ba-metric__state--now {
+    color: var(--color-text-primary);
+}
+
+.ba-metric__state--goal {
+    color: var(--color-text-primary);
+}
+
+.ba-progress {
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ba-progress__fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.ba-progress--now .ba-progress__fill {
+    background: #d1d5db;
+}
+
+.ba-progress--goal .ba-progress__fill {
+    background: var(--color-success);
+}
+
+/* Segmented progress blocks (5 per metric, replaces smooth bar) */
+.ba-segs {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+}
+
+.ba-seg {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: #e5e7eb;   /* unfilled — light grey */
+}
+
+.ba-seg--now.ba-seg--on {
+    background: var(--color-primary);   /* filled now — purple */
+}
+
+.ba-seg--goal.ba-seg--on {
+    background: var(--color-primary);   /* filled goal — purple */
+}
+
+/* ---- Personalized Headline ---- */
+.paywall-headline {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    line-height: 1.35;
+    margin-bottom: var(--spacing-lg);
+    padding: 0 var(--spacing-md);
+}
+
+/* BEM modifier: paywall-headline__highlight */
+.paywall-headline__highlight {
+    color: var(--color-primary);
+}
+
+/* ---- Promo Ticket ---- */
+.promo-ticket {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 2px dashed var(--color-primary);
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+}
+
+.promo-ticket__top {
+    background: var(--color-primary-light);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.promo-ticket__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.promo-ticket__applied {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.promo-ticket__bottom {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Left side: checkmark + promo code pill */
+.promo-ticket__code-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.promo-ticket__check {
+    width: 22px;
+    height: 22px;
+    color: var(--color-success);
+    flex-shrink: 0;
+}
+
+.promo-ticket__code {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.5px;
+}
+
+/* Right side: timer digits + label stacked */
+.promo-ticket__timer-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+/* Timer digits inside promo ticket (also has class countdown-timer__digits) */
+.promo-ticket__timer-digits {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-urgent);
+    font-variant-numeric: tabular-nums;
+}
+
+.promo-ticket__timer-label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* ---- Context Tags ---- */
+.context-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.context-tag {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    flex: 1 1 0;
+    min-width: 0;        /* allow shrinking below 140px so two always fit side-by-side */
+}
+
+.context-tag__icon {
+    width: 20px;
+    height: 20px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.context-tag__label {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    margin: 0 0 2px;
+}
+
+.context-tag__value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+/* ---- Pricing Card Redesign: radio-button row style ---- */
+/* Override the old center-aligned card with the new flex-row layout */
+.pricing-card {
+    position: relative;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    transform: none !important; /* remove old hover lift */
+}
+
+.pricing-card:hover {
+    border-color: var(--color-primary);
+    transform: none;
+    box-shadow: 0 0 0 1px rgba(91, 91, 214, 0.3);
+}
+
+.pricing-card--selected {
+    border-color: var(--color-primary);
+    border-width: 2px;
+    background: var(--color-surface);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+/* Full-width "MOST POPULAR" bar sitting above the card (outside .pricing-card) */
+.pricing-card__popular-bar {
+    background: var(--color-primary);
+    color: #fff;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 5px 0;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    margin-bottom: -2px; /* collapse the gap between bar and card border */
+}
+
+/* Radio circle on the left */
+.pricing-card__radio {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.2s;
+}
+
+.pricing-card__radio--selected {
+    border-color: var(--color-primary);
+}
+
+.pricing-card__radio--selected::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-primary);
+}
+
+/* Center text column */
+.pricing-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pricing-card__name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 3px;
+}
+
+.pricing-card__prices {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+/* Strikethrough original price */
+.pricing-card__original {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+}
+
+/* Discounted total price */
+.pricing-card__discounted {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+/* Right-side grey pill showing per-day cost */
+.pricing-card__per-day-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 5px 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.pricing-card--selected .pricing-card__per-day-badge {
+    background: var(--color-primary-light);
+}
+
+.per-day__currency {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+}
+
+.per-day__integer {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    line-height: 1;
+}
+
+.per-day__decimal {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+.per-day__label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    margin-left: 3px;
+    align-self: flex-end;
+    margin-bottom: 1px;
+}
+
+.pricing-card--selected .per-day__integer,
+.pricing-card--selected .per-day__currency,
+.pricing-card--selected .per-day__decimal {
+    color: var(--color-primary);
+}
+
+/* Pricing tiers stacked vertically (override old grid) */
+.pricing-tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+}
+
+/* ---- Legal Disclaimer ---- */
+.paywall-legal {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+    text-align: center;
+    padding: 0 var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.paywall-legal a {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+/* ---- Goals List ---- */
+.goals-list-section {
+    padding: var(--spacing-lg) var(--spacing-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Heading uses __headline BEM modifier (not __heading) */
+.goals-list__headline {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.goals-list__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 1.45;
+}
+
+/* Green circle with SVG checkmark */
+.goals-list__check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.goals-list__check svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* ---- Stats Section with SVG Arc Chart ---- */
+.stats-section {
+    padding: var(--spacing-lg) var(--spacing-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Heading uses __headline BEM modifier */
+.stats-section__headline {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.35;
+}
+
+.stats-section__brand {
+    color: var(--color-primary);
+}
+
+/* SVG arc chart container */
+.stats-chart {
+    display: block;
+    margin: 0 auto var(--spacing-lg);
+    max-width: 260px;
+    width: 100%;
+    overflow: visible;
+}
+
+.stat-callouts {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.stat-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.stat-callout__pct {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--color-primary);
+    line-height: 1;
+    min-width: 58px;
+    flex-shrink: 0;
+}
+
+.stat-callout__desc {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.45;
+    padding-top: 4px;
+}
+
+.stat-callout__desc strong {
+    color: var(--color-text-primary);
+    font-weight: 700;
+}
+
+/* ---- Contrast Lists (without/with Compass) ---- */
+.contrast-lists {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.contrast-card {
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    border: 2px solid transparent;
+}
+
+.contrast-card--without {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.contrast-card--with {
+    background: #f0fdf4;
+    border-color: var(--color-success);
+}
+
+/* Heading uses __title BEM modifier (not __heading) */
+.contrast-card__title {
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.contrast-card--without .contrast-card__title {
+    color: #6b7280;
+}
+
+.contrast-card--with .contrast-card__title {
+    color: #065f46;
+}
+
+.contrast-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.contrast-list__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.contrast-list__icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 13px;
+}
+
+.contrast-list__icon--check {
+    width: 16px;
+    height: 16px;
+    color: var(--color-success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contrast-list__icon--check svg {
+    width: 14px;
+    height: 14px;
+}
+
+.contrast-card--without .contrast-list__item {
+    color: #6b7280;
+}
+
+.contrast-card--with .contrast-list__item {
+    color: #065f46;
+}
+
+/* ---- Second CTA Block ---- */
+.second-cta-block {
+    width: 100%;
+    padding: var(--spacing-lg) 0;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* ---- Money Back Card (redesign) ---- */
+.money-back-card {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg) var(--spacing-md);
+    background: var(--color-surface);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Medal image centered above headline */
+.guarantee-medal {
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-sm);
+    display: block;
+}
+
+/* Headline uses __headline BEM modifier */
+.money-back-card__headline {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Body uses __description BEM modifier */
+.money-back-card__description {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+    max-width: 340px;
+}
+
+.money-back-card__link {
+    font-size: 13px;
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+}
+
+/* ---- FAQ: ? circle icon badge ---- */
+/* .faq-accordion-section and .faq-accordion__headline already exist; just update heading size */
+.faq-accordion__headline {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: var(--color-text-primary) !important;
+    text-align: left;
+}
+
+/* Question-mark badge left of question text */
+.faq-q-icon {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    margin-right: 6px;
+}
+
+/* Ensure faq-question is flex so badge + text align nicely */
+.faq-question {
+    display: flex;
+    align-items: center;
+}
+
+.faq-question__text {
+    flex: 1;
+    text-align: left;
+}
+
+/* ---- Testimonials: orange stars + handle ---- */
+.testimonial-card__star {
+    color: #f97316 !important; /* override the green from old styles */
+}
+
+.testimonial-card__handle {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    font-style: normal;
+}
+
+/* ---- Responsive overrides for new paywall sections ---- */
+@media (max-width: 480px) {
+    .ba-images {
+        gap: 8px;
+    }
+
+    .ba-image {
+        max-width: 120px;
+    }
+
+    .paywall-headline {
+        font-size: 19px;
+    }
+
+    .stat-callout__pct {
+        font-size: 24px;
+        min-width: 50px;
+    }
+
+    .per-day__integer {
+        font-size: 16px;
+    }
+}
+
+/* ========================================
+   Paywall Pixel-Perfect Fixes — Issue #17
+   ======================================== */
+
+/* ---- Before/After: arrow between columns + label below image ---- */
+.ba-images {
+    align-items: flex-start; /* top-align so arrow SVG sits mid-height of images */
+}
+
+.ba-image-col {
+    align-items: center; /* center label below image */
+}
+
+/* Arrow decoration between the two image columns */
+@keyframes arrow-nudge {
+    0%,  100% { transform: translateX(0); opacity: 1; }
+    40%        { transform: translateX(6px); opacity: 0.7; }
+    70%        { transform: translateX(3px); opacity: 0.9; }
+}
+
+.ba-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    flex-shrink: 0;
+    align-self: center;
+    animation: arrow-nudge 1.8s ease-in-out infinite;
+}
+
+.ba-arrow svg {
+    width: 32px;
+    height: 80px;
+}
+
+/* ---- Promo ticket: split MM : SS timer display ---- */
+.promo-ticket__timer-display {
+    display: flex;
+    align-items: flex-start;
+    gap: 2px;
+    line-height: 1;
+}
+
+/* Each digit + its label stacked */
+.promo-ticket__digit-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.promo-ticket__digit-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+
+.countdown-mins,
+.countdown-secs {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-urgent);
+    font-variant-numeric: tabular-nums;
+    min-width: 26px;
+    text-align: center;
+    line-height: 1;
+}
+
+.pt-sep {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-urgent);
+    line-height: 1;
+    padding-top: 2px; /* align colon with digit top */
+}
+
+/* ---- Pricing card group wrapper ---- */
+.pricing-card-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Stack groups with a gap; no gap between popular-bar and its card */
+.pricing-tiers {
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+/* When a card has a popular bar above it, remove its top border-radius */
+.pricing-card--has-bar {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-top-color: #065f46 !important;
+}
+
+/* Popular bar same-width border as card */
+.pricing-card__popular-bar {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+/* Per-day badge: currency + integer + decimal stacked nicely */
+.pricing-card__per-day-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 6px 10px;
+    flex-shrink: 0;
+    min-width: 72px;
+}
+
+.pricing-card--selected .pricing-card__per-day-badge {
+    background: var(--color-primary-light);
+}
+
+.per-day__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 1px;
+    line-height: 1;
+}
+
+.per-day__currency {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    margin-top: 3px;
+}
+
+.per-day__integer {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    line-height: 1;
+}
+
+.per-day__decimal {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    margin-top: 3px;
+}
+
+.per-day__label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pricing-card--selected .per-day__integer,
+.pricing-card--selected .per-day__currency,
+.pricing-card--selected .per-day__decimal {
+    color: var(--color-primary);
+}
+
+/* ---- Pay Safe & Secure badge pill ---- */
+.payment-icons__secure-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f3f4f6;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0 auto var(--spacing-sm);
+}
+
+.payment-icons-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ---- Contrast list: circle-X SVG icon sizing ---- */
+.contrast-list__svg--x {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ---- Award badge ---- */
+.award-badge {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.award-badge__icon {
+    width: 48px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+.award-badge__content {
+    flex: 1;
+}
+
+.award-badge__title {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.award-badge__title strong {
+    color: var(--color-text-primary);
+    font-weight: 700;
+}
+
+/* ---- Pricing card: prices layout ---- */
+.pricing-card__prices {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.pricing-card__original {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--color-text-muted);
+}
+
+.pricing-card__discounted {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+/* ---- Testimonials Section ---- */
+.testimonials-section {
+    padding: var(--spacing-lg) 0;
+    text-align: center;
+}
+
+.testimonials-section__headline {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.testimonials-section__sub {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
 }

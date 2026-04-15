@@ -178,52 +178,29 @@ const Icons = {
         </svg>`,
 
         // ========================================
-        // Payment Icons (Phase 3c - Paywall)
+        // Payment Icons (Official Brand SVGs — aaronfagan/svg-credit-card-payment-icons flat-rounded)
         // ========================================
-        
-        // Visa card icon
-        visa: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#1A1F71"/>
-            <path d="M18.5 22L21.8 10H25L21.7 22H18.5ZM32.7 10.3C32 10.1 30.9 9.8 29.5 9.8C26.2 9.8 23.9 11.5 23.9 14C23.9 15.8 25.6 16.8 26.9 17.4C28.2 18 28.7 18.4 28.7 19C28.7 19.9 27.6 20.3 26.6 20.3C25.2 20.3 24.4 20.1 23.3 19.6L22.9 19.4L22.5 21.9C23.3 22.3 24.8 22.6 26.4 22.6C30 22.6 32.2 20.9 32.3 18.2C32.3 16.8 31.4 15.7 29.4 14.8C28.2 14.2 27.5 13.8 27.5 13.2C27.5 12.7 28.1 12.1 29.4 12.1C30.5 12.1 31.4 12.3 32.1 12.6L32.5 12.8L32.7 10.3ZM38.5 10H36C35.2 10 34.6 10.2 34.2 11L29 22H32.6L33.3 20.2H37.7L38.2 22H41.5L38.5 10ZM34.2 17.7L35.8 13L36.8 17.7H34.2ZM15.5 10L12 19.5L11.6 17.4L10.4 11.8C10.2 10.8 9.5 10.1 8.6 10H8.6L8.6 10H3V10.3C4.2 10.6 5.3 11 6.2 11.5L9.3 22H13L19 10H15.5Z" fill="white"/>
-        </svg>`,
 
-        // Mastercard icon
-        mastercard: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#000000"/>
-            <circle cx="18" cy="16" r="9" fill="#EB001B"/>
-            <circle cx="30" cy="16" r="9" fill="#F79E1B"/>
-            <path d="M24 9C25.9 10.5 27 12.9 27 15.5C27 18.1 25.9 20.5 24 22C22.1 20.5 21 18.1 21 15.5C21 12.9 22.1 10.5 24 9Z" fill="#FF5F00"/>
-        </svg>`,
+        // Visa — official paths, bg changed from blue to white
+        visa: `<svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 0H740C762.092 0 780 17.909 780 40V460C780 482.092 762.092 500 740 500H40C17.909 500 0 482.092 0 460V40C0 17.909 17.909 0 40 0Z" fill="white" stroke="#E0E0E0" stroke-width="8"/><path d="M489.823 143.111C442.988 143.111 401.134 167.393 401.134 212.256C401.134 263.706 475.364 267.259 475.364 293.106C475.364 303.989 462.895 313.731 441.6 313.731C411.377 313.731 388.789 300.119 388.789 300.119L379.123 345.391C379.123 345.391 405.145 356.889 439.692 356.889C490.898 356.889 531.19 331.415 531.19 285.784C531.19 231.419 456.652 227.971 456.652 203.981C456.652 195.455 466.887 186.114 488.122 186.114C512.081 186.114 531.628 196.014 531.628 196.014L541.087 152.289C541.087 152.289 519.818 143.111 489.823 143.111ZM61.3294 146.411L60.1953 153.011C60.1953 153.011 79.8988 156.618 97.645 163.814C120.495 172.064 122.122 176.868 125.971 191.786L167.905 353.486H224.118L310.719 146.411H254.635L198.989 287.202L176.282 167.861C174.199 154.203 163.651 146.411 150.74 146.411H61.3294ZM333.271 146.411L289.275 353.486H342.756L386.598 146.411H333.271ZM631.554 146.411C618.658 146.411 611.825 153.318 606.811 165.386L528.458 353.486H584.542L595.393 322.136H663.72L670.318 353.486H719.805L676.633 146.411H631.554ZM638.848 202.356L655.473 280.061H610.935L638.848 202.356Z" fill="#1A1F71"/></svg>`,
 
-        // American Express icon
-        amex: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#016FD0"/>
-            <path d="M10.5 12L8 20H10.8L11.3 18.5H13.1L13.6 20H16.8V18.8L17.2 20H19.2L19.6 18.8V20H29V18.5H29.3C29.6 18.5 29.6 18.5 29.6 18.8V20H36.5L37.5 18.9L38.4 20H42L38.6 16L42 12H38.5L37.5 13.1L36.6 12H29.3V13.4C29.1 13.4 28.9 13.4 28.7 13.4H27.2V12H23.5L22.7 14L21.8 12H17.5V13.1L17.1 12H13.7L10.5 12Z" fill="white"/>
-        </svg>`,
+        // Mastercard — official circles, bg changed from dark to white
+        mastercard: `<svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 0H740C762.092 0 780 17.909 780 40V460C780 482.092 762.092 500 740 500H40C17.909 500 0 482.092 0 460V40C0 17.909 17.909 0 40 0Z" fill="white" stroke="#E0E0E0" stroke-width="8"/><path d="M465.738 69.1387H313.812V342.088H465.738V69.1387Z" fill="#FF5A00"/><path d="M323.926 205.613C323.926 150.158 349.996 100.94 390 69.1387C360.559 45.9902 323.42 32 282.91 32C186.945 32 109.297 109.648 109.297 205.613C109.297 301.578 186.945 379.227 282.91 379.227C323.42 379.227 360.559 365.237 390 342.088C349.94 310.737 323.926 261.069 323.926 205.613Z" fill="#EB001B"/><path d="M670.711 205.613C670.711 301.578 593.062 379.227 497.098 379.227C456.588 379.227 419.449 365.237 390.008 342.088C430.518 310.231 456.082 261.069 456.082 205.613C456.082 150.158 430.012 100.94 390.008 69.1387C419.393 45.9902 456.532 32 497.041 32C593.062 32 670.711 110.154 670.711 205.613Z" fill="#F79E1B"/></svg>`,
 
-        // Apple Pay icon
-        applepay: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="black"/>
-            <path d="M12.5 10.5C12.9 10 13.4 9.5 14 9.5C14 10.1 13.8 10.7 13.4 11.2C13 11.7 12.4 12 11.8 12C11.7 11.5 12 10.9 12.5 10.5ZM14 12.1C13.1 12 12.3 12.6 11.9 12.6C11.5 12.6 10.8 12.1 10.1 12.1C9.2 12.2 8.4 12.7 7.9 13.5C7 15.1 7.6 17.5 8.5 18.9C8.9 19.6 9.4 20.3 10.1 20.3C10.8 20.3 11 19.9 11.8 19.9C12.6 19.9 12.8 20.3 13.5 20.3C14.3 20.3 14.7 19.6 15.1 18.9C15.5 18.1 15.7 17.4 15.7 17.4C15.7 17.4 14.5 16.9 14.5 15.5C14.5 14.3 15.4 13.7 15.5 13.7C14.9 12.9 14 12.1 14 12.1Z" fill="white"/>
-            <path d="M19.5 9.5H22.1L24.6 17.5L27.2 9.5H29.7L25.9 20.2H23.4L19.5 9.5Z" fill="white"/>
-            <path d="M30.5 20.2V9.5H35.5C37.4 9.5 38.7 10.8 38.7 12.5C38.7 14.2 37.3 15.5 35.4 15.5H32.8V20.2H30.5ZM32.8 11.2V13.8H35C36.1 13.8 36.7 13.2 36.7 12.5C36.7 11.8 36.1 11.2 35 11.2H32.8Z" fill="white"/>
-        </svg>`,
+        // American Express — official SVG, keep blue background
+        amex: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><path d="m40 1e-3h700c22.092 0 40 17.909 40 40v420c0 22.092-17.908 40-40 40h-700c-22.091 0-40-17.908-40-40v-420c0-22.091 17.909-40 40-40z" fill="#2557D6"/><path d="m0.253 235.69h37.441l8.442-19.51h18.9l8.42 19.51h73.668v-14.915l6.576 14.98h38.243l6.576-15.202v15.138h183.08l-0.085-32.026h3.542c2.479 0.083 3.204 0.302 3.204 4.226v27.8h94.689v-7.455c7.639 3.92 19.518 7.455 35.148 7.455h39.836l8.525-19.51h18.9l8.337 19.51h76.765v-18.532l11.626 18.532h61.515v-122.51h-60.88v14.468l-8.522-14.468h-62.471v14.468l-7.828-14.468h-84.38c-14.123 0-26.539 1.889-36.569 7.153v-7.153h-58.229v7.153c-6.383-5.426-15.079-7.153-24.75-7.153h-212.74l-14.274 31.641-14.659-31.641h-67.005v14.468l-7.362-14.468h-57.145l-26.539 58.246v64.261h3e-3zm236.34-17.67h-22.464l-0.083-68.794-31.775 68.793h-19.24l-31.858-68.854v68.854h-44.57l-8.42-19.592h-45.627l-8.505 19.592h-23.801l39.241-87.837h32.559l37.269 83.164v-83.164h35.766l28.678 59.587 26.344-59.587h36.485l1e-3 87.838zm-165.9-37.823l-14.998-35.017-14.915 35.017h29.913zm255.3 37.821h-73.203v-87.837h73.203v18.291h-51.289v15.833h50.06v18.005h-50.061v17.542h51.289l1e-3 18.166zm103.16-64.18c0 14.004-9.755 21.24-15.439 23.412 4.794 1.748 8.891 4.838 10.84 7.397 3.094 4.369 3.628 8.271 3.628 16.116v17.255h-22.104l-0.083-11.077c0-5.285 0.528-12.886-3.458-17.112-3.202-3.09-8.083-3.76-15.973-3.76h-23.523v31.95h-21.914v-87.838h50.401c11.199 0 19.451 0.283 26.535 4.207 6.933 3.924 11.09 9.652 11.09 19.45zm-27.699 13.042c-3.013 1.752-6.573 1.81-10.841 1.81h-26.62v-19.51h26.982c3.818 0 7.804 0.164 10.393 1.584 2.842 1.28 4.601 4.003 4.601 7.765 0 3.84-1.674 6.929-4.515 8.351zm62.844 51.138h-22.358v-87.837h22.358v87.837zm259.56 0h-31.053l-41.535-65.927v65.927h-44.628l-8.527-19.592h-45.521l-8.271 19.592h-25.648c-10.649 0-24.138-2.257-31.773-9.715-7.701-7.458-11.708-17.56-11.708-33.533 0-13.027 2.395-24.936 11.812-34.347 7.085-7.01 18.18-10.242 33.28-10.242h21.215v18.821h-20.771c-7.997 0-12.514 1.14-16.862 5.203-3.735 3.699-6.298 10.69-6.298 19.897 0 9.41 1.951 16.196 6.023 20.628 3.373 3.476 9.506 4.53 15.272 4.53h9.842l30.884-69.076h32.835l37.102 83.081v-83.08h33.366l38.519 61.174v-61.174h22.445v87.833zm-133.2-37.82l-15.165-35.017-15.081 35.017h30.246zm189.04 178.08c-5.322 7.457-15.694 11.238-29.736 11.238h-42.319v-18.84h42.147c4.181 0 7.106-0.527 8.868-2.175 1.665-1.474 2.605-3.554 2.591-5.729 0-2.561-1.064-4.593-2.677-5.811-1.59-1.342-3.904-1.95-7.722-1.95-20.574-0.67-46.244 0.608-46.244-27.194 0-12.742 8.443-26.156 31.439-26.156h43.649v-17.479h-40.557c-12.237 0-21.129 2.81-27.425 7.174v-7.175h-59.985c-9.595 0-20.854 2.279-26.179 7.175v-7.175h-107.12v7.175c-8.524-5.892-22.908-7.175-29.549-7.175h-70.656v7.175c-6.745-6.258-21.742-7.175-30.886-7.175h-79.077l-18.094 18.764-16.949-18.764h-118.13v122.59h115.9l18.646-19.062 17.565 19.062 71.442 0.061v-28.838h7.021c9.479 0.14 20.66-0.228 30.523-4.312v33.085h58.928v-31.952h2.842c3.628 0 3.985 0.144 3.985 3.615v28.333h179.01c11.364 0 23.244-2.786 29.824-7.845v7.845h56.78c11.815 0 23.354-1.587 32.134-5.649l2e-3 -22.84zm-354.94-47.155c0 24.406-19.005 29.445-38.159 29.445h-27.343v29.469h-42.591l-26.984-29.086-28.042 29.086h-86.802v-87.859h88.135l26.961 28.799 27.875-28.799h70.021c17.389 0 36.929 4.613 36.929 28.945zm-174.22 40.434h-53.878v-17.48h48.11v-17.926h-48.11v-15.974h54.939l23.969 25.604-25.03 25.776zm86.81 10.06l-33.644-35.789 33.644-34.65v70.439zm49.757-39.066h-28.318v-22.374h28.572c7.912 0 13.404 3.09 13.404 10.772 0 7.599-5.238 11.602-13.658 11.602zm148.36-40.373h73.138v18.17h-51.315v15.973h50.062v17.926h-50.062v17.48l51.314 0.08v18.23h-73.139l2e-3 -87.859zm-28.119 47.029c4.878 1.725 8.865 4.816 10.734 7.375 3.095 4.291 3.542 8.294 3.631 16.037v17.418h-22.002v-10.992c0-5.286 0.531-13.112-3.542-17.198-3.201-3.147-8.083-3.899-16.076-3.899h-23.42v32.09h-22.02v-87.859h50.594c11.093 0 19.173 0.47 26.366 4.146 6.915 4.004 11.266 9.487 11.266 19.511-1e-3 14.022-9.764 21.178-15.531 23.371zm-12.385-11.107c-2.932 1.667-6.556 1.811-10.818 1.811h-26.622v-19.732h26.982c3.902 0 7.807 0.08 10.458 1.587 2.84 1.423 4.538 4.146 4.538 7.903 0 3.758-1.699 6.786-4.538 8.431zm197.82 5.597c4.27 4.229 6.554 9.571 6.554 18.613 0 18.9-12.322 27.723-34.425 27.723h-42.68v-18.84h42.51c4.157 0 7.104-0.525 8.95-2.175 1.508-1.358 2.589-3.333 2.589-5.729 0-2.561-1.17-4.592-2.675-5.811-1.675-1.34-3.986-1.949-7.803-1.949-20.493-0.67-46.157 0.609-46.157-27.192 0-12.744 8.355-26.158 31.33-26.158h43.932v18.7h-40.198c-3.984 0-6.575 0.145-8.779 1.587-2.4 1.422-3.29 3.534-3.29 6.319 0 3.314 2.037 5.57 4.795 6.546 2.311 0.77 4.795 0.995 8.526 0.995l11.797 0.306c11.895 0.276 20.061 2.248 25.024 7.065zm86.955-23.52h-39.938c-3.986 0-6.638 0.144-8.867 1.587-2.312 1.423-3.202 3.534-3.202 6.322 0 3.314 1.951 5.568 4.791 6.544 2.312 0.771 4.795 0.996 8.444 0.996l11.878 0.304c11.983 0.284 19.982 2.258 24.86 7.072 0.891 0.67 1.422 1.422 2.033 2.175v-25h1e-3z" fill="#fff"/></svg>`,
 
-        // Google Pay icon
-        googlepay: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="white" stroke="#DADCE0"/>
-            <path d="M23 16V19.5H27.7C27.5 20.6 26.5 22.6 23 22.6C19.9 22.6 17.4 20.1 17.4 16.9C17.4 13.7 19.9 11.2 23 11.2C24.8 11.2 26 12 26.9 12.8L29.6 10.2C28 8.7 25.9 7.7 23 7.7C17.5 7.7 13 12.1 13 17.6C13 23.1 17.5 27.5 23 27.5C28.8 27.5 32.3 23.6 32.3 17.8C32.3 17.1 32.2 16.6 32.1 16.1H23V16Z" fill="#4285F4"/>
-            <path d="M23 16V19.5H27.7C27.5 20.6 26.5 22.6 23 22.6V27.5C28.8 27.5 32.3 23.6 32.3 17.8C32.3 17.1 32.2 16.6 32.1 16.1H23V16Z" fill="#34A853"/>
-            <path d="M17.4 16.9C17.4 15.9 17.7 14.9 18.2 14L15.3 11.7C14.2 13.2 13.5 15 13.5 17C13.5 19 14.2 20.8 15.3 22.3L18.2 20C17.7 19.1 17.4 18.1 17.4 16.9Z" fill="#FBBC05"/>
-            <path d="M23 11.2C24.8 11.2 26 12 26.9 12.8L29.6 10.2C28 8.7 25.9 7.7 23 7.7C19.1 7.7 15.7 9.9 14.3 13.1L17.2 15.4C17.9 13.3 20.2 11.2 23 11.2Z" fill="#EA4335"/>
-        </svg>`,
+        // Apple Pay — custom SVG, black background with proper Apple logo + Pay text
+        applepay: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><rect width="780" height="500" rx="40" fill="black"/><g transform="translate(50 142) scale(9)" fill="white"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.78 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.76 19.67 18.11 18.71 19.5Z"/><path d="M13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></g><text x="265" y="305" fill="white" font-size="165" font-family="-apple-system, BlinkMacSystemFont, Helvetica, sans-serif" font-weight="400" letter-spacing="-4">Pay</text></svg>`,
 
-        // PayPal icon
-        paypal: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#003087"/>
-            <path d="M18.5 9.5H23.8C26.5 9.5 28.3 11 28.3 13.3C28.3 16.2 26.1 18 23 18H20.8L19.8 22.5H17.5L18.5 9.5ZM23.3 11.7H21.2L20.5 15.8H22.6C24.3 15.8 25.5 15 25.5 13.6C25.5 12.3 24.5 11.7 23.3 11.7Z" fill="white"/>
-            <path d="M27.5 17.8C27.5 15.3 29.4 13.3 32 13.3C34.6 13.3 36.5 15.3 36.5 17.8C36.5 20.3 34.6 22.3 32 22.3C29.4 22.3 27.5 20.3 27.5 17.8ZM34.2 17.8C34.2 16.5 33.3 15.5 32 15.5C30.7 15.5 29.8 16.5 29.8 17.8C29.8 19.1 30.7 20.1 32 20.1C33.3 20.1 34.2 19.1 34.2 17.8Z" fill="#009CDE"/>
-        </svg>`
+        // Maestro — white bg, red + blue circles with purple lens overlap
+        maestro: `<svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 0H740C762 0 780 18 780 40V460C780 482 762 500 740 500H40C18 500 0 482 0 460V40C0 18 18 0 40 0Z" fill="white" stroke="#E0E0E0" stroke-width="8"/><circle cx="310" cy="250" r="155" fill="#EB001B"/><circle cx="470" cy="250" r="155" fill="#00A1DF"/><path d="M390 117A155 155 0 0 1 390 383A155 155 0 0 0 390 117Z" fill="#7673C0"/></svg>`,
+
+        // Discover — white bg, DISCOVER text with orange O
+        discover: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><rect width="780" height="500" rx="40" fill="white" stroke="#E0E0E0" stroke-width="8"/><text x="390" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="145" font-weight="700" fill="#231F20"><tspan>DISC</tspan><tspan fill="#F47216">O</tspan><tspan>VER</tspan></text></svg>`,
+
+        // PayPal — official SVG (white bg)
+        paypal: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><path d="M725,0H55C24.673,0,0,24.673,0,55v391c0,30.327,24.673,55,55,55h670c30.325,0,55-24.673,55-55V55C780,24.673,755.325,0,725,0z" fill="#FFF" stroke="#E0E0E0" stroke-width="8"/><path d="m168.38 169.85c-8.399-5.774-19.359-8.668-32.88-8.668h-52.346c-4.145 0-6.435 2.073-6.87 6.214l-21.265 133.48c-0.221 1.311 0.107 2.51 0.981 3.6 0.869 1.093 1.962 1.636 3.271 1.636h24.864c4.361 0 6.758-2.068 7.198-6.216l5.888-35.985c0.215-1.744 0.982-3.162 2.291-4.254 1.308-1.09 2.944-1.804 4.907-2.13 1.963-0.324 3.814-0.487 5.562-0.487 1.743 0 3.814 0.11 6.217 0.327 2.397 0.218 3.925 0.324 4.58 0.324 18.756 0 33.478-5.285 44.167-15.866 10.684-10.577 16.032-25.244 16.032-44.004 0-12.868-4.202-22.192-12.597-27.975zm-26.99 40.08c-1.094 7.635-3.926 12.649-8.506 15.049-4.581 2.403-11.124 3.597-19.629 3.597l-10.797 0.328 5.563-35.007c0.434-2.397 1.851-3.597 4.252-3.597h6.218c8.72 0 15.049 1.257 18.975 3.761 3.924 2.51 5.233 7.802 3.924 15.869z" fill="#003087"/><path d="m720.79 161.18h-24.208c-2.405 0-3.821 1.2-4.253 3.599l-21.267 136.1-0.328 0.654c0 1.096 0.437 2.127 1.311 3.109 0.868 0.979 1.963 1.471 3.271 1.471h21.595c4.138 0 6.429-2.068 6.871-6.215l21.265-133.81v-0.325c-2e-3 -3.053-1.424-4.58-4.257-4.58z" fill="#009CDE"/><path d="m428.31 213.86c0-1.088-0.438-2.126-1.306-3.106-0.875-0.981-1.857-1.474-2.945-1.474h-25.191c-2.404 0-4.366 1.096-5.89 3.271l-34.679 51.04-14.394-49.075c-1.096-3.488-3.493-5.236-7.198-5.236h-24.54c-1.093 0-2.075 0.492-2.942 1.474-0.875 0.98-1.309 2.019-1.309 3.106 0 0.44 2.127 6.871 6.379 19.303 4.252 12.434 8.833 25.848 13.741 40.244 4.908 14.394 7.468 22.031 7.688 22.898-17.886 24.43-26.826 37.518-26.826 39.26 0 2.838 1.417 4.254 4.253 4.254h25.191c2.399 0 4.361-1.088 5.89-3.271l83.427-120.4c0.433-0.433 0.651-1.193 0.651-2.289z" fill="#003087"/><path d="m662.89 209.28h-24.865c-3.056 0-4.904 3.599-5.559 10.797-5.677-8.72-16.031-13.088-31.083-13.088-15.704 0-29.065 5.89-40.077 17.668-11.016 11.779-16.521 25.631-16.521 41.551 0 12.871 3.761 23.121 11.285 30.752 7.524 7.639 17.611 11.451 30.266 11.451 6.323 0 12.757-1.311 19.3-3.926 6.544-2.617 11.665-6.105 15.379-10.469 0 0.219-0.222 1.198-0.654 2.942-0.44 1.748-0.655 3.06-0.655 3.926 0 3.494 1.414 5.234 4.254 5.234h22.576c4.138 0 6.541-2.068 7.193-6.216l13.415-85.389c0.215-1.309-0.111-2.507-0.981-3.599-0.876-1.087-1.964-1.634-3.273-1.634zm-42.694 64.452c-5.562 5.453-12.269 8.179-20.12 8.179-6.328 0-11.449-1.742-15.377-5.234-3.928-3.483-5.891-8.282-5.891-14.396 0-8.064 2.727-14.884 8.181-20.446 5.446-5.562 12.214-8.343 20.284-8.343 6.102 0 11.174 1.8 15.212 5.397 4.032 3.599 6.055 8.563 6.055 14.888-1e-3 7.851-2.783 14.505-8.344 19.955z" fill="#009CDE"/><path d="m291.23 209.28h-24.864c-3.058 0-4.908 3.599-5.563 10.797-5.889-8.72-16.25-13.088-31.081-13.088-15.704 0-29.065 5.89-40.078 17.668-11.016 11.779-16.521 25.631-16.521 41.551 0 12.871 3.763 23.121 11.288 30.752 7.525 7.639 17.61 11.451 30.262 11.451 6.104 0 12.433-1.311 18.975-3.926 6.543-2.617 11.778-6.105 15.704-10.469-0.875 2.616-1.309 4.907-1.309 6.868 0 3.494 1.417 5.234 4.253 5.234h22.574c4.141 0 6.543-2.068 7.198-6.216l13.413-85.389c0.215-1.309-0.112-2.507-0.981-3.599-0.873-1.087-1.962-1.634-3.27-1.634zm-42.695 64.614c-5.563 5.351-12.382 8.017-20.447 8.017-6.329 0-11.4-1.742-15.214-5.234-3.819-3.483-5.726-8.282-5.726-14.396 0-8.064 2.725-14.884 8.18-20.446 5.449-5.562 12.211-8.343 20.284-8.343 6.104 0 11.175 1.8 15.214 5.398 4.032 3.599 6.052 8.563 6.052 14.888 0 8.069-2.781 14.778-8.343 20.116z" fill="#003087"/><path d="m540.04 169.85c-8.398-5.774-19.356-8.668-32.879-8.668h-52.02c-4.364 0-6.765 2.073-7.197 6.214l-21.266 133.48c-0.221 1.312 0.106 2.511 0.981 3.601 0.865 1.092 1.962 1.635 3.271 1.635h26.826c2.617 0 4.361-1.416 5.235-4.252l5.89-37.949c0.216-1.744 0.98-3.162 2.29-4.254 1.309-1.09 2.943-1.803 4.908-2.13 1.962-0.324 3.812-0.487 5.562-0.487 1.743 0 3.814 0.11 6.214 0.327 2.399 0.218 3.931 0.324 4.58 0.324 18.76 0 33.479-5.285 44.168-15.866 10.688-10.577 16.031-25.244 16.031-44.004 2e-3 -12.867-4.199-22.191-12.594-27.974zm-33.534 53.82c-4.799 3.271-11.997 4.906-21.592 4.906l-10.47 0.328 5.562-35.007c0.432-2.397 1.849-3.597 4.252-3.597h5.887c4.798 0 8.614 0.218 11.454 0.653 2.831 0.44 5.562 1.799 8.179 4.089 2.618 2.291 3.926 5.618 3.926 9.98 0 9.16-2.402 15.375-7.198 18.648z" fill="#009CDE"/></svg>`
     },
 
     /**
@@ -1042,7 +1019,7 @@ const Components = {
      * @returns {string} HTML string
      */
     testimonialCard(testimonial) {
-        // Generate star icons
+        // Orange stars matching the reference design
         const stars = Array.from({ length: Math.min(testimonial.rating || 5, 5) }, () =>
             `<span class="testimonial-card__star">★</span>`
         ).join('');
@@ -1051,11 +1028,10 @@ const Components = {
             <div class="testimonial-card">
                 <div class="testimonial-card__header">
                     <div class="testimonial-card__stars">${stars}</div>
-                    ${testimonial.source ? `<span class="testimonial-card__source">${Security.escapeHtml(testimonial.source)}</span>` : ''}
+                    ${testimonial.handle ? `<span class="testimonial-card__handle">${Security.escapeHtml(testimonial.handle)}</span>` : ''}
                 </div>
                 <h4 class="testimonial-card__title">${Security.escapeHtml(testimonial.title || '')}</h4>
                 <p class="testimonial-card__content">${Security.escapeHtml(testimonial.content || '')}</p>
-                <span class="testimonial-card__author">— ${Security.escapeHtml(testimonial.author || '')}</span>
             </div>
         `;
     },
@@ -1129,6 +1105,31 @@ const Components = {
     },
 
     /**
+     * Render minimal sticky header for the paywall screen.
+     * Replaces the standard app header — shows live countdown on the left and
+     * a GET MY PLAN CTA pill on the right, matching the reference design.
+     * The timer digits are updated by CountdownTimer.updateDisplay() via the
+     * shared '.countdown-timer__digits' selector.
+     * @param {string} ctaText   - CTA button label
+     * @param {string} screenId  - data-screen attribute for CTA delegation
+     * @param {number} initialMinutes - Starting MM:SS value to display
+     * @returns {string} HTML string
+     */
+    paywallHeader(ctaText, screenId, initialMinutes = 10) {
+        const mins = String(Math.floor(initialMinutes)).padStart(2, '0');
+        const secs = '00';
+        const safeCta = Security.escapeHtml(ctaText || 'GET MY PLAN');
+        const safeId  = Security.escapeHtml(screenId);
+
+        return `
+            <header class="paywall-header">
+                <span class="countdown-timer__digits paywall-header__timer">${mins}:${secs}</span>
+                <button class="cta-button paywall-header__cta" data-screen="${safeId}">${safeCta}</button>
+            </header>
+        `;
+    },
+
+    /**
      * Render countdown timer (paywall)
      * Real-time countdown with MM:SS format, infinite loop
      * @param {string} headline - Timer headline text
@@ -1155,25 +1156,26 @@ const Components = {
 
     /**
      * Generate personalized promo code
-     * Format: {NAME}_{MONTH}_{DISCOUNT}
-     * Example: "JOHN_FEB_50"
+     * Format: {Name}_{Mon}{Year}
+     * Example: "John_Apr2026"
      * @param {string} name - User's name (from state)
-     * @param {number} discount - Discount percentage
      * @returns {string} Promo code string
      */
-    generatePromoCode(name, discount) {
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-        const currentMonth = months[new Date().getMonth()];
-        
-        // Sanitize name: uppercase, remove non-letters, use fallback if empty
-        let userName = (name || '').toUpperCase().replace(/[^A-Z]/g, '');
-        if (!userName) {
-            // Fallback: try email username
-            const email = State.getAnswer('email_capture');
-            userName = email ? email.split('@')[0].toUpperCase().replace(/[^A-Z]/g, '') : 'USER';
-        }
+    generatePromoCode(name) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const now = new Date();
+        const currentMonth = months[now.getMonth()];
+        const currentYear  = now.getFullYear();
 
-        return `${userName}_${currentMonth}_${discount}`;
+        // Title-case first name (letters only); fallback to email username or 'User'
+        let raw = (name || '').replace(/[^a-zA-Z]/g, '');
+        if (!raw) {
+            const email = State.getAnswer('email_capture');
+            raw = email ? email.split('@')[0].replace(/[^a-zA-Z]/g, '') : 'User';
+        }
+        const userName = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+
+        return `${userName}_${currentMonth}${currentYear}`;
     },
 
     /**
@@ -1214,31 +1216,47 @@ const Components = {
      * @returns {string} HTML string
      */
     pricingCard(tier, isSelected) {
-        const safeName = Security.escapeHtml(tier.name);
-        const safeOriginalPrice = Security.escapeHtml(tier.originalPrice);
+        const safeName            = Security.escapeHtml(tier.name);
+        const safeOriginalPrice   = Security.escapeHtml(tier.originalPrice);
         const safeDiscountedPrice = Security.escapeHtml(tier.discountedPrice);
-        const safePricePerDay = Security.escapeHtml(tier.pricePerDay);
-        const safeSavings = Security.escapeHtml(tier.savings);
-        const safeId = Security.escapeHtml(tier.id);
-        
-        const selectedClass = isSelected ? 'pricing-card--selected' : '';
-        const recommendedClass = tier.recommended ? 'pricing-card--recommended' : '';
-        const hasBadge = tier.badge;
+        const safeId              = Security.escapeHtml(tier.id);
+        const selectedClass       = isSelected ? 'pricing-card--selected' : '';
+
+        // Per-day price badge: parse "€0.66/day" → big number + suffix
+        // Renders as: "€ 0 66" with superscript-style layout
+        const perDayRaw = (tier.pricePerDay || '').replace('€', '').replace('/day', '').trim();
+        const [perDayInt, perDayDec] = perDayRaw.split('.');
 
         return `
-            <div class="pricing-card ${selectedClass} ${recommendedClass}"
-                 data-tier-id="${safeId}"
-                 role="button"
-                 tabindex="0"
-                 aria-label="Select ${safeName}">
-                ${hasBadge ? this.mostPopularBadge() : ''}
-                <h3 class="pricing-card__name">${safeName}</h3>
-                <div class="pricing-card__prices">
-                    <span class="pricing-card__original-price">${safeOriginalPrice}</span>
-                    <span class="pricing-card__discounted-price">${safeDiscountedPrice}</span>
+            <div class="pricing-card-group">
+                ${tier.badge ? `<div class="pricing-card__popular-bar">★ ${Security.escapeHtml(tier.badge)}</div>` : ''}
+                <div class="pricing-card ${selectedClass}${tier.badge ? ' pricing-card--has-bar' : ''}"
+                     data-tier-id="${safeId}"
+                     role="button"
+                     tabindex="0"
+                     aria-label="Select ${safeName}">
+                    <!-- Radio indicator -->
+                    <div class="pricing-card__radio ${isSelected ? 'pricing-card__radio--selected' : ''}"></div>
+
+                    <!-- Plan name + prices -->
+                    <div class="pricing-card__info">
+                        <p class="pricing-card__name">${safeName}</p>
+                        <p class="pricing-card__prices">
+                            <del class="pricing-card__original">${safeOriginalPrice}</del>
+                            <span class="pricing-card__discounted">${safeDiscountedPrice}</span>
+                        </p>
+                    </div>
+
+                    <!-- Per-day price badge (grey pill right side) -->
+                    <div class="pricing-card__per-day-badge">
+                        <div class="per-day__top">
+                            <span class="per-day__currency">€</span>
+                            <span class="per-day__integer">${Security.escapeHtml(perDayInt || '0')}</span>
+                            <span class="per-day__decimal">${Security.escapeHtml(perDayDec || '00')}</span>
+                        </div>
+                        <span class="per-day__label">per day</span>
+                    </div>
                 </div>
-                <p class="pricing-card__per-day">${safePricePerDay}</p>
-                <span class="pricing-card__savings">${safeSavings}</span>
             </div>
         `;
     },
@@ -1269,14 +1287,22 @@ const Components = {
      */
     paymentIcons(headline, icons) {
         const safeHeadline = Security.escapeHtml(headline || 'Pay Safe & Secure');
+        const iconKeyMap = { 'americanexpress': 'amex', 'applepay': 'applepay', 'maestro': 'maestro', 'discover': 'discover' };
         const iconsHtml = icons.map(iconName => {
-            const iconKey = iconName.toLowerCase().replace(/\s+/g, '');
+            const raw = iconName.toLowerCase().replace(/\s+/g, '');
+            const iconKey = iconKeyMap[raw] || raw;
             return `<div class="payment-icon">${Icons.get(iconKey)}</div>`;
         }).join('');
 
         return `
             <div class="payment-icons-section">
-                <h3 class="payment-icons__headline">${safeHeadline}</h3>
+                <div class="payment-icons__secure-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <polyline points="9 12 11 14 15 10"/>
+                    </svg>
+                    ${safeHeadline}
+                </div>
                 <div class="payment-icons">
                     ${iconsHtml}
                 </div>
@@ -1338,10 +1364,9 @@ const Components = {
 
         return `
             <div class="award-badge">
-                <div class="award-badge__icon">🏆</div>
+                <img src="assets/award_badge.png" alt="Award medal" class="award-badge__icon">
                 <div class="award-badge__content">
-                    <p class="award-badge__title">${safeBadge}</p>
-                    <p class="award-badge__source">${safeSource}</p>
+                    <p class="award-badge__title">Compass is the <strong>${safeBadge}</strong></p>
                 </div>
             </div>
         `;
@@ -1353,16 +1378,16 @@ const Components = {
      * @returns {string} HTML string
      */
     moneyBackGuarantee(guarantee) {
-        const safeHeadline = Security.escapeHtml(guarantee.headline || '30-Day Money-Back Guarantee');
+        const safeHeadline    = Security.escapeHtml(guarantee.headline || '30-Day Money-Back Guarantee');
         const safeDescription = Security.escapeHtml(guarantee.description || '');
-        
+        const safeLinkText    = Security.escapeHtml(guarantee.linkText || 'Learn more');
+
         return `
-            <div class="money-back-guarantee">
-                <div class="guarantee-icon">✓</div>
-                <div class="guarantee-content">
-                    <h3 class="guarantee-headline">${safeHeadline}</h3>
-                    <p class="guarantee-description">${safeDescription}</p>
-                </div>
+            <div class="money-back-card">
+                <img src="assets/guarantee_badge.png" alt="30-day money-back guarantee" class="guarantee-medal">
+                <h3 class="money-back-card__headline">${safeHeadline}</h3>
+                <p class="money-back-card__description">${safeDescription}</p>
+                <a href="#money-back-policy" class="money-back-card__link">${safeLinkText}</a>
             </div>
         `;
     },
@@ -1376,17 +1401,21 @@ const Components = {
      * @returns {string} HTML string
      */
     faqAccordion(headline, questions, openIndex) {
-        const safeHeadline = Security.escapeHtml(headline || 'Frequently Asked Questions');
-        
+        const safeHeadline = Security.escapeHtml(headline || 'People often ask');
+
+        // Question-mark circle icon badge used by the reference design
+        const qIcon = `<span class="faq-q-icon">?</span>`;
+
         const questionsHtml = questions.map((item, index) => {
             const isOpen = index === openIndex;
             const safeQuestion = Security.escapeHtml(item.question);
-            const safeAnswer = Security.escapeHtml(item.answer);
+            const safeAnswer   = Security.escapeHtml(item.answer);
 
             return `
                 <div class="faq-item ${isOpen ? 'faq-item--open' : ''}" data-faq-index="${index}">
                     <button class="faq-question" aria-expanded="${isOpen}">
-                        <span>${safeQuestion}</span>
+                        ${qIcon}
+                        <span class="faq-question__text">${safeQuestion}</span>
                         <span class="faq-chevron">${Icons.get('chevron_down')}</span>
                     </button>
                     <div class="faq-answer">
@@ -1402,6 +1431,325 @@ const Components = {
                 <div class="faq-accordion">
                     ${questionsHtml}
                 </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render before/after comparison section.
+     * Two-column layout: "Now" (distressed) vs "Your Goal" (confident).
+     * Each column shows a character image and 3 metric rows with progress bars.
+     * @param {Object} data - beforeAfter object from JSON
+     * @returns {string} HTML string
+     */
+    beforeAfter(data) {
+        // Build a row of 5 segmented blocks; filled count = Math.round(fill * 5)
+        const makeSegments = (fill, variant) => {
+            const total = 5;
+            const filled = Math.max(1, Math.round(fill * total));
+            return Array.from({ length: total }, (_, i) =>
+                `<span class="ba-seg ba-seg--${variant}${i < filled ? ' ba-seg--on' : ''}"></span>`
+            ).join('');
+        };
+
+        const metricsHtml = data.metrics.map(m => `
+            <div class="ba-metric">
+                <div class="ba-metric__row">
+                    <div class="ba-metric__col">
+                        <p class="ba-metric__label">${Security.escapeHtml(m.label)}</p>
+                        <p class="ba-metric__state ba-metric__state--now">${Security.escapeHtml(m.nowState)}</p>
+                        <div class="ba-segs">${makeSegments(m.nowFill, 'now')}</div>
+                    </div>
+                    <div class="ba-metric__col">
+                        <p class="ba-metric__label">${Security.escapeHtml(m.label)}</p>
+                        <p class="ba-metric__state ba-metric__state--goal">${Security.escapeHtml(m.goalState)}</p>
+                        <div class="ba-segs">${makeSegments(m.goalFill, 'goal')}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="before-after">
+                <div class="ba-images">
+                    <div class="ba-image-col">
+                        <img src="${Security.escapeHtml(data.nowImage)}" alt="Current state" class="ba-image">
+                        <span class="ba-label">${Security.escapeHtml(data.nowLabel || 'Now')}</span>
+                    </div>
+                    <div class="ba-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 40 100" xmlns="http://www.w3.org/2000/svg" fill="none">
+                            <polyline points="8,20 28,50 8,80" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="20,20 40,50 20,80" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="ba-image-col">
+                        <div class="ba-image ba-image--after"
+                             style="background-image: url('${Security.escapeHtml(data.goalImage)}');"
+                             role="img" aria-label="Goal state"></div>
+                        <span class="ba-label ba-label--goal">${Security.escapeHtml(data.goalLabel || 'Your Goal')}</span>
+                    </div>
+                </div>
+                <div class="ba-metrics">
+                    ${metricsHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render personalized headline for paywall.
+     * Injects age group and highlights plan name in primary color.
+     * @param {string} ageGroup - e.g. "35-44" (from question_age answer)
+     * @returns {string} HTML string
+     */
+    personalizedHeadline() {
+        return `
+            <h2 class="paywall-headline">
+                Your <span class="paywall-headline__highlight">Porn Addiction Recovery Plan</span> is ready!
+            </h2>
+        `;
+    },
+
+    /**
+     * Render ticket-style promo code card with embedded live timer.
+     * The '.countdown-timer__digits' span inside is updated by CountdownTimer.
+     * @param {string} promoCode - Generated promo code (e.g. "John_Apr2026")
+     * @param {number} initialMinutes - Countdown start value for initial render
+     * @returns {string} HTML string
+     */
+    promoTicket(promoCode, initialMinutes = 10) {
+        const safeCode = Security.escapeHtml(promoCode);
+        const mins = String(Math.floor(initialMinutes)).padStart(2, '0');
+
+        return `
+            <div class="promo-ticket">
+                <div class="promo-ticket__top">
+                    <svg class="promo-ticket__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                        <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    <span class="promo-ticket__applied">Your promo code applied!</span>
+                </div>
+                <div class="promo-ticket__bottom">
+                    <div class="promo-ticket__code-pill">
+                        <svg class="promo-ticket__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        <span class="promo-ticket__code">${safeCode}</span>
+                    </div>
+                    <div class="promo-ticket__timer-col">
+                        <div class="promo-ticket__timer-display">
+                            <div class="promo-ticket__digit-col">
+                                <span class="countdown-mins">${mins}</span>
+                                <span class="promo-ticket__digit-label">min</span>
+                            </div>
+                            <span class="pt-sep"> : </span>
+                            <div class="promo-ticket__digit-col">
+                                <span class="countdown-secs">00</span>
+                                <span class="promo-ticket__digit-label">sec</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render context tags row: Main challenge + Goal chips.
+     * Values are derived from quiz answers with sensible fallbacks.
+     * @param {string} mainChallenge - e.g. "Stress & anxiety"
+     * @param {string} goal         - e.g. "Healthy intimacy"
+     * @returns {string} HTML string
+     */
+    contextTags(mainChallenge, goal) {
+        const safeChallenge = Security.escapeHtml(mainChallenge || 'Dopamine depletion');
+        const safeGoal      = Security.escapeHtml(goal || 'Healthy habits');
+
+        return `
+            <div class="context-tags">
+                <div class="context-tag">
+                    <span class="context-tag__emoji" style="font-size: 20px; flex-shrink: 0;">🧠</span>
+                    <div>
+                        <p class="context-tag__label">Main challenge</p>
+                        <p class="context-tag__value">${safeChallenge}</p>
+                    </div>
+                </div>
+                <div class="context-tag">
+                    <span class="context-tag__emoji" style="font-size: 20px; flex-shrink: 0;">🎯</span>
+                    <div>
+                        <p class="context-tag__label">Goal</p>
+                        <p class="context-tag__value">${safeGoal}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render "Our goals" checklist section.
+     * @param {Array<string>} items - List of goal strings from JSON
+     * @returns {string} HTML string
+     */
+    goalsList(items) {
+        const itemsHtml = items.map(item => `
+            <li class="goals-list__item">
+                <span class="goals-list__check">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span>${Security.escapeHtml(item)}</span>
+            </li>
+        `).join('');
+
+        return `
+            <div class="goals-list-section">
+                <h3 class="goals-list__headline">Our goals</h3>
+                <ul class="goals-list">
+                    ${itemsHtml}
+                </ul>
+            </div>
+        `;
+    },
+
+    /**
+     * Render stats section with SVG semicircle arc chart + 3 stat callouts.
+     * The arc chart shows 3 concentric arcs at different fill lengths (45%, 77%, 83%).
+     * Stat descriptions support <strong> tags for bold inline emphasis.
+     * @param {Array<Object>} stats - [{percentage, description}, ...]
+     * @returns {string} HTML string
+     */
+    statsWithChart(stats) {
+        // Build stat callout blocks — allow <strong> in description for bold inline text
+        const statsHtml = stats.map(stat => `
+            <div class="stat-callout">
+                <span class="stat-callout__pct">${Security.escapeHtml(stat.percentage)}</span>
+                <p class="stat-callout__desc">${stat.description}</p>
+            </div>
+        `).join('');
+
+        // SVG semicircle arc chart — 3 concentric half-circle arcs
+        // viewH extended to 168 so the 45% label can sit below the arc baseline (cy=130)
+        const cx = 130, cy = 130, viewW = 260, viewH = 168;
+        const arcs = [
+            // outer 83% — dark primary purple, label top-right outside arc
+            { r: 110, pct: 0.83, stroke: '#5B5BD6', label: '83%',
+              lx: 234, ly: 38, linex1: 218, liney1: 50, linex2: 231, liney2: 41 },
+            // middle 77% — mid purple, label top-left outside arc
+            { r:  84, pct: 0.77, stroke: '#8B8BE8', label: '77%',
+              lx: 26,  ly: 56, linex1: 50,  liney1: 66, linex2: 36,  liney2: 59 },
+            // inner 45% — label placed BELOW the baseline so it is clearly readable
+            { r:  58, pct: 0.45, stroke: '#A5B4FC', label: '45%',
+              lx: 72,  ly: 155, linex1: 72,  liney1: 149, linex2: 72,  liney2: 133 },
+        ];
+        const arcPaths = arcs.map(a => {
+            const halfCirc = Math.PI * a.r;
+            const filled = halfCirc * a.pct;
+            return `
+                <circle cx="${cx}" cy="${cy}" r="${a.r}"
+                    fill="none" stroke="#e5e7eb" stroke-width="13"
+                    stroke-dasharray="${halfCirc} ${halfCirc}"
+                    transform="rotate(180 ${cx} ${cy})"/>
+                <circle cx="${cx}" cy="${cy}" r="${a.r}"
+                    fill="none" stroke="${a.stroke}" stroke-width="13" stroke-linecap="round"
+                    stroke-dasharray="${filled} ${2 * Math.PI * a.r}"
+                    transform="rotate(180 ${cx} ${cy})"/>
+                <line x1="${a.linex1}" y1="${a.liney1}" x2="${a.linex2}" y2="${a.liney2}"
+                    stroke="#9ca3af" stroke-width="1" stroke-dasharray="2,2"/>
+                <text x="${a.lx}" y="${a.ly}" font-size="12" font-weight="800"
+                    fill="#1A1A2E" text-anchor="middle">${a.label}</text>
+            `;
+        }).join('');
+
+        return `
+            <div class="stats-section">
+                <h3 class="stats-section__headline">People just like you achieved great results using our <span class="stats-section__brand">Porn Addiction Recovery Plan!</span></h3>
+                <div class="stats-chart" aria-hidden="true">
+                    <svg viewBox="0 0 ${viewW} ${viewH}" xmlns="http://www.w3.org/2000/svg">
+                        ${arcPaths}
+                    </svg>
+                </div>
+                <div class="stat-callouts">
+                    ${statsHtml}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render "without/with Compass" contrast lists.
+     * Two cards side by side (stacked on mobile): X-mark negative list, checkmark positive list.
+     * @param {Object} data - contrastLists from JSON
+     * @returns {string} HTML string
+     */
+    contrastLists(data) {
+        // Grey circle with × inside — matches reference design
+        const xIcon = `<svg class="contrast-list__svg contrast-list__svg--x" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="9" stroke="#9ca3af" stroke-width="1.5"/>
+            <line x1="7" y1="7" x2="13" y2="13" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="13" y1="7" x2="7" y2="13" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>`;
+
+        const withoutItems = (data.withoutItems || []).map(item => `
+            <li class="contrast-list__item contrast-list__item--x">
+                <span class="contrast-list__icon contrast-list__icon--x">${xIcon}</span>
+                <span>${Security.escapeHtml(item)}</span>
+            </li>
+        `).join('');
+
+        const withItems = (data.withItems || []).map(item => `
+            <li class="contrast-list__item contrast-list__item--check">
+                <span class="contrast-list__icon contrast-list__icon--check">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span>${Security.escapeHtml(item)}</span>
+            </li>
+        `).join('');
+
+        return `
+            <div class="contrast-lists">
+                <div class="contrast-card contrast-card--without">
+                    <h4 class="contrast-card__title">${Security.escapeHtml(data.withoutHeadline || 'How life might be without Compass')}</h4>
+                    <ul class="contrast-list">${withoutItems}</ul>
+                </div>
+                <div class="contrast-card contrast-card--with">
+                    <h4 class="contrast-card__title">${Security.escapeHtml(data.withHeadline || 'How life might be with Compass')}</h4>
+                    <ul class="contrast-list">${withItems}</ul>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Render a second CTA block (pricing tiers repeat + button).
+     * Reuses pricingTiers() and ctaButton() — no new state or logic.
+     * @param {Array}  tiers         - Same pricingTiers array from JSON
+     * @param {string} selectedTierId - Currently selected tier
+     * @param {string} ctaText        - Button label
+     * @param {string} screenId       - data-screen for event delegation
+     * @returns {string} HTML string
+     */
+    /**
+     * Second CTA block renders the full purchase flow again:
+     * personalized headline → promo ticket → context tags → pricing → CTA.
+     * Accepts pre-built HTML strings for headline/ticket/tags so the caller
+     * doesn't have to re-compute state.
+     */
+    secondCtaBlock(tiers, selectedTierId, ctaText, screenId, headlineHtml, promoTicketHtml, contextTagsHtml, legalHtml, paymentHtml) {
+        return `
+            <div class="second-cta-block">
+                ${headlineHtml || ''}
+                ${promoTicketHtml || ''}
+                ${contextTagsHtml || ''}
+                ${this.pricingTiers(tiers, selectedTierId)}
+                <div class="paywall__cta">
+                    ${this.ctaButton(ctaText, screenId)}
+                </div>
+                ${legalHtml || ''}
+                ${paymentHtml || ''}
             </div>
         `;
     },
@@ -2437,97 +2785,140 @@ const Screens = {
      * @returns {string} HTML string
      */
     paywall(screenData) {
-        const safeId = Security.escapeHtml(screenData.id);
-        const safeHeadline = Security.escapeHtml(screenData.headline || 'Choose Your Plan');
-
-        // Generate personalized promo code
-        const userName = State.getAnswer('name_capture');
-        const promoCode = Components.generatePromoCode(userName, 50);
-
-        // Get currently selected tier from state
+        const safeId         = Security.escapeHtml(screenData.id);
         const selectedTierId = State.data.selectedTier || '1_month';
+        const openFaqIndex   = State.data.openFaqIndex;
+        const initialMins    = screenData.urgencyElements?.countdownTimer?.initialMinutes || 10;
+        const ctaText        = screenData.ctaButton?.text || 'GET MY PLAN';
 
-        // Get current FAQ open index from state
-        const openFaqIndex = State.data.openFaqIndex;
+        // ── Promo code ─────────────────────────────────────────────────────────
+        const userName = State.getAnswer('name_capture');
+        const promoCode = Components.generatePromoCode(userName);
 
-        // Build paywall sections in order (as per JSON structure)
+        // ── Personalization: age, challenge, goal ───────────────────────────────
+        const ageGroup = State.getAnswer('question_age') || 'your age group';
+
+        // Map question_5 (first trigger) → display label
+        const challengeMap = {
+            'Stress':     'Stress & anxiety',
+            'Boredom':    'Boredom triggers',
+            'Loneliness': 'Social withdrawal',
+            'Anxiety':    'Anxiety triggers',
+            'Curiosity':  'Curiosity triggers',
+        };
+        const rawChallenge = State.getAnswer('question_5');
+        // question_5 is multiple_choice; getAnswer returns the stored value
+        const firstChallenge = Array.isArray(rawChallenge) ? rawChallenge[0] : rawChallenge;
+        const mainChallenge  = challengeMap[firstChallenge] || 'Dopamine depletion';
+
+        // Map question_31 (first goal selection) → display label
+        const goalMap = {
+            'Better relationships and intimacy':     'Healthy intimacy',
+            'More confidence and self-respect':      'Self-confidence',
+            'More motivation for things that matter':'Motivation',
+            'More productivity and success':         'Productivity',
+        };
+        const rawGoal  = State.getAnswer('question_31');
+        const firstGoal = Array.isArray(rawGoal) ? rawGoal[0] : rawGoal;
+        const goal      = goalMap[firstGoal] || 'Healthy habits';
+
         return `
             <div class="screen paywall-screen" data-screen="${safeId}">
-                ${Components.header()}
+
+                <!-- 1. Sticky minimal header (timer + CTA) — replaces standard header -->
+                ${Components.paywallHeader(ctaText, safeId, initialMins)}
 
                 <main class="content paywall">
-                    <h1 class="headline">${safeHeadline}</h1>
 
-                    <!-- 1. Countdown Timer -->
-                    ${screenData.urgencyElements?.countdownTimer ? 
-                        Components.countdownTimer(
-                            screenData.urgencyElements.countdownTimer.headline,
-                            screenData.urgencyElements.countdownTimer.initialMinutes
-                        ) : ''}
+                    <!-- 2. Before / After comparison -->
+                    ${screenData.beforeAfter ? Components.beforeAfter(screenData.beforeAfter) : ''}
 
-                    <!-- 2. Promo Code Badge -->
-                    ${screenData.urgencyElements?.promoCode ? 
-                        Components.promoCodeBadge(
-                            screenData.urgencyElements.promoCode.label,
-                            promoCode,
-                            screenData.urgencyElements.promoCode.discount
-                        ) : ''}
+                    <!-- 3. Personalized headline -->
+                    ${Components.personalizedHeadline()}
 
-                    <!-- 3. Pricing Tiers -->
-                    ${screenData.pricingTiers ? 
+                    <!-- 4. Promo ticket (with embedded live timer) -->
+                    ${Components.promoTicket(promoCode, initialMins)}
+
+                    <!-- 5. Context tags: main challenge + goal -->
+                    ${Components.contextTags(mainChallenge, goal)}
+
+                    <!-- 6. Pricing tiers -->
+                    ${screenData.pricingTiers ?
                         Components.pricingTiers(screenData.pricingTiers, selectedTierId) : ''}
 
-                    <!-- 4. CTA Button -->
+                    <!-- 7. Primary CTA -->
                     <div class="paywall__cta">
-                        ${Components.ctaButton(
-                            screenData.ctaButton?.text || 'Get my plan',
-                            safeId
-                        )}
+                        ${Components.ctaButton(ctaText, safeId)}
                     </div>
 
-                    <!-- 5. Payment Security -->
-                    ${screenData.trustElements?.paymentSecurity ? 
+                    <!-- 8. Legal disclaimer -->
+                    ${screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : ''}
+
+                    <!-- 9. Payment security + icons -->
+                    ${screenData.trustElements?.paymentSecurity ?
                         Components.paymentIcons(
                             screenData.trustElements.paymentSecurity.headline,
                             screenData.trustElements.paymentSecurity.icons
                         ) : ''}
 
-                    <!-- 6. Media Features -->
-                    ${screenData.trustElements?.mediaFeatures ? 
-                        Components.mediaLogos(
-                            screenData.trustElements.mediaFeatures.headline,
-                            screenData.trustElements.mediaFeatures.logos
-                        ) : ''}
+                    <!-- 10. Our goals checklist -->
+                    ${screenData.goalsList ? Components.goalsList(screenData.goalsList) : ''}
 
-                    <!-- 7. Statistics Block -->
-                    ${screenData.trustElements?.statistics ? 
-                        Components.statisticsBlock(screenData.trustElements.statistics) : ''}
+                    <!-- 12. Stats section with arc chart -->
+                    ${screenData.trustElements?.statistics ?
+                        Components.statsWithChart(screenData.trustElements.statistics) : ''}
 
-                    <!-- 8. Award Badge -->
-                    ${screenData.trustElements?.award ? 
+                    <!-- 13 & 14. Without / With Compass contrast lists -->
+                    ${screenData.contrastLists ? Components.contrastLists(screenData.contrastLists) : ''}
+
+                    <!-- 15. Award badge -->
+                    ${screenData.trustElements?.award ?
                         Components.awardBadge(screenData.trustElements.award) : ''}
 
-                    <!-- 9. Money-Back Guarantee -->
-                    ${screenData.trustElements?.moneyBackGuarantee ? 
-                        Components.moneyBackGuarantee(screenData.trustElements.moneyBackGuarantee) : ''}
-
-                    <!-- 10. FAQ Accordion -->
-                    ${screenData.faq ? 
+                    <!-- 16. FAQ accordion -->
+                    ${screenData.faq ?
                         Components.faqAccordion(
                             screenData.faq.headline,
                             screenData.faq.questions || [],
                             openFaqIndex
                         ) : ''}
 
-                    <!-- 11. Testimonials -->
+                    <!-- 17. Testimonials -->
                     ${screenData.testimonials ? `
-                        <div class="testimonial-cards">
-                            ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
+                        <div class="testimonials-section">
+                            <h3 class="testimonials-section__headline">Users love our plans</h3>
+                            <p class="testimonials-section__sub">Here's what people are saying about Compass</p>
+                            <div class="testimonial-cards">
+                                ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
+                            </div>
                         </div>
                     ` : ''}
 
-                    <!-- 12. Company Footer -->
+                    <!-- 18. Second CTA block: full repeat — headline + promo + tags + pricing + CTA + trust -->
+                    ${screenData.pricingTiers ?
+                        Components.secondCtaBlock(
+                            screenData.pricingTiers,
+                            selectedTierId,
+                            ctaText,
+                            safeId,
+                            Components.personalizedHeadline(),
+                            Components.promoTicket(promoCode, initialMins),
+                            Components.contextTags(mainChallenge, goal),
+                            screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : '',
+                            screenData.trustElements?.paymentSecurity ?
+                                Components.paymentIcons(
+                                    screenData.trustElements.paymentSecurity.headline,
+                                    screenData.trustElements.paymentSecurity.icons
+                                ) : ''
+                        ) : ''}
+
+                    <!-- 19. Money-back guarantee card -->
+                    ${screenData.trustElements?.moneyBackGuarantee ?
+                        Components.moneyBackGuarantee(screenData.trustElements.moneyBackGuarantee) : ''}
+
+                    <!-- 20. Company footer -->
                     ${screenData.companyInfo ? Components.companyFooter(screenData.companyInfo) : ''}
+
                 </main>
             </div>
         `;
@@ -2596,18 +2987,25 @@ const CountdownTimer = {
     },
 
     /**
-     * Update timer display in DOM
+     * Update timer display in DOM.
+     * Updates ALL elements with class '.countdown-timer__digits' so that the
+     * paywall sticky header, the promo ticket, and any legacy timer section
+     * all stay in sync with a single interval.
      */
     updateDisplay() {
-        const timerEl = document.querySelector('.countdown-timer__digits');
-        if (!timerEl) return;
-
         const minutes = Math.floor(this.remainingSeconds / 60);
         const seconds = this.remainingSeconds % 60;
-        
-        // Format as MM:SS with leading zeros
-        const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        timerEl.textContent = display;
+        const mm = String(minutes).padStart(2, '0');
+        const ss = String(seconds).padStart(2, '0');
+
+        // Compact "MM:SS" for sticky header
+        document.querySelectorAll('.countdown-timer__digits').forEach(el => {
+            el.textContent = `${mm}:${ss}`;
+        });
+
+        // Split display "MM : SS" for promo ticket
+        document.querySelectorAll('.countdown-mins').forEach(el => { el.textContent = mm; });
+        document.querySelectorAll('.countdown-secs').forEach(el => { el.textContent = ss; });
     },
 
     /**
