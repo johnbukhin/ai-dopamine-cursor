@@ -1,132 +1,298 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../src/lib/supabase';
 import { CancelFlow } from './CancelFlow';
 
 type SettingsTab = 'Profile' | 'Access' | 'Terms';
 
-const ProfileSettings = () => (
-  <div>
-    <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile</h2>
-    <div className="space-y-6">
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-        <input type="email" name="email" id="email" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-      </div>
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Change Password</label>
-        <input type="password" name="password" id="password" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-      </div>
-      <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
-        <input type="password" name="confirmPassword" id="confirmPassword" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" />
-      </div>
-    </div>
-  </div>
-);
+// ---------------------------------------------------------------------------
+// Subscription row shape as stored in Supabase (written by webhook.js)
+// ---------------------------------------------------------------------------
+interface Subscription {
+  stripe_subscription_id: string;
+  plan_label: string | null;
+  amount_paid: number | null;       // cents
+  currency: string | null;
+  paid_at: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+}
 
-const AccessSettings = () => {
-  const [isSubscriptionActive, setIsSubscriptionActive] = useState(true);
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Format a cents integer + ISO currency code as a display string (e.g. "€19.99") */
+function formatAmount(cents: number | null, currency: string | null): string {
+  if (cents == null || currency == null) return '—';
+  const symbol = currency.toLowerCase() === 'eur' ? '€' : currency.toUpperCase() + ' ';
+  return `${symbol}${(cents / 100).toFixed(2)}`;
+}
+
+/** Format an ISO date string as a short locale date (e.g. "16 Apr 2026") */
+function formatDate(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// ---------------------------------------------------------------------------
+// Profile tab
+// ---------------------------------------------------------------------------
+const ProfileSettings: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Pre-fill email from the current Supabase auth session
+  useEffect(() => {
+    supabase?.auth.getUser().then(({ data }) => {
+      if (data?.user?.email) setEmail(data.user.email);
+    });
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase) return;
+
+    setErrorMsg('');
+
+    if (password !== confirm) {
+      setErrorMsg('Passwords do not match');
+      return;
+    }
+    if (password.length < 8) {
+      setErrorMsg('Password must be at least 8 characters');
+      return;
+    }
+
+    setStatus('saving');
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      setErrorMsg(error.message);
+      setStatus('error');
+    } else {
+      setPassword('');
+      setConfirm('');
+      setStatus('success');
+      setTimeout(() => setStatus('idle'), 3000);
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile</h2>
+      <form onSubmit={handleSave} className="space-y-6 max-w-md">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            value={email}
+            readOnly
+            className="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-500 sm:text-sm cursor-default"
+          />
+          <p className="mt-1 text-xs text-gray-400">Email cannot be changed here.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">New Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+            placeholder="Min. 8 characters"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+          <input
+            type="password"
+            value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+            placeholder="Repeat password"
+          />
+        </div>
+
+        {errorMsg && (
+          <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{errorMsg}</p>
+        )}
+        {status === 'success' && (
+          <p className="text-sm text-emerald-700 bg-emerald-50 rounded-md px-3 py-2">Password updated successfully.</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={status === 'saving' || !password}
+          className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+        >
+          {status === 'saving' ? 'Saving…' : 'Save Password'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Access tab
+// ---------------------------------------------------------------------------
+const AccessSettings: React.FC = () => {
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
   const [showCancelFlow, setShowCancelFlow] = useState(false);
+  // After confirmed cancel, store the period-end date to show "Access until"
+  const [cancelledUntil, setCancelledUntil] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!supabase) { setLoading(false); return; }
+
+      // Get current user's email to query their subscription row
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData?.user?.email;
+      if (!email) { setLoading(false); return; }
+
+      setUserEmail(email);
+
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('stripe_subscription_id, plan_label, amount_paid, currency, paid_at, current_period_end, cancel_at_period_end')
+        .eq('user_email', email)
+        .order('paid_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data) {
+        setSubscription(data as Subscription);
+        // If already scheduled for cancellation, pre-populate the cancelled state
+        if (data.cancel_at_period_end) {
+          setCancelledUntil(data.current_period_end);
+        }
+      }
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const handleCancelConfirmed = (periodEnd: string | null) => {
+    // Update local state immediately — no need to refetch
+    setCancelledUntil(periodEnd || subscription?.current_period_end || null);
+    setSubscription(prev => prev ? { ...prev, cancel_at_period_end: true } : prev);
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
+        <p className="text-sm text-gray-500">Loading subscription…</p>
+      </div>
+    );
+  }
+
+  if (!subscription) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
+        <div className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6">
+          <p className="text-sm text-gray-500">No active subscription found.</p>
+          <p className="text-xs text-gray-400 mt-1">
+            If you recently purchased, it may take a moment to appear.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const isCancelled = subscription.cancel_at_period_end || !!cancelledUntil;
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
-      <div className="bg-white shadow sm:rounded-lg mb-6 relative">
+      <div className="bg-white shadow sm:rounded-lg mb-6">
         <div className="px-4 py-5 sm:p-6">
           <div className="flex justify-between items-start">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Current membership</h3>
-            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isSubscriptionActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {isSubscriptionActive ? 'Active' : 'Inactive'}
+            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              isCancelled ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
+            }`}>
+              {isCancelled ? 'Cancels at period end' : 'Active'}
             </span>
           </div>
-          <div className="mt-2 max-w-xl text-sm text-gray-500">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <div>
-                <p className="font-medium">Membership type</p>
-                <p>Premium</p>
-              </div>
-              <div>
-                <p className="font-medium">Begin date</p>
-                <p>2024-01-01</p>
-              </div>
-              <div>
-                <p className="font-medium">Amount of payment</p>
-                <p>$9.99 / month</p>
-              </div>
-              <div>
-                <p className="font-medium">Valid until</p>
-                <p>2025-01-01</p>
-              </div>
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-500">
+            <div>
+              <p className="font-medium text-gray-700">Membership type</p>
+              <p>{subscription.plan_label || '—'}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-700">Begin date</p>
+              <p>{formatDate(subscription.paid_at)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-700">Amount paid</p>
+              <p>{formatAmount(subscription.amount_paid, subscription.currency)}</p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-700">
+                {isCancelled ? 'Access until' : 'Renews on'}
+              </p>
+              <p>{formatDate(cancelledUntil || subscription.current_period_end)}</p>
             </div>
           </div>
+
           <div className="mt-6">
-            {isSubscriptionActive ? (
+            {isCancelled ? (
+              <p className="text-sm text-amber-700">
+                Your subscription has been cancelled. You have access until{' '}
+                <strong>{formatDate(cancelledUntil || subscription.current_period_end)}</strong>.
+              </p>
+            ) : (
               <button
                 onClick={() => setShowCancelFlow(true)}
                 className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-red-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 Cancel Membership
               </button>
-            ) : (
-              <button
-                onClick={() => setIsSubscriptionActive(true)}
-                className="w-full sm:w-auto px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Renew with discount
-              </button>
             )}
           </div>
         </div>
       </div>
-      <div>
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Other materials</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-          <div className="bg-white shadow sm:rounded-lg p-6">
-            <h4 className="font-bold">28-Day Plan</h4>
-            <p className="text-sm text-gray-500 mt-2">Unlocked</p>
-          </div>
-          <div className="bg-gray-200 shadow sm:rounded-lg p-6 opacity-50">
-            <h4 className="font-bold">Advanced Course</h4>
-            <p className="text-sm text-gray-500 mt-2">Locked</p>
-          </div>
-          <div className="bg-gray-200 shadow sm:rounded-lg p-6 opacity-50">
-            <h4 className="font-bold">Community Access</h4>
-            <p className="text-sm text-gray-500 mt-2">Locked</p>
-          </div>
-        </div>
-      </div>
+
       {showCancelFlow && (
-        <CancelFlow 
-          onClose={() => setShowCancelFlow(false)} 
-          onConfirmCancel={() => {
-            setIsSubscriptionActive(false);
-            // The flow component will show the final step, no need to close here
-          }} 
+        <CancelFlow
+          stripeSubscriptionId={subscription.stripe_subscription_id}
+          userEmail={userEmail}
+          onClose={() => setShowCancelFlow(false)}
+          onConfirmCancel={handleCancelConfirmed}
         />
       )}
     </div>
   );
 };
 
-const TermsSettings = () => (
+// ---------------------------------------------------------------------------
+// Terms tab
+// ---------------------------------------------------------------------------
+const TermsSettings: React.FC = () => (
   <div>
     <h2 className="text-2xl font-bold text-gray-800 mb-6">Terms</h2>
-    <p>Content for Terms will be added later.</p>
+    <p className="text-sm text-gray-500">Legal documents are in preparation and will be published here shortly.</p>
   </div>
 );
 
+// ---------------------------------------------------------------------------
+// Settings shell
+// ---------------------------------------------------------------------------
 export const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Profile');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'Profile':
-        return <ProfileSettings />;
-      case 'Access':
-        return <AccessSettings />;
-      case 'Terms':
-        return <TermsSettings />;
-      default:
-        return <ProfileSettings />;
+      case 'Profile': return <ProfileSettings />;
+      case 'Access':  return <AccessSettings />;
+      case 'Terms':   return <TermsSettings />;
+      default:        return <ProfileSettings />;
     }
   };
 

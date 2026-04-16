@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 // Stripe Webhook Handler
 //
 // Listens for subscription lifecycle events and upserts a `subscriptions`
-// row in Supabase so the webapp can gate access to the 28-day plan.
+// row in Supabase so the webapp can gate access and display subscription data.
 //
 // Wiring up (after first Vercel deploy):
 //   Stripe Dashboard → Developers → Webhooks → Add endpoint
@@ -18,6 +18,16 @@ const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// Mirror of the plan map in create-checkout.js — used to resolve a human-
+// readable label from a Stripe price ID for display in the webapp Settings.
+const PRICE_LABEL_MAP = {
+    [process.env.STRIPE_PRICE_INTRO_7DAY]:      '7-Day Plan',
+    [process.env.STRIPE_PRICE_INTRO_1MONTH]:    '1-Month Plan',
+    [process.env.STRIPE_PRICE_INTRO_3MONTH]:    '3-Month Plan',
+    [process.env.STRIPE_PRICE_REGULAR_MONTHLY]: 'Monthly Plan',
+    [process.env.STRIPE_PRICE_REGULAR_QUARTERLY]: 'Quarterly Plan',
+};
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).end();
@@ -57,9 +67,26 @@ export default async function handler(req, res) {
     }
 
     // -----------------------------------------------------------------------
-    // invoice.payment_succeeded — record the active subscription in Supabase
+    // invoice.payment_succeeded — upsert active subscription in Supabase.
+    //
+    // Fires on initial payment AND every renewal, so current_period_end stays
+    // up-to-date automatically without any additional cron/polling.
     // -----------------------------------------------------------------------
     const invoice = event.data.object;
+
+    // Extract period end from the first line item (covers both initial invoices
+    // and renewal invoices which always have exactly one subscription line).
+    const firstLine = invoice.lines?.data?.[0];
+    const periodEndUnix = firstLine?.period?.end;
+    const currentPeriodEnd = periodEndUnix
+        ? new Date(periodEndUnix * 1000).toISOString()
+        : null;
+
+    // Resolve a human-readable plan label from the price ID on the line item.
+    // Fall back to the line item description if the price ID isn't in our map
+    // (e.g. manual invoices or future price IDs not yet added to PRICE_LABEL_MAP).
+    const priceId = firstLine?.price?.id;
+    const planLabel = PRICE_LABEL_MAP[priceId] || firstLine?.description || null;
 
     try {
         const { error } = await supabase.from('subscriptions').upsert(
@@ -69,15 +96,20 @@ export default async function handler(req, res) {
                 user_email:             invoice.customer_email,
                 status:                 'active',
                 paid_at:                new Date(invoice.status_transitions?.paid_at * 1000).toISOString(),
-                amount_paid:            invoice.amount_paid,   // in cents
+                amount_paid:            invoice.amount_paid,    // in cents
                 currency:               invoice.currency,
+                current_period_end:     currentPeriodEnd,
+                plan_label:             planLabel,
+                // Reset cancel flag on successful payment — covers the case where
+                // a user cancels then resubscribes (new invoice fires, clears flag).
+                cancel_at_period_end:   false,
             },
             { onConflict: 'stripe_subscription_id' }
         );
 
         if (error) {
             // Log but don't return 500 — Stripe would retry and we'd loop.
-            console.error('[webhook] Supabase upsert error:', error.message);
+            console.error('[webhook] Supabase upsert error:', error.message, error.code);
         }
     } catch (err) {
         console.error('[webhook] Unexpected error:', err.message);
