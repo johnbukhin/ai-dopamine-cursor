@@ -4108,11 +4108,10 @@ const Events = {
         // ── Dev mock: bypass /api/create-user on localhost ──────────────────
         // Static server has no serverless functions; mock a successful response
         // so the full post-account flow (success message, navigation) can be tested.
-        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-        if (isLocalhost) {
+        if (isDev()) {
             log.info('[Account] Dev mock — skipping create-user API (localhost)');
             State.set('accountCreated', true);
-            App.showSuccess('Account created successfully! (Dev mock)');
+            App.showSuccess('Account created successfully!');
             button.textContent = 'Account Created';
             setTimeout(() => {
                 const nextScreen = Router.getNextScreen(screenId);
@@ -4267,6 +4266,11 @@ const Events = {
 };
 
 // ========================================
+// ── Dev utility ─────────────────────────────────────────────────────────────
+// Returns true when running on a local static server. Used to gate dev mocks
+// (Stripe, create-user) that require serverless APIs unavailable on localhost.
+const isDev = () => ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
 // Main Application
 // ========================================
 const App = {
@@ -4351,8 +4355,7 @@ const App = {
         // Static server can't run serverless APIs, so we wire the button to
         // jump straight to the next screen. This path is never reachable on
         // Vercel (where hostname is not localhost).
-        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-        if (isLocalhost) {
+        if (isDev()) {
             if (mountEl) mountEl.innerHTML = '<p style="color:var(--color-text-secondary);font-size:0.85rem;text-align:center;padding:12px 0">⚡ Dev mode — payment mocked (localhost)</p>';
             if (payBtn) {
                 payBtn.disabled = false;

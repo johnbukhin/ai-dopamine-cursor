@@ -19,6 +19,11 @@ export default async function handler(req, res) {
     gender, ageGroup, mainChallenge, goal, scores, funnelVersion,
   } = req.body;
 
+  // Clip text fields to guard against oversized client payloads.
+  // Profile insert is non-fatal so errors are swallowed — prevent silent
+  // DB rejections by trimming at the boundary.
+  const clip = (v, max = 100) => (typeof v === 'string' ? v.slice(0, max) : null);
+
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
@@ -47,20 +52,20 @@ export default async function handler(req, res) {
       quiz_answers:  quizAnswers   || null,
       // Structured quiz columns (Issue #19) — queryable alternatives to the
       // raw quiz_answers blob. All are optional; missing answers send null.
-      gender:                        gender        ?? null,
-      age_group:                     ageGroup      ?? null,
-      main_challenge:                mainChallenge ?? null,
-      goal:                          goal          ?? null,
+      gender:                        clip(gender),
+      age_group:                     clip(ageGroup),
+      main_challenge:                clip(mainChallenge),
+      goal:                          clip(goal),
       score_overall:                 scores?.overall              ?? null,
       score_dopamine_sensitivity:    scores?.dopamine_sensitivity  ?? null,
       score_emotional_regulation:    scores?.emotional_regulation  ?? null,
       score_pattern_stage:           scores?.pattern_stage         ?? null,
       score_physical_impact:         scores?.physical_impact       ?? null,
-      funnel_version:                funnelVersion ?? null,
+      funnel_version:                clip(funnelVersion, 20),
     });
 
     if (profileError) {
-      console.error('[create-user] Profile insert error:', profileError.message);
+      console.error('[create-user] Profile insert error:', profileError.message, profileError.code);
     }
 
     const { data: session, error: signInError } = await supabase.auth.signInWithPassword({
