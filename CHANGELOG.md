@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #19)
+- **Structured quiz data in `users_profile`** — 10 new queryable columns written on account creation: `gender`, `age_group`, `main_challenge`, `goal`, `score_overall`, `score_dopamine_sensitivity`, `score_emotional_regulation`, `score_pattern_stage`, `score_physical_impact`, `funnel_version`
+- **Dev mock for account creation** — on localhost, `handleAccountFormSubmit` skips the `/api/create-user` API call and navigates forward; real API runs on Vercel only
+- **Dev mock for Stripe checkout** — on localhost, checkout screen shows a "Complete Payment (Mock)" button that skips Stripe and goes to the next screen
+- **`isDev()` helper** — module-level utility in `app.js` for detecting localhost; replaces duplicate `isLocalhost` checks
+
+### Fixed (Issue #19)
+- **Gender not saved** — was reading `State.getAnswer('gender_selection')` but gender is stored under `'landing'` key by `handleGenderSelect`
+- **`funnel_version` always null on Vercel** — regex only matched `/funnels/v2/` (localhost path); added second pattern to match `/funnel-v2/` (Vercel rewrite URL)
+- **Vercel routing infinite load** — `fetch('config.json')` from URL `/funnel-v2` resolved to `/config.json` (wrong path); fixed by redirecting `/funnel-v2` → `/funnel-v2/` and rewriting `/funnel-v2/:path+` → `/funnels/v2/:path+` so relative fetches resolve correctly
+- **Root URL 404** — `https://ai-dopamine-cursor.vercel.app/` now redirects to `/funnel-v2/`
+
+### Changed (Issue #19)
+- `create-user.js` text fields (`gender`, `age_group`, `main_challenge`, `goal`, `funnel_version`) clipped to 100/20 chars before insert to guard against oversized payloads silently failing the non-fatal profile write
+- `profileError` log now includes `profileError.code` for easier Supabase debugging
+
 ### Added (Issue #18)
 - **Timer persistence across page refreshes** — countdown timer stores expiry timestamp in `localStorage` (`mc_discount_expiry`); on reload, resumes from remaining time rather than resetting to 10:00
 - **Timer expiry behavior** — when countdown hits 00:00: promo ticket hidden, `.discount-expired` CSS class applied to paywall; pricing cards revert to full (original) price, discounted price and per-day badge hidden; expired state persists across reloads

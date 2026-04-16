@@ -1,6 +1,6 @@
 # Feature Implementation Plan — Issue #19
 
-**Overall Progress:** `75%`
+**Overall Progress:** `100%`
 
 ## TLDR
 Store structured onboarding quiz data (gender, age group, scores, challenge, goal, funnel version) as queryable columns in `users_profile` alongside the existing raw `quiz_answers` blob. Three files touched: Supabase migration, `create-user.js` API handler, `app.js` account submission.
@@ -41,7 +41,7 @@ Store structured onboarding quiz data (gender, age group, scores, challenge, goa
   - [x] 🟩 Destructure new fields from `req.body`: `gender`, `ageGroup`, `mainChallenge`, `goal`, `scores`, `funnelVersion`
   - [x] 🟩 Add new columns to the `supabase.from('users_profile').insert(...)` call
 
-- [ ] 🟥 **Step 4: Validate**
-  - [ ] 🟥 Run through V2 funnel end-to-end, create test account, verify all 10 new columns populated in Supabase
-  - [ ] 🟥 Run through V1 funnel, verify `goal` is `null` and `age_group` reads from `question_age`
-  - [ ] 🟥 Confirm `profileError` path: if insert fails, account creation still succeeds
+- [x] 🟩 **Step 4: Validate**
+  - [x] 🟩 Run through V2 funnel end-to-end, create test account, verify all 10 new columns populated in Supabase
+  - [x] 🟩 Run through V1 funnel, verify `goal` is `null` and `age_group` reads from `question_age`
+  - [x] 🟩 Confirm `profileError` path: if insert fails, account creation still succeeds
