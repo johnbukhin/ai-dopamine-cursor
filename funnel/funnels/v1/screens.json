@@ -1746,8 +1746,8 @@
     "beforeAfter": {
       "nowLabel": "Now",
       "goalLabel": "Your Goal",
-      "nowImage": "../assets/before_state.png",
-      "goalImage": "../assets/after_state.png",
+      "nowImage": "../../assets/before_state.png",
+      "goalImage": "../../assets/after_state.png",
       "metrics": [
         {
           "label": "Dopamine system",
