@@ -1,12 +1,24 @@
 {
-  "rewrites": [
+  "redirects": [
     {
       "source": "/funnel-v1",
-      "destination": "/funnels/v1/index.html"
+      "destination": "/funnel-v1/",
+      "permanent": false
     },
     {
       "source": "/funnel-v2",
-      "destination": "/funnels/v2/index.html"
+      "destination": "/funnel-v2/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/funnel-v1/:path*",
+      "destination": "/funnels/v1/:path*"
+    },
+    {
+      "source": "/funnel-v2/:path*",
+      "destination": "/funnels/v2/:path*"
     }
   ],
   "headers": [
