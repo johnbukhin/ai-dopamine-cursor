@@ -13,7 +13,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, password, name, selectedPlan, promoCode, quizAnswers } = req.body;
+  const {
+    email, password, name, selectedPlan, promoCode, quizAnswers,
+    // Structured quiz profile fields (Issue #19)
+    gender, ageGroup, mainChallenge, goal, scores, funnelVersion,
+  } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -37,10 +41,22 @@ export default async function handler(req, res) {
     const { error: profileError } = await supabase.from('users_profile').insert({
       id: authData.user.id,
       email,
-      name: name || null,
-      selected_plan: selectedPlan || null,
-      promo_code: promoCode || null,
-      quiz_answers: quizAnswers || null
+      name:          name          || null,
+      selected_plan: selectedPlan  || null,
+      promo_code:    promoCode     || null,
+      quiz_answers:  quizAnswers   || null,
+      // Structured quiz columns (Issue #19) — queryable alternatives to the
+      // raw quiz_answers blob. All are optional; missing answers send null.
+      gender:                        gender        ?? null,
+      age_group:                     ageGroup      ?? null,
+      main_challenge:                mainChallenge ?? null,
+      goal:                          goal          ?? null,
+      score_overall:                 scores?.overall              ?? null,
+      score_dopamine_sensitivity:    scores?.dopamine_sensitivity  ?? null,
+      score_emotional_regulation:    scores?.emotional_regulation  ?? null,
+      score_pattern_stage:           scores?.pattern_stage         ?? null,
+      score_physical_impact:         scores?.physical_impact       ?? null,
+      funnel_version:                funnelVersion ?? null,
     });
 
     if (profileError) {

@@ -4070,6 +4070,54 @@ const Events = {
         const userName = State.getAnswer('name_capture');
         const promoCode = Components.generatePromoCode(userName, 50);
 
+        // --- Structured quiz fields for users_profile ---
+
+        // Compute all category scores; returns {overall, dopamine_sensitivity,
+        // emotional_regulation, pattern_stage, physical_impact} each with {sum,max,pct}.
+        const scoreData = Scoring.calculate();
+        const scores = {
+            overall:               scoreData.overall?.pct              ?? null,
+            dopamine_sensitivity:  scoreData.dopamine_sensitivity?.pct  ?? null,
+            emotional_regulation:  scoreData.emotional_regulation?.pct  ?? null,
+            pattern_stage:         scoreData.pattern_stage?.pct         ?? null,
+            physical_impact:       scoreData.physical_impact?.pct       ?? null,
+        };
+
+        // Parse funnel version from URL path, e.g. /funnels/v2/ → "v2"
+        const funnelVersion = window.location.pathname.match(/\/funnels\/([^/]+)\//)?.[1] || null;
+
+        // V2 uses 'age_selection'; V1 uses 'question_age' — fall back gracefully
+        const ageGroup = State.getAnswer('age_selection') || State.getAnswer('question_age') || null;
+
+        // gender comes from 'gender_selection' (V2) or 'question_gender' (V1)
+        const gender = State.getAnswer('gender_selection') || State.getAnswer('question_gender') || null;
+
+        // main challenge from dedicated scoring helper (reads question_31)
+        const mainChallenge = Scoring.getMainChallenge() || null;
+
+        // goal only exists in V2 (question_33); send null for V1 to avoid the
+        // hardcoded 'Focus levels' fallback inside Scoring.getGoal()
+        const goal = State.getAnswer('question_33') ? Scoring.getGoal() : null;
+
+        // ── Dev mock: bypass /api/create-user on localhost ──────────────────
+        // Static server has no serverless functions; mock a successful response
+        // so the full post-account flow (success message, navigation) can be tested.
+        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        if (isLocalhost) {
+            log.info('[Account] Dev mock — skipping create-user API (localhost)');
+            State.set('accountCreated', true);
+            App.showSuccess('Account created successfully! (Dev mock)');
+            button.textContent = 'Account Created';
+            setTimeout(() => {
+                const nextScreen = Router.getNextScreen(screenId);
+                if (nextScreen) {
+                    State.pushHistory(screenId);
+                    Router.navigate(nextScreen);
+                }
+            }, 1000);
+            return;
+        }
+
         try {
             const response = await fetch('../api/create-user', {
                 method: 'POST',
@@ -4080,7 +4128,14 @@ const Events = {
                     name: userName || null,
                     selectedPlan: State.data.selectedTier,
                     promoCode,
-                    quizAnswers: State.data.answers
+                    quizAnswers: State.data.answers,
+                    // Structured quiz profile fields
+                    gender,
+                    ageGroup,
+                    mainChallenge,
+                    goal,
+                    scores,
+                    funnelVersion,
                 })
             });
 
@@ -4283,6 +4338,28 @@ const App = {
 
         if (!email) {
             showCheckoutError('Please complete email capture before checkout.');
+            return;
+        }
+
+        // ── Dev mock: bypass Stripe entirely on localhost ────────────────────
+        // Static server can't run serverless APIs, so we wire the button to
+        // jump straight to the next screen. This path is never reachable on
+        // Vercel (where hostname is not localhost).
+        const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        if (isLocalhost) {
+            if (mountEl) mountEl.innerHTML = '<p style="color:var(--color-text-secondary);font-size:0.85rem;text-align:center;padding:12px 0">⚡ Dev mode — payment mocked (localhost)</p>';
+            if (payBtn) {
+                payBtn.disabled = false;
+                payBtn.classList.remove('cta-button--disabled');
+                payBtn.textContent = 'Complete Payment (Mock)';
+                payBtn.addEventListener('click', () => {
+                    log.info('[Checkout] Dev mock payment — skipping Stripe, navigating to next screen');
+                    State.pushHistory(screenData.id);
+                    const nextScreen = Router.getNextScreen(screenData.id);
+                    if (nextScreen) Router.navigate(nextScreen);
+                });
+            }
+            this._stripeInitializing = false;
             return;
         }
 
