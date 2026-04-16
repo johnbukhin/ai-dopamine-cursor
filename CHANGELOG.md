@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #18)
+- **Timer persistence across page refreshes** — countdown timer stores expiry timestamp in `localStorage` (`mc_discount_expiry`); on reload, resumes from remaining time rather than resetting to 10:00
+- **Timer expiry behavior** — when countdown hits 00:00: promo ticket hidden, `.discount-expired` CSS class applied to paywall; pricing cards revert to full (original) price, discounted price and per-day badge hidden; expired state persists across reloads
+- **`maestro` and `discover` payment icons** — were missing from engine icon set despite being referenced in v2 screens.json
+- **CSS architecture rules in CLAUDE.md** — explicit `width: 100%` over `align-items: stretch`, hard-refresh reminder, canonical data source for paywall content
+
+### Fixed (Issue #18)
+- **Paywall element widths** — first-section elements (before/after, promo ticket, context tags, CTA) were narrower than second section; fixed by adding `width: 100%; box-sizing: border-box` to `.paywall > *` instead of relying on `align-items: stretch` cascade
+- **AMEX icon clipping** — complex path-based SVG was clipping "EXPRESS" at small display sizes; replaced with clean text-based card rendering "AMEX" (same approach as Discover icon)
+- **Personalized headline** — was incorrectly appending `for {gender} {ageGroup}` text that was removed in Issue #17; reverted to "Your Porn Addiction Recovery Plan is ready!"
+- **EUR pricing in v2 paywall** — migration used wrong source (pre-Issue-#17 USD data); all 3 tiers now use correct EUR amounts (7-day €10.50, 1-month €19.99, 3-month €34.99)
+- **Legal disclaimer** — updated to EUR amounts and correct support email `support@mind-compass.app`
+- **Timer NaN display** — corrupt or non-numeric `localStorage` value caused `NaN:NaN` countdown display; added `isNaN` guard that clears the corrupt key and starts fresh
+
+### Changed (Issue #18)
+- Payment icons upgraded from simplified 48×32 placeholder SVGs to proper branded 780×500 SVGs (Visa, Mastercard, Apple Pay, PayPal); icons sized to 31×20px with `flex-wrap: nowrap`
+- `.cta-button` shape updated to pill (border-radius: 50px), uppercase, letter-spacing
+- Tighter spacing between pricing cards and primary CTA button
+
+### Removed (Issue #18)
+- Dead `.before-after { display: grid }` CSS block — pre-Issue-#17 orphan that was overriding the new `ba-*` layout
+- Orphaned `.progress-bar-mini__fill` CSS rules (parent `.progress-bar-mini` was already deleted)
+- Stale `subscriptionNote` field from v2 `screens.json` — never rendered by engine, contained wrong USD pricing
+- Dead `defaultSelectedTier` field from v2 `screens.json` — engine never read it (hardcoded fallback `'1_month'`)
+
+
+
 ### Added
 - **Mind Compass funnel v2** (Issue #16, `funnel/liven-funnel-2/`)
   - Complete quiz-to-paywall funnel: 54 screens, 36 questions (27 likert + 9 mixed type)

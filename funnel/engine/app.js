@@ -311,33 +311,17 @@ const Icons = {
         // Payment Icons (Phase 3c - Paywall)
         // ========================================
         
-        // Visa card icon
-        visa: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#1A1F71"/>
-            <path d="M18.5 22L21.8 10H25L21.7 22H18.5ZM32.7 10.3C32 10.1 30.9 9.8 29.5 9.8C26.2 9.8 23.9 11.5 23.9 14C23.9 15.8 25.6 16.8 26.9 17.4C28.2 18 28.7 18.4 28.7 19C28.7 19.9 27.6 20.3 26.6 20.3C25.2 20.3 24.4 20.1 23.3 19.6L22.9 19.4L22.5 21.9C23.3 22.3 24.8 22.6 26.4 22.6C30 22.6 32.2 20.9 32.3 18.2C32.3 16.8 31.4 15.7 29.4 14.8C28.2 14.2 27.5 13.8 27.5 13.2C27.5 12.7 28.1 12.1 29.4 12.1C30.5 12.1 31.4 12.3 32.1 12.6L32.5 12.8L32.7 10.3ZM38.5 10H36C35.2 10 34.6 10.2 34.2 11L29 22H32.6L33.3 20.2H37.7L38.2 22H41.5L38.5 10ZM34.2 17.7L35.8 13L36.8 17.7H34.2ZM15.5 10L12 19.5L11.6 17.4L10.4 11.8C10.2 10.8 9.5 10.1 8.6 10H8.6L8.6 10H3V10.3C4.2 10.6 5.3 11 6.2 11.5L9.3 22H13L19 10H15.5Z" fill="white"/>
-        </svg>`,
+        // Visa — official paths, white card bg
+        visa: `<svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 0H740C762.092 0 780 17.909 780 40V460C780 482.092 762.092 500 740 500H40C17.909 500 0 482.092 0 460V40C0 17.909 17.909 0 40 0Z" fill="white" stroke="#E0E0E0" stroke-width="8"/><path d="M489.823 143.111C442.988 143.111 401.134 167.393 401.134 212.256C401.134 263.706 475.364 267.259 475.364 293.106C475.364 303.989 462.895 313.731 441.6 313.731C411.377 313.731 388.789 300.119 388.789 300.119L379.123 345.391C379.123 345.391 405.145 356.889 439.692 356.889C490.898 356.889 531.19 331.415 531.19 285.784C531.19 231.419 456.652 227.971 456.652 203.981C456.652 195.455 466.887 186.114 488.122 186.114C512.081 186.114 531.628 196.014 531.628 196.014L541.087 152.289C541.087 152.289 519.818 143.111 489.823 143.111ZM61.3294 146.411L60.1953 153.011C60.1953 153.011 79.8988 156.618 97.645 163.814C120.495 172.064 122.122 176.868 125.971 191.786L167.905 353.486H224.118L310.719 146.411H254.635L198.989 287.202L176.282 167.861C174.199 154.203 163.651 146.411 150.74 146.411H61.3294ZM333.271 146.411L289.275 353.486H342.756L386.598 146.411H333.271ZM631.554 146.411C618.658 146.411 611.825 153.318 606.811 165.386L528.458 353.486H584.542L595.393 322.136H663.72L670.318 353.486H719.805L676.633 146.411H631.554ZM638.848 202.356L655.473 280.061H610.935L638.848 202.356Z" fill="#1A1F71"/></svg>`,
 
-        // Mastercard icon
-        mastercard: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#000000"/>
-            <circle cx="18" cy="16" r="9" fill="#EB001B"/>
-            <circle cx="30" cy="16" r="9" fill="#F79E1B"/>
-            <path d="M24 9C25.9 10.5 27 12.9 27 15.5C27 18.1 25.9 20.5 24 22C22.1 20.5 21 18.1 21 15.5C21 12.9 22.1 10.5 24 9Z" fill="#FF5F00"/>
-        </svg>`,
+        // Mastercard — official circles, white card bg
+        mastercard: `<svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 0H740C762.092 0 780 17.909 780 40V460C780 482.092 762.092 500 740 500H40C17.909 500 0 482.092 0 460V40C0 17.909 17.909 0 40 0Z" fill="white" stroke="#E0E0E0" stroke-width="8"/><path d="M465.738 69.1387H313.812V342.088H465.738V69.1387Z" fill="#FF5A00"/><path d="M323.926 205.613C323.926 150.158 349.996 100.94 390 69.1387C360.559 45.9902 323.42 32 282.91 32C186.945 32 109.297 109.648 109.297 205.613C109.297 301.578 186.945 379.227 282.91 379.227C323.42 379.227 360.559 365.237 390 342.088C349.94 310.737 323.926 261.069 323.926 205.613Z" fill="#EB001B"/><path d="M670.711 205.613C670.711 301.578 593.062 379.227 497.098 379.227C456.588 379.227 419.449 365.237 390.008 342.088C430.518 310.231 456.082 261.069 456.082 205.613C456.082 150.158 430.012 100.94 390.008 69.1387C419.393 45.9902 456.532 32 497.041 32C593.062 32 670.711 110.154 670.711 205.613Z" fill="#F79E1B"/></svg>`,
 
-        // American Express icon
-        amex: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#016FD0"/>
-            <path d="M10.5 12L8 20H10.8L11.3 18.5H13.1L13.6 20H16.8V18.8L17.2 20H19.2L19.6 18.8V20H29V18.5H29.3C29.6 18.5 29.6 18.5 29.6 18.8V20H36.5L37.5 18.9L38.4 20H42L38.6 16L42 12H38.5L37.5 13.1L36.6 12H29.3V13.4C29.1 13.4 28.9 13.4 28.7 13.4H27.2V12H23.5L22.7 14L21.8 12H17.5V13.1L17.1 12H13.7L10.5 12Z" fill="white"/>
-        </svg>`,
+        // American Express — blue card, bold AMEX text (legible at all sizes)
+        amex: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><rect width="780" height="500" rx="40" fill="#2557D6"/><text x="390" y="260" text-anchor="middle" dominant-baseline="middle" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="220" font-weight="900" fill="white" letter-spacing="-6">AMEX</text></svg>`,
 
-        // Apple Pay icon
-        applepay: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="black"/>
-            <path d="M12.5 10.5C12.9 10 13.4 9.5 14 9.5C14 10.1 13.8 10.7 13.4 11.2C13 11.7 12.4 12 11.8 12C11.7 11.5 12 10.9 12.5 10.5ZM14 12.1C13.1 12 12.3 12.6 11.9 12.6C11.5 12.6 10.8 12.1 10.1 12.1C9.2 12.2 8.4 12.7 7.9 13.5C7 15.1 7.6 17.5 8.5 18.9C8.9 19.6 9.4 20.3 10.1 20.3C10.8 20.3 11 19.9 11.8 19.9C12.6 19.9 12.8 20.3 13.5 20.3C14.3 20.3 14.7 19.6 15.1 18.9C15.5 18.1 15.7 17.4 15.7 17.4C15.7 17.4 14.5 16.9 14.5 15.5C14.5 14.3 15.4 13.7 15.5 13.7C14.9 12.9 14 12.1 14 12.1Z" fill="white"/>
-            <path d="M19.5 9.5H22.1L24.6 17.5L27.2 9.5H29.7L25.9 20.2H23.4L19.5 9.5Z" fill="white"/>
-            <path d="M30.5 20.2V9.5H35.5C37.4 9.5 38.7 10.8 38.7 12.5C38.7 14.2 37.3 15.5 35.4 15.5H32.8V20.2H30.5ZM32.8 11.2V13.8H35C36.1 13.8 36.7 13.2 36.7 12.5C36.7 11.8 36.1 11.2 35 11.2H32.8Z" fill="white"/>
-        </svg>`,
+        // Apple Pay — black bg with Apple logo + Pay text
+        applepay: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><rect width="780" height="500" rx="40" fill="black"/><g transform="translate(50 142) scale(9)" fill="white"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.78 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.76 19.67 18.11 18.71 19.5Z"/><path d="M13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></g><text x="265" y="305" fill="white" font-size="165" font-family="-apple-system, BlinkMacSystemFont, Helvetica, sans-serif" font-weight="400" letter-spacing="-4">Pay</text></svg>`,
 
         // Google Pay icon
         googlepay: `<svg viewBox="0 0 48 32" fill="none">
@@ -348,12 +332,14 @@ const Icons = {
             <path d="M23 11.2C24.8 11.2 26 12 26.9 12.8L29.6 10.2C28 8.7 25.9 7.7 23 7.7C19.1 7.7 15.7 9.9 14.3 13.1L17.2 15.4C17.9 13.3 20.2 11.2 23 11.2Z" fill="#EA4335"/>
         </svg>`,
 
-        // PayPal icon
-        paypal: `<svg viewBox="0 0 48 32" fill="none">
-            <rect width="48" height="32" rx="4" fill="#003087"/>
-            <path d="M18.5 9.5H23.8C26.5 9.5 28.3 11 28.3 13.3C28.3 16.2 26.1 18 23 18H20.8L19.8 22.5H17.5L18.5 9.5ZM23.3 11.7H21.2L20.5 15.8H22.6C24.3 15.8 25.5 15 25.5 13.6C25.5 12.3 24.5 11.7 23.3 11.7Z" fill="white"/>
-            <path d="M27.5 17.8C27.5 15.3 29.4 13.3 32 13.3C34.6 13.3 36.5 15.3 36.5 17.8C36.5 20.3 34.6 22.3 32 22.3C29.4 22.3 27.5 20.3 27.5 17.8ZM34.2 17.8C34.2 16.5 33.3 15.5 32 15.5C30.7 15.5 29.8 16.5 29.8 17.8C29.8 19.1 30.7 20.1 32 20.1C33.3 20.1 34.2 19.1 34.2 17.8Z" fill="#009CDE"/>
-        </svg>`
+        // Maestro — white bg, red + blue circles with purple lens overlap
+        maestro: `<svg viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M40 0H740C762 0 780 18 780 40V460C780 482 762 500 740 500H40C18 500 0 482 0 460V40C0 18 18 0 40 0Z" fill="white" stroke="#E0E0E0" stroke-width="8"/><circle cx="310" cy="250" r="155" fill="#EB001B"/><circle cx="470" cy="250" r="155" fill="#00A1DF"/><path d="M390 117A155 155 0 0 1 390 383A155 155 0 0 0 390 117Z" fill="#7673C0"/></svg>`,
+
+        // Discover — white bg, DISCOVER text with orange O
+        discover: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><rect width="780" height="500" rx="40" fill="white" stroke="#E0E0E0" stroke-width="8"/><text x="390" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="145" font-weight="700" fill="#231F20"><tspan>DISC</tspan><tspan fill="#F47216">O</tspan><tspan>VER</tspan></text></svg>`,
+
+        // PayPal — white card bg with full PayPal paths
+        paypal: `<svg viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg"><path d="M725,0H55C24.673,0,0,24.673,0,55v391c0,30.327,24.673,55,55,55h670c30.325,0,55-24.673,55-55V55C780,24.673,755.325,0,725,0z" fill="#FFF" stroke="#E0E0E0" stroke-width="8"/><path d="m168.38 169.85c-8.399-5.774-19.359-8.668-32.88-8.668h-52.346c-4.145 0-6.435 2.073-6.87 6.214l-21.265 133.48c-0.221 1.311 0.107 2.51 0.981 3.6 0.869 1.093 1.962 1.636 3.271 1.636h24.864c4.361 0 6.758-2.068 7.198-6.216l5.888-35.985c0.215-1.744 0.982-3.162 2.291-4.254 1.308-1.09 2.944-1.804 4.907-2.13 1.963-0.324 3.814-0.487 5.562-0.487 1.743 0 3.814 0.11 6.217 0.327 2.397 0.218 3.925 0.324 4.58 0.324 18.756 0 33.478-5.285 44.167-15.866 10.684-10.577 16.032-25.244 16.032-44.004 0-12.868-4.202-22.192-12.597-27.975zm-26.99 40.08c-1.094 7.635-3.926 12.649-8.506 15.049-4.581 2.403-11.124 3.597-19.629 3.597l-10.797 0.328 5.563-35.007c0.434-2.397 1.851-3.597 4.252-3.597h6.218c8.72 0 15.049 1.257 18.975 3.761 3.924 2.51 5.233 7.802 3.924 15.869z" fill="#003087"/><path d="m720.79 161.18h-24.208c-2.405 0-3.821 1.2-4.253 3.599l-21.267 136.1-0.328 0.654c0 1.096 0.437 2.127 1.311 3.109 0.868 0.979 1.963 1.471 3.271 1.471h21.595c4.138 0 6.429-2.068 6.871-6.215l21.265-133.81v-0.325c-2e-3 -3.053-1.424-4.58-4.257-4.58z" fill="#009CDE"/><path d="m291.23 209.28h-24.864c-3.058 0-4.908 3.599-5.563 10.797-5.889-8.72-16.25-13.088-31.081-13.088-15.704 0-29.065 5.89-40.078 17.668-11.016 11.779-16.521 25.631-16.521 41.551 0 12.871 3.763 23.121 11.288 30.752 7.525 7.639 17.61 11.451 30.262 11.451 6.104 0 12.433-1.311 18.975-3.926 6.543-2.617 11.778-6.105 15.704-10.469-0.875 2.616-1.309 4.907-1.309 6.868 0 3.494 1.417 5.234 4.253 5.234h22.574c4.141 0 6.543-2.068 7.198-6.216l13.413-85.389c0.215-1.309-0.112-2.507-0.981-3.599-0.873-1.087-1.962-1.634-3.27-1.634zm-42.695 64.614c-5.563 5.351-12.382 8.017-20.447 8.017-6.329 0-11.4-1.742-15.214-5.234-3.819-3.483-5.726-8.282-5.726-14.396 0-8.064 2.725-14.884 8.18-20.446 5.449-5.562 12.211-8.343 20.284-8.343 6.104 0 11.175 1.8 15.214 5.398 4.032 3.599 6.052 8.563 6.052 14.888 0 8.069-2.781 14.778-8.343 20.116z" fill="#003087"/><path d="m428.31 213.86c0-1.088-0.438-2.126-1.306-3.106-0.875-0.981-1.857-1.474-2.945-1.474h-25.191c-2.404 0-4.366 1.096-5.89 3.271l-34.679 51.04-14.394-49.075c-1.096-3.488-3.493-5.236-7.198-5.236h-24.54c-1.093 0-2.075 0.492-2.942 1.474-0.875 0.98-1.309 2.019-1.309 3.106 0 0.44 2.127 6.871 6.379 19.303 4.252 12.434 8.833 25.848 13.741 40.244 4.908 14.394 7.468 22.031 7.688 22.898-17.886 24.43-26.826 37.518-26.826 39.26 0 2.838 1.417 4.254 4.253 4.254h25.191c2.399 0 4.361-1.088 5.89-3.271l83.427-120.4c0.433-0.433 0.651-1.193 0.651-2.289z" fill="#003087"/><path d="m662.89 209.28h-24.865c-3.056 0-4.904 3.599-5.559 10.797-5.677-8.72-16.031-13.088-31.083-13.088-15.704 0-29.065 5.89-40.077 17.668-11.016 11.779-16.521 25.631-16.521 41.551 0 12.871 3.761 23.121 11.285 30.752 7.524 7.639 17.611 11.451 30.266 11.451 6.323 0 12.757-1.311 19.3-3.926 6.544-2.617 11.665-6.105 15.379-10.469 0 0.219-0.222 1.198-0.654 2.942-0.44 1.748-0.655 3.06-0.655 3.926 0 3.494 1.414 5.234 4.254 5.234h22.576c4.138 0 6.541-2.068 7.193-6.216l13.415-85.389c0.215-1.309-0.111-2.507-0.981-3.599-0.876-1.087-1.964-1.634-3.273-1.634zm-42.694 64.452c-5.562 5.453-12.269 8.179-20.12 8.179-6.328 0-11.449-1.742-15.377-5.234-3.928-3.483-5.891-8.282-5.891-14.396 0-8.064 2.727-14.884 8.181-20.446 5.446-5.562 12.214-8.343 20.284-8.343 6.102 0 11.174 1.8 15.212 5.397 4.032 3.599 6.055 8.563 6.055 14.888-1e-3 7.851-2.783 14.505-8.344 19.955z" fill="#009CDE"/><path d="m540.04 169.85c-8.398-5.774-19.356-8.668-32.879-8.668h-52.02c-4.364 0-6.765 2.073-7.197 6.214l-21.266 133.48c-0.221 1.312 0.106 2.511 0.981 3.601 0.865 1.092 1.962 1.635 3.271 1.635h26.826c2.617 0 4.361-1.416 5.235-4.252l5.89-37.949c0.216-1.744 0.98-3.162 2.29-4.254 1.309-1.09 2.943-1.803 4.908-2.13 1.962-0.324 3.812-0.487 5.562-0.487 1.743 0 3.814 0.11 6.214 0.327 2.399 0.218 3.931 0.324 4.58 0.324 18.76 0 33.479-5.285 44.168-15.866 10.688-10.577 16.031-25.244 16.031-44.004 2e-3 -12.867-4.199-22.191-12.594-27.974zm-33.534 53.82c-4.799 3.271-11.997 4.906-21.592 4.906l-10.47 0.328 5.562-35.007c0.432-2.397 1.849-3.597 4.252-3.597h5.887c4.798 0 8.614 0.218 11.454 0.653 2.831 0.44 5.562 1.799 8.179 4.089 2.618 2.291 3.926 5.618 3.926 9.98 0 9.16-2.402 15.375-7.198 18.648z" fill="#009CDE"/></svg>`
     },
 
     /**
@@ -1738,12 +1724,9 @@ const Components = {
      * @returns {string} HTML string
      */
     personalizedHeadline() {
-        const genderRaw = State.getAnswer('landing') || 'male';
-        const gender = genderRaw.toLowerCase() === 'male' ? 'men' : 'women';
-        const ageGroup = State.getAnswer('age_selection') || '25-34';
         return `
             <h2 class="paywall-headline">
-                Your <span class="paywall-headline__highlight">Porn Addiction Recovery Plan</span> for ${Security.escapeHtml(gender)} ${Security.escapeHtml(ageGroup)} is ready!
+                Your <span class="paywall-headline__highlight">Porn Addiction Recovery Plan</span> is ready!
             </h2>
         `;
     },
@@ -3195,37 +3178,82 @@ const CountdownTimer = {
     /** Active timer interval ID */
     timerId: null,
     /** Remaining seconds */
-    remainingSeconds: 600, // 10 minutes = 600 seconds
+    remainingSeconds: 600,
+    /** localStorage key for expiry timestamp */
+    STORAGE_KEY: 'mc_discount_expiry',
 
     /**
-     * Start countdown timer with infinite loop
+     * Start countdown. Resumes across page refreshes using localStorage.
+     * When timer expires, discounts are removed and state is persisted.
      * @param {number} initialMinutes - Starting time in minutes (default 10)
      */
     start(initialMinutes = 10) {
         this.cleanup();
-        this.remainingSeconds = initialMinutes * 60;
-        
-        // Update display immediately
+
+        const now = Date.now();
+        const stored = localStorage.getItem(this.STORAGE_KEY);
+
+        const expiryMs = stored ? parseInt(stored, 10) : NaN;
+
+        if (!isNaN(expiryMs)) {
+            const remainingMs = expiryMs - now;
+            if (remainingMs <= 0) {
+                // Already expired on a previous visit
+                this.remainingSeconds = 0;
+                this.updateDisplay();
+                this.onExpire();
+                return;
+            }
+            // Resume from saved expiry
+            this.remainingSeconds = Math.ceil(remainingMs / 1000);
+            log.info(`[Timer] Resumed with ${this.remainingSeconds}s remaining`);
+        } else {
+            // No stored value or corrupt value — clear and start fresh
+            if (stored) localStorage.removeItem(this.STORAGE_KEY);
+            // First visit — save expiry timestamp
+            const expiryMs = now + initialMinutes * 60 * 1000;
+            localStorage.setItem(this.STORAGE_KEY, String(expiryMs));
+            this.remainingSeconds = initialMinutes * 60;
+            log.info(`[Timer] Started fresh ${initialMinutes}:00 countdown`);
+        }
+
         this.updateDisplay();
 
-        // Update every second
         this.timerId = setInterval(() => {
             this.remainingSeconds--;
 
-            // Loop back to start when reaching 0
-            if (this.remainingSeconds < 0) {
-                this.remainingSeconds = initialMinutes * 60;
+            if (this.remainingSeconds <= 0) {
+                this.remainingSeconds = 0;
+                this.updateDisplay();
+                this.cleanup();
+                this.onExpire();
+                return;
             }
 
             this.updateDisplay();
         }, 1000);
-
-        log.info(`[Timer] Started ${initialMinutes}:00 countdown with infinite loop`);
     },
 
     /**
-     * Update timer display in DOM
-     * Updates .countdown-timer__digits (header), .countdown-mins and .countdown-secs (promo ticket)
+     * Called when timer reaches zero. Persists expired state and removes
+     * all promotional elements from the paywall.
+     */
+    onExpire() {
+        // Persist as expired so future page loads also show no discounts
+        localStorage.setItem(this.STORAGE_KEY, '0');
+
+        // Hide promo ticket(s)
+        document.querySelectorAll('.promo-ticket').forEach(el => { el.style.display = 'none'; });
+
+        // Mark paywall containers so CSS can revert pricing to full price
+        document.querySelectorAll('.paywall').forEach(el => el.classList.add('discount-expired'));
+
+        log.info('[Timer] Expired — discounts removed');
+    },
+
+    /**
+     * Update timer display in DOM.
+     * Updates .countdown-timer__digits (header), .countdown-mins and .countdown-secs (promo ticket).
      */
     updateDisplay() {
         const minutes = Math.floor(this.remainingSeconds / 60);
@@ -3235,22 +3263,20 @@ const CountdownTimer = {
         const ss = String(seconds).padStart(2, '0');
         const display = `${mm}:${ss}`;
 
-        // Update header timer digits
         document.querySelectorAll('.countdown-timer__digits').forEach(el => { el.textContent = display; });
-        // Update promo ticket split display
         document.querySelectorAll('.countdown-mins').forEach(el => { el.textContent = mm; });
         document.querySelectorAll('.countdown-secs').forEach(el => { el.textContent = ss; });
     },
 
     /**
-     * Clean up timer interval
+     * Stop the interval. Does NOT clear localStorage (discount state persists).
+     * Called when navigating away from the paywall screen.
      */
     cleanup() {
         if (this.timerId) {
             clearInterval(this.timerId);
             this.timerId = null;
         }
-        this.remainingSeconds = 600;
         log.info('[Timer] Cleaned up');
     }
 };

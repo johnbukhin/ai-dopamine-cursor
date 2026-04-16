@@ -1708,15 +1708,41 @@ body {
     margin-top: var(--spacing-xl);
 }
 
+/* Tighten gap between pricing cards and primary CTA in paywall */
+.paywall > .paywall__cta {
+    margin-top: var(--spacing-sm);
+}
+
+/* ---- Discount-expired state (timer hit zero) ---- */
+/* Hide promo ticket when discount expires (also set via JS display:none for immediate effect) */
+.paywall.discount-expired .promo-ticket {
+    display: none;
+}
+/* Revert pricing cards to full (original) price — hide discounted price, un-strike original */
+.paywall.discount-expired .pricing-card__original {
+    text-decoration: none;
+    color: var(--color-text-primary);
+    font-weight: 700;
+}
+.paywall.discount-expired .pricing-card__discounted {
+    display: none;
+}
+/* Hide per-day badge since it reflects the discounted rate */
+.paywall.discount-expired .pricing-card__per-day-badge {
+    display: none;
+}
+
 .cta-button {
     width: 100%;
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-primary);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 50px;
     font-size: var(--font-size-lg);
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
     transition: background 0.2s ease, transform 0.1s ease;
 }
@@ -1743,11 +1769,15 @@ body {
 .paywall {
     max-width: 800px;
     margin: 0 auto;
-    padding-bottom: var(--spacing-xl);
+    padding: 0 8px var(--spacing-xl);
+    /* Override .content's align-items: center — paywall children must stretch to full width */
+    align-items: stretch;
 }
 
 .paywall > * {
     margin-bottom: var(--spacing-lg);
+    width: 100%; /* Explicit full-width: don't rely on align-items:stretch cascade */
+    box-sizing: border-box;
 }
 
 /* Countdown Timer */
@@ -1932,13 +1962,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
 }
 
 .payment-icon {
-    width: 48px;
-    height: 32px;
+    width: 31px;
+    height: 20px;
+    flex-shrink: 1;
+    min-width: 22px;
 }
 
 .payment-icon svg {
@@ -3144,110 +3176,8 @@ body {
     color: var(--color-text-muted);
 }
 
-/* ========================================
-   NEW: Before/After Comparison (Paywall)
-   ======================================== */
-.before-after {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 20px 0;
-    padding: 20px;
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-}
 
-.before-after__side {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 
-.before-after__badge {
-    display: inline-block;
-    padding: 4px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-
-.before-after__badge--now {
-    background: #f5f5f5;
-    color: var(--color-primary);
-    border: 1px solid var(--color-border);
-}
-
-.before-after__badge--goal {
-    background: var(--color-primary);
-    color: white;
-}
-
-.before-after__image {
-    width: 120px;
-    height: 150px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    background-size: cover;
-    background-position: center;
-}
-
-.before-after__image--worried {
-    background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
-}
-
-.before-after__image--happy {
-    background: linear-gradient(135deg, #c8e6c9, #81c784);
-}
-
-.before-after__metric {
-    width: 100%;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.before-after__metric:last-child {
-    border-bottom: none;
-}
-
-.before-after__metric-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--color-text);
-    margin-bottom: 2px;
-}
-
-.before-after__metric-value--negative {
-    font-size: 12px;
-    color: var(--color-text-muted);
-}
-
-.before-after__metric-value--positive {
-    font-size: 12px;
-    color: var(--color-primary);
-}
-
-.progress-bar-mini {
-    height: 6px;
-    background: #e8e8e8;
-    border-radius: 3px;
-    margin-top: 4px;
-    overflow: hidden;
-}
-
-.progress-bar-mini__fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.6s ease;
-}
-
-.progress-bar-mini__fill--low {
-    background: #bdbdbd;
-}
-
-.progress-bar-mini__fill--high {
-    background: var(--color-primary);
-}
 
 /* Paywall Personalized Info */
 .paywall__personalized {

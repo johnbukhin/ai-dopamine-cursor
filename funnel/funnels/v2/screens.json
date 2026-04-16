@@ -50,7 +50,7 @@
     "variant": "welcome",
     "headline": "We're glad you are here",
     "content": {
-      "description": "This quiz is a space for honest reflection \u2014 not judgment. Your answers help us understand your unique patterns so we can recommend the most effective, science-backed strategies for you.",
+      "description": "This quiz is a space for honest reflection — not judgment. Your answers help us understand your unique patterns so we can recommend the most effective, science-backed strategies for you.",
       "bulletPoints": [
         "Your responses are private and secure",
         "There are no right or wrong answers"
@@ -1670,38 +1670,37 @@
       {
         "id": "7_day",
         "name": "7-DAY PLAN",
-        "originalPrice": "$79.99",
-        "discountedPrice": "$39.99",
-        "price": "$39.99",
-        "pricePerDay": "$5.71/day",
-        "recommended": false
+        "originalPrice": "€49.99",
+        "discountedPrice": "€10.50",
+        "pricePerDay": "€1.50/day",
+        "recommended": false,
+        "savings": "79% OFF"
       },
       {
         "id": "1_month",
         "name": "1-MONTH PLAN",
         "badge": "MOST POPULAR",
-        "originalPrice": "$59.99",
-        "discountedPrice": "$39.99",
-        "price": "$39.99",
-        "pricePerDay": "$1.33/day",
-        "recommended": true
+        "originalPrice": "€49.99",
+        "discountedPrice": "€19.99",
+        "pricePerDay": "€0.66/day",
+        "recommended": true,
+        "savings": "60% OFF"
       },
       {
         "id": "3_month",
         "name": "3-MONTH PLAN",
-        "originalPrice": "$119.99",
-        "discountedPrice": "$79.99",
-        "price": "$79.99",
-        "pricePerDay": "$0.89/day",
-        "recommended": false
+        "originalPrice": "€99.99",
+        "discountedPrice": "€34.99",
+        "pricePerDay": "€0.38/day",
+        "recommended": false,
+        "savings": "65% OFF"
       }
     ],
     "ctaButton": {
       "text": "GET MY PLAN",
       "style": "primary_green"
     },
-    "subscriptionNote": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is $39.99, then $39.99/month. Cancel via the app or email: support@mindcompass.com. See Subscription Policy for details.",
-    "legalDisclaimer": "By clicking 'GET MY PLAN', you agree to automatic subscription renewal. First month is $39.99, then $39.99/month. Cancel via the app or email: support@mindcompass.com. See Subscription Policy for details.",
+    "legalDisclaimer": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is €19.99, then €49.99/month (prices incl. VAT). Cancel via the app or email: support@mind-compass.app. See our Subscription Policy for details.",
     "goalsList": [
       "Build a healthier relationship with sexual desire",
       "Reduce reliance on porn and strengthen real-world intimacy",
