@@ -4083,14 +4083,20 @@ const Events = {
             physical_impact:       scoreData.physical_impact?.pct       ?? null,
         };
 
-        // Parse funnel version from URL path, e.g. /funnels/v2/ → "v2"
-        const funnelVersion = window.location.pathname.match(/\/funnels\/([^/]+)\//)?.[1] || null;
+        // Parse funnel version from URL. Handles both URL shapes:
+        //   /funnels/v2/   (localhost direct access)
+        //   /funnel-v2/    (Vercel rewrite)
+        const funnelVersion =
+            window.location.pathname.match(/\/funnels\/([^/]+)\//)?.[1] ||
+            window.location.pathname.match(/\/funnel-([^/]+)/)?.[1] ||
+            null;
 
         // V2 uses 'age_selection'; V1 uses 'question_age' — fall back gracefully
         const ageGroup = State.getAnswer('age_selection') || State.getAnswer('question_age') || null;
 
-        // gender comes from 'gender_selection' (V2) or 'question_gender' (V1)
-        const gender = State.getAnswer('gender_selection') || State.getAnswer('question_gender') || null;
+        // Gender is stored under the 'landing' key (set in handleGenderSelect)
+        // for both V1 and V2.
+        const gender = State.getAnswer('landing') || null;
 
         // main challenge from dedicated scoring helper (reads question_31)
         const mainChallenge = Scoring.getMainChallenge() || null;
