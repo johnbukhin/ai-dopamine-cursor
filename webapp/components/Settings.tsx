@@ -122,9 +122,13 @@ const ProfileSettings: React.FC = () => {
           <p className="text-sm text-emerald-700 bg-emerald-50 rounded-md px-3 py-2">Password updated successfully.</p>
         )}
 
-        <Button type="submit" disabled={status === 'saving' || !password} className="py-2 text-sm">
+        <button
+          type="submit"
+          disabled={status === 'saving' || !password}
+          style={{ backgroundColor: '#065f46', color: '#ffffff', padding: '10px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: (status === 'saving' || !password) ? 'not-allowed' : 'pointer', opacity: (status === 'saving' || !password) ? 0.5 : 1 }}
+        >
           {status === 'saving' ? 'Saving…' : 'Save Password'}
-        </Button>
+        </button>
       </form>
     </div>
   );
@@ -271,9 +275,13 @@ const AccessSettings: React.FC = () => {
                 {renewError && (
                   <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{renewError}</p>
                 )}
-                <Button onClick={handleRenew} disabled={renewing} className="py-2 text-sm">
+                <button
+                  onClick={handleRenew}
+                  disabled={renewing}
+                  style={{ backgroundColor: '#065f46', color: '#ffffff', padding: '10px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: renewing ? 'not-allowed' : 'pointer', opacity: renewing ? 0.5 : 1, display: 'inline-block' }}
+                >
                   {renewing ? 'Renewing…' : 'Renew Subscription'}
-                </Button>
+                </button>
               </div>
             ) : (
               <button
