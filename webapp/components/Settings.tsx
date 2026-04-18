@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { CancelFlow } from './CancelFlow';
+import { Button } from './Button';
 
 type SettingsTab = 'Profile' | 'Access' | 'Terms';
 
@@ -121,13 +122,9 @@ const ProfileSettings: React.FC = () => {
           <p className="text-sm text-emerald-700 bg-emerald-50 rounded-md px-3 py-2">Password updated successfully.</p>
         )}
 
-        <button
-          type="submit"
-          disabled={status === 'saving' || !password}
-          className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-        >
+        <Button type="submit" disabled={status === 'saving' || !password} className="py-2 text-sm">
           {status === 'saving' ? 'Saving…' : 'Save Password'}
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -274,13 +271,9 @@ const AccessSettings: React.FC = () => {
                 {renewError && (
                   <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{renewError}</p>
                 )}
-                <button
-                  onClick={handleRenew}
-                  disabled={renewing}
-                  className="w-full sm:w-auto px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <Button onClick={handleRenew} disabled={renewing} className="py-2 text-sm">
                   {renewing ? 'Renewing…' : 'Renew Subscription'}
-                </button>
+                </Button>
               </div>
             ) : (
               <button
