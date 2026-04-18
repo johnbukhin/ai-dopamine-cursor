@@ -141,8 +141,9 @@ const AccessSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
   const [showCancelFlow, setShowCancelFlow] = useState(false);
-  // After confirmed cancel, store the period-end date to show "Access until"
   const [cancelledUntil, setCancelledUntil] = useState<string | null>(null);
+  const [renewing, setRenewing] = useState(false);
+  const [renewError, setRenewError] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -176,9 +177,31 @@ const AccessSettings: React.FC = () => {
   }, []);
 
   const handleCancelConfirmed = (periodEnd: string | null) => {
-    // Update local state immediately — no need to refetch
     setCancelledUntil(periodEnd || subscription?.current_period_end || null);
     setSubscription(prev => prev ? { ...prev, cancel_at_period_end: true } : prev);
+  };
+
+  const handleRenew = async () => {
+    if (!subscription) return;
+    setRenewing(true);
+    setRenewError('');
+    try {
+      const response = await fetch('/api/renew-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stripe_subscription_id: subscription.stripe_subscription_id, userEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setRenewError(data.error || 'Failed to renew subscription. Please try again.');
+      } else {
+        setCancelledUntil(null);
+        setSubscription(prev => prev ? { ...prev, cancel_at_period_end: false } : prev);
+      }
+    } catch {
+      setRenewError('Network error. Please try again.');
+    }
+    setRenewing(false);
   };
 
   if (loading) {
@@ -243,10 +266,22 @@ const AccessSettings: React.FC = () => {
 
           <div className="mt-6">
             {isCancelled ? (
-              <p className="text-sm text-amber-700">
-                Your subscription has been cancelled. You have access until{' '}
-                <strong>{formatDate(cancelledUntil || subscription.current_period_end)}</strong>.
-              </p>
+              <div>
+                <p className="text-sm text-amber-700 mb-4">
+                  Your subscription has been cancelled. You have access until{' '}
+                  <strong>{formatDate(cancelledUntil || subscription.current_period_end)}</strong>.
+                </p>
+                {renewError && (
+                  <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{renewError}</p>
+                )}
+                <button
+                  onClick={handleRenew}
+                  disabled={renewing}
+                  className="w-full sm:w-auto px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {renewing ? 'Renewing…' : 'Renew Subscription'}
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => setShowCancelFlow(true)}
