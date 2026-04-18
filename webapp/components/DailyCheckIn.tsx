@@ -86,11 +86,14 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
     // Update UI immediately — DB write is fire-and-forget
     onComplete(checkIn);
 
-    // Persist to Supabase asynchronously (never blocks the UI)
+    // Persist to Supabase — fire-and-forget, never blocks UI.
+    // Must await the insert inside an async IIFE; without await the Supabase
+    // query builder never executes (it only runs when the promise is consumed).
     if (supabase) {
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      (async () => {
+        const { data: { user } } = await supabase!.auth.getUser();
         if (!user) return;
-        supabase!.from('check_ins').insert({
+        await supabase!.from('check_ins').insert({
           user_id: user.id,
           date: checkIn.date.toISOString(),
           status: checkIn.status,
@@ -103,7 +106,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
           time_of_day: checkIn.timeOfDay ?? null,
           tasks_completed: checkIn.tasksCompleted ?? false,
         });
-      });
+      })();
     }
   };
 

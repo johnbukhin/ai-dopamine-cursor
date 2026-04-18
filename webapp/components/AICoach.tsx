@@ -53,13 +53,14 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
         assistantMsg,
       ].slice(1);
 
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      (async () => {
+        const { data: { user } } = await supabase!.auth.getUser();
         if (!user) return;
-        supabase!.from('coach_messages').upsert(
+        await supabase!.from('coach_messages').upsert(
           { user_id: user.id, messages: toStore, updated_at: new Date().toISOString() },
           { onConflict: 'user_id' }
         );
-      });
+      })();
     }
   };
 
