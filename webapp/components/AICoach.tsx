@@ -37,27 +37,30 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     const response = await getCoachResponse(userMsg, recentHistory);
 
     const assistantMsg: ChatMessage = { role: 'assistant', content: response };
-    setMessages(prev => {
-      const updated = [...prev, assistantMsg];
 
-      // Persist after state update — fire-and-forget, never blocks UI.
-      // The welcome message (index 0) is a hardcoded system greeting and is
-      // excluded from storage; only real user↔AI exchanges are persisted.
-      if (supabase) {
-        const toStore = updated.slice(1); // strip welcome message
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (!user) return;
-          supabase!.from('coach_messages').upsert({
-            user_id: user.id,
-            messages: toStore,
-            updated_at: new Date().toISOString(),
-          });
-        });
-      }
-
-      return updated;
-    });
+    // Update UI — pure state update, no side effects inside updater
+    setMessages(prev => [...prev, assistantMsg]);
     setIsLoading(false);
+
+    // Persist to Supabase — fire-and-forget, never blocks UI.
+    // Reconstruct the full conversation from the closure: messages (captured at
+    // handleSend call time, excludes userMsg) + userMsg + assistantMsg.
+    // Slice off index 0 (hardcoded welcome message — never stored in DB).
+    if (supabase) {
+      const toStore: ChatMessage[] = [
+        ...messages,
+        { role: 'user', content: userMsg },
+        assistantMsg,
+      ].slice(1);
+
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        supabase!.from('coach_messages').upsert(
+          { user_id: user.id, messages: toStore, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        );
+      });
+    }
   };
 
   const formatMessage = (content: string) => {
