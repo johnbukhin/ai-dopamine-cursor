@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CheckIn, CheckInStatus } from '../types';
+import React, { useState, useMemo } from 'react';
+import { CheckIn, CheckInStatus, View } from '../types';
 import { ChevronLeft, ChevronRight, X, Sparkles, Activity, Plus } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isFuture } from 'date-fns';
 
@@ -7,11 +7,19 @@ interface DashboardProps {
   checkIns: CheckIn[];
   streak: number;
   onOpenCheckIn?: () => void;
+  onChangeView: (view: View) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCheckIn }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCheckIn, onChangeView }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }, []);
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -51,70 +59,89 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
   };
 
   return (
-    <div className="flex-1 h-full overflow-y-auto p-4 md:p-8 space-y-6">
+    <div className="flex-1 h-full overflow-y-auto pb-28 md:pb-8">
+      
+      {/* Edge-to-Edge Header Image */}
+      <div className="w-full h-56 md:h-64 relative mb-4 overflow-hidden">
+        <img src="/illustrations/dashboard.png" alt="Dashboard" className="w-full h-full object-cover scale-[1.4] origin-center" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
+        <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Today</span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-purple-900 mt-1">{greeting}</h2>
+        </div>
+      </div>
       
       {/* Top Section: Split into Progress and Check-in Action */}
-      <div className="max-w-4xl mx-auto w-full grid grid-cols-2 gap-3 md:gap-6">
+      <div className="max-w-4xl mx-auto w-full grid grid-cols-2 gap-4 md:gap-8 px-4 md:px-8 relative z-10 -mt-8 mb-8">
          {/* Left: Progress */}
-         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col justify-center gap-1">
-             <div className="flex items-center gap-2 text-stone-500 mb-2">
+         <div className="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-purple-100 flex flex-col justify-center gap-1">
+             <div className="flex items-center gap-2 text-purple-600 mb-2">
                 <Activity size={16} />
                 <span className="text-xs font-bold uppercase tracking-wider">Your Streak</span>
              </div>
              <div className="flex items-baseline gap-1">
-                <span className="text-3xl md:text-4xl font-bold text-emerald-900">{streak}</span>
-                <span className="text-sm font-medium text-emerald-600">Days</span>
+                <span className="text-3xl md:text-4xl font-bold text-purple-900">{streak}</span>
+                <span className="text-sm font-medium text-purple-600">Days</span>
              </div>
-             <p className="text-xs text-stone-400 mt-1">One day at a time.</p>
+             <p className="text-xs text-gray-500 mt-1">One day at a time.</p>
          </div>
          
          {/* Right: Add Check-in */}
          {onOpenCheckIn ? (
+           <div className="flex flex-col gap-3">
              <button 
                 onClick={onOpenCheckIn}
-                className="bg-emerald-800 p-4 md:p-6 rounded-2xl shadow-sm border border-emerald-900 flex flex-col justify-center items-start text-left gap-1 hover:bg-emerald-900 transition-all group relative overflow-hidden"
+                className="flex-1 bg-purple-600 p-5 md:p-8 rounded-2xl shadow-sm border border-purple-700 flex flex-col justify-center items-start text-left gap-1 hover:bg-purple-700 transition-all group relative overflow-hidden"
              >
                  <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <Plus size={64} className="text-white" />
                  </div>
                  
-                 <div className="flex items-center gap-2 text-emerald-200 mb-2 z-10">
-                    <div className="bg-emerald-700/50 p-1 rounded-md">
+                 <div className="flex items-center gap-2 text-purple-200 mb-2 z-10">
+                    <div className="bg-purple-500/50 p-1 rounded-md">
                         <Plus size={14} />
                     </div>
                     <span className="text-xs font-bold uppercase tracking-wider">New Entry</span>
                  </div>
                  <span className="text-xl md:text-2xl font-bold text-white z-10">Add Check-in</span>
-                 <p className="text-xs text-emerald-200/70 mt-1 z-10">Log your status now</p>
+                 <p className="text-xs text-purple-200/70 mt-1 z-10">Log your status now</p>
              </button>
+             <button 
+                onClick={() => onChangeView(View.URGE_HELP)}
+                className="bg-rose-50 p-4 rounded-xl border border-rose-100 flex items-center justify-center text-rose-600 hover:bg-rose-100 transition-colors gap-2 font-semibold text-sm shadow-sm"
+             >
+                 <span>⚠️ Urge Help</span>
+             </button>
+           </div>
          ) : (
-            <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center justify-center text-stone-400">
+            <div className="bg-gray-50 p-4 rounded-2xl border border-purple-100 flex items-center justify-center text-gray-500">
                 <span className="text-sm">Read Only Mode</span>
             </div>
          )}
       </div>
 
+      <div className="px-4 md:px-8 mt-4 md:mt-8">
       {/* Calendar */}
-      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-200 max-w-4xl mx-auto">
+      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-purple-100 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-emerald-900">{format(currentMonth, 'MMMM yyyy')}</h3>
+            <h3 className="text-lg font-medium text-purple-900">{format(currentMonth, 'MMMM yyyy')}</h3>
             <div className="flex gap-2">
-                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-stone-100 rounded-full text-emerald-800"><ChevronLeft size={20} /></button>
-                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-stone-100 rounded-full text-emerald-800"><ChevronRight size={20} /></button>
+                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full text-purple-800"><ChevronLeft size={20} /></button>
+                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full text-purple-800"><ChevronRight size={20} /></button>
             </div>
         </div>
 
         <div className="grid grid-cols-7 gap-2 mb-2">
             {['S','M','T','W','T','F','S'].map((d, i) => (
-                <div key={i} className="text-center text-xs font-medium text-stone-400">{d}</div>
+                <div key={i} className="text-center text-xs font-medium text-gray-500">{d}</div>
             ))}
         </div>
         <div className="grid grid-cols-7 gap-1.5 md:gap-2">
             {emptyDays.map((_, i) => <div key={`empty-${i}`} className="aspect-square" />)}
             {daysInMonth.map(day => {
                 const status = getDayStatus(day);
-                let bgClass = 'bg-stone-50 border-stone-100';
-                let textClass = 'text-stone-400';
+                let bgClass = 'bg-gray-50 border-gray-100';
+                let textClass = 'text-gray-500';
                 
                 if (status === CheckInStatus.CLEAN) {
                     bgClass = 'bg-emerald-500 border-emerald-600 shadow-sm';
@@ -123,8 +150,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
                     bgClass = 'bg-rose-400 border-rose-500 shadow-sm';
                     textClass = 'text-white font-bold';
                 } else if (status === 'EMPTY') {
-                    bgClass = 'bg-stone-100 border-stone-200 hover:bg-stone-200 cursor-pointer';
-                    textClass = 'text-stone-600';
+                    bgClass = 'bg-gray-100 border-purple-100 hover:bg-gray-200 cursor-pointer';
+                    textClass = 'text-gray-600';
                 }
 
                 return (
@@ -141,13 +168,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
         </div>
       </div>
 
+      </div>
+
       {/* Day Detail Modal */}
       {selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4" onClick={() => setSelectedDate(null)}>
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between p-4 md:p-6 border-b border-stone-100">
-                    <h3 className="text-lg md:text-xl font-semibold text-emerald-900">{format(selectedDate, 'EEEE, MMMM do')}</h3>
-                    <button onClick={() => setSelectedDate(null)} className="text-stone-400 hover:text-stone-600"><X /></button>
+                <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-100">
+                    <h3 className="text-lg md:text-xl font-semibold text-purple-900">{format(selectedDate, 'EEEE, MMMM do')}</h3>
+                    <button onClick={() => setSelectedDate(null)} className="text-gray-500 hover:text-gray-600"><X /></button>
                 </div>
                 
                 <div className="p-4 md:p-6 overflow-y-auto max-h-[70vh]">
@@ -155,7 +184,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
                         const dayDetails = getDayDetails(selectedDate);
                         
                         if (dayDetails.length === 0) {
-                            return <p className="text-stone-500 text-center py-8">No check-in recorded for this day.</p>;
+                            return <p className="text-purple-600 text-center py-8">No check-in recorded for this day.</p>;
                         }
 
                         // Determine Overall Status for the UI Banner
@@ -164,13 +193,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
                         return (
                             <div className="space-y-6">
                                 {/* Overall Status Banner */}
-                                <div className={`p-4 rounded-xl border ${isDayClean ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
+                                <div className={`p-4 rounded-xl border ${isDayClean ? 'bg-emerald-50 border-emerald-100 text-purple-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
                                     <span className="font-bold block text-lg mb-1">{isDayClean ? "Clean Day" : "Slip Day"}</span>
                                     <span className="text-sm opacity-80">{isDayClean ? "A day of control." : "A learning day."}</span>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Activity Log ({dayDetails.length})</h4>
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Activity Log ({dayDetails.length})</h4>
                                     
                                     {/* List all Check-ins */}
                                     {dayDetails.map((detail, index) => {
@@ -187,19 +216,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
                                         
                                         const statusTextClass = isClean ? 'text-emerald-700' : 'text-rose-700';
                                         
-                                        const labelClass = isClean ? "text-emerald-600/70" : "text-rose-600/70";
-                                        const valueClass = isClean ? "text-emerald-900" : "text-rose-900";
+                                        const labelClass = isClean ? "text-purple-600/70" : "text-rose-600/70";
+                                        const valueClass = isClean ? "text-purple-900" : "text-rose-900";
                                         
                                         const tagClass = isClean 
-                                            ? "bg-white border-emerald-100 text-emerald-800" 
+                                            ? "bg-white border-emerald-100 text-purple-800" 
                                             : "bg-white border-rose-100 text-rose-800";
                                         
                                         const noteClass = isClean
-                                            ? "text-emerald-800 border-emerald-200"
+                                            ? "text-purple-800 border-emerald-200"
                                             : "text-rose-800 border-rose-200";
                                             
                                         const aiBoxClass = isClean
-                                            ? "bg-emerald-100/50 border-emerald-100 text-emerald-900"
+                                            ? "bg-emerald-100/50 border-emerald-100 text-purple-900"
                                             : "bg-rose-100/50 border-rose-100 text-rose-900";
 
                                         return (

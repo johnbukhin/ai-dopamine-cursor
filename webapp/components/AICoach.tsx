@@ -14,6 +14,8 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef(messages);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -48,7 +50,7 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     // Slice off index 0 (hardcoded welcome message — never stored in DB).
     if (supabase) {
       const toStore: ChatMessage[] = [
-        ...messages,
+        ...messagesRef.current,
         { role: 'user' as const, content: userMsg },
         assistantMsg,
       ].slice(1);
@@ -75,18 +77,28 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   };
 
   return (
-    <div className="flex flex-col h-full bg-stone-50">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
-        {messages.map((m, i) => (
+    <div className="flex flex-col h-full bg-purple-50">
+      <div className="flex-1 overflow-y-auto pb-28 md:pb-4" ref={scrollRef}>
+        {/* Edge-to-Edge Header Image */}
+        <div className="w-full h-48 md:h-56 relative mb-6 overflow-hidden">
+          <img src="/illustrations/coach.png" alt="AI Coach" className="w-full h-full object-cover scale-[1.4] origin-center" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
+          <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-purple-900 mt-1">Your AI Coach</h2>
+          </div>
+        </div>
+        
+        <div className="px-4 space-y-4 max-w-4xl mx-auto">
+          {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-stone-300 text-stone-600' : 'bg-emerald-700 text-white'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-gray-200 text-gray-600' : 'bg-purple-600 text-white'}`}>
                 {m.role === 'user' ? <UserIcon size={16} /> : <Brain size={16} />}
               </div>
               <div className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                 m.role === 'user' 
-                  ? 'bg-white border border-stone-200 text-emerald-900 rounded-tr-none' 
-                  : 'bg-emerald-800 text-stone-50 rounded-tl-none shadow-sm'
+                  ? 'bg-white border border-gray-200 text-gray-900 rounded-tr-none' 
+                  : 'bg-purple-700 text-white rounded-tl-none shadow-sm'
               }`}>
                 {formatMessage(m.content)}
               </div>
@@ -96,18 +108,19 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
         {isLoading && (
             <div className="flex justify-start">
                  <div className="flex gap-3 max-w-[80%]">
-                    <div className="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center">
                         <Brain size={16} />
                     </div>
-                    <div className="p-4 bg-emerald-800 rounded-2xl rounded-tl-none flex items-center">
-                        <Loader2 className="animate-spin text-stone-300" size={16} />
+                    <div className="p-4 bg-purple-700 rounded-2xl rounded-tl-none flex items-center">
+                        <Loader2 className="animate-spin text-purple-200" size={16} />
                     </div>
                  </div>
             </div>
         )}
+        </div>
       </div>
 
-      <div className="p-4 bg-white border-t border-stone-200">
+      <div className="p-4 bg-white border-t border-purple-100">
         <div className="flex gap-2 max-w-4xl mx-auto">
           <input
             type="text"
@@ -120,7 +133,7 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
           <button 
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="p-3 bg-emerald-800 text-white rounded-xl hover:bg-emerald-900 disabled:opacity-50 transition-colors"
+            className="p-3 bg-purple-700 text-white rounded-xl hover:bg-emerald-900 disabled:opacity-50 transition-colors"
           >
             <Send size={20} />
           </button>

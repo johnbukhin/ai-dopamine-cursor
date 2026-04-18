@@ -116,7 +116,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
 
   const renderInitialQuestion = () => (
     <div className="text-center animate-in fade-in duration-500">
-      <h2 className="text-2xl font-semibold text-emerald-900 mb-8">Did you maintain control since your last check-in?</h2>
+      <h2 className="text-2xl font-semibold text-purple-900 mb-8">Did you maintain control since your last check-in?</h2>
       <div className="flex justify-center gap-6">
         <button 
           onClick={() => handleStartFlow(true)}
@@ -125,7 +125,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
           <div className="w-20 h-20 rounded-full bg-emerald-100/60 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 group-hover:scale-105 transition-all border border-emerald-100">
             <Check size={36} strokeWidth={2.5} />
           </div>
-          <span className="font-medium text-emerald-800">Yes</span>
+          <span className="font-medium text-purple-800">Yes</span>
         </button>
         <button 
           onClick={() => handleStartFlow(false)}
@@ -134,13 +134,13 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
           <div className="w-20 h-20 rounded-full bg-rose-100/60 flex items-center justify-center text-rose-600 group-hover:bg-rose-100 group-hover:scale-105 transition-all border border-rose-100">
             <X size={36} strokeWidth={2.5} />
           </div>
-          <span className="font-medium text-emerald-800">No</span>
+          <span className="font-medium text-purple-800">No</span>
         </button>
       </div>
       <div className="mt-12">
         <button 
           onClick={onClose} 
-          className="text-stone-500 hover:text-emerald-800 font-medium text-sm transition-colors py-2 px-4"
+          className="text-gray-400 hover:text-gray-600 font-medium text-sm transition-colors py-2 px-4"
         >
           Skip
         </button>
@@ -154,11 +154,11 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
       case 1: // Confirmation (Statement, requires Continue)
         return (
           <div className="space-y-6 text-center animate-in slide-in-from-right-8 duration-300">
-            <div className="w-16 h-16 mx-auto bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+            <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
               <CheckCircle size={32} />
             </div>
             <h3 className="text-xl font-medium">Great. You stayed in control today.</h3>
-            <p className="text-emerald-700 italic">"{POSITIVE_FEEDBACK[Math.floor(Math.random() * POSITIVE_FEEDBACK.length)]}"</p>
+            <p className="text-purple-700 italic">"{POSITIVE_FEEDBACK[Math.floor(Math.random() * POSITIVE_FEEDBACK.length)]}"</p>
             <Button onClick={handleNext} fullWidth>Continue</Button>
           </div>
         );
@@ -171,7 +171,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setSelectedHelped, opt)}
-                  className={`p-3 text-sm text-left rounded-lg border transition-all ${selectedHelped === opt ? 'bg-emerald-100 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white border-stone-200 hover:border-emerald-200'}`}
+                  className={`p-3 text-sm text-left rounded-lg border transition-all ${selectedHelped === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
@@ -188,7 +188,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setEmotion, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${emotion === opt ? 'bg-emerald-100 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white border-stone-200 hover:border-emerald-200'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${emotion === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
@@ -205,7 +205,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="For example: evenings are easier when I stay offline."
-              className="w-full p-4 rounded-lg border border-stone-300 focus:ring-2 focus:ring-emerald-200 outline-none"
+              className="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-200 outline-none"
             />
             <Button onClick={handleSubmit} fullWidth disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Complete Check-in"}
@@ -222,7 +222,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
       case 1: // Neutral Framing (Statement, requires Continue)
         return (
           <div className="space-y-6 text-center animate-in slide-in-from-right-8 duration-300">
-            <p className="text-lg text-emerald-800">Thank you for being honest. This is not failure. This is information.</p>
+            <p className="text-lg text-purple-800">Thank you for being honest. This is not failure. This is information.</p>
             <Button onClick={handleNext} fullWidth variant="secondary">Continue</Button>
           </div>
         );
@@ -235,7 +235,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setSelectedTrigger, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${selectedTrigger === opt ? 'bg-stone-200 border-stone-400 ring-1 ring-stone-400' : 'bg-white border-stone-200 hover:border-stone-300'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${selectedTrigger === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                 >
                   {opt}
                 </button>
@@ -252,7 +252,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setTimeOfDay, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${timeOfDay === opt ? 'bg-stone-200 border-stone-400 ring-1 ring-stone-400' : 'bg-white border-stone-200 hover:border-stone-300'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${timeOfDay === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                 >
                   {opt}
                 </button>
@@ -269,7 +269,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setReaction, opt)}
-                  className={`w-full p-3 text-sm text-left rounded-lg border transition-all ${reaction === opt ? 'bg-stone-200 border-stone-400 ring-1 ring-stone-400' : 'bg-white border-stone-200 hover:border-stone-300'}`}
+                  className={`w-full p-3 text-sm text-left rounded-lg border transition-all ${reaction === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                 >
                   {opt}
                 </button>
@@ -286,7 +286,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setSelectedLearning, opt)}
-                  className={`p-3 text-sm text-left rounded-lg border transition-all ${selectedLearning === opt ? 'bg-emerald-100 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white border-stone-200 hover:border-emerald-200'}`}
+                  className={`p-3 text-sm text-left rounded-lg border transition-all ${selectedLearning === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
@@ -303,7 +303,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setEmotion, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${emotion === opt ? 'bg-stone-200 border-stone-400 ring-1 ring-stone-400' : 'bg-white border-stone-200 hover:border-stone-300'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${emotion === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                 >
                   {opt}
                 </button>
@@ -320,10 +320,10 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="For example: being alone at night is my weak point."
-              className="w-full p-4 rounded-lg border border-stone-300 focus:ring-2 focus:ring-emerald-200 outline-none"
+              className="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-200 outline-none"
             />
             <div className="pt-4 text-center">
-                <p className="text-sm text-emerald-700 italic mb-4">"This is not a relapse. This is data."</p>
+                <p className="text-sm text-purple-700 italic mb-4">"This is not a relapse. This is data."</p>
                 <Button onClick={handleSubmit} fullWidth disabled={isSubmitting}>
                    {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Complete Check-in"}
                 </Button>
@@ -335,18 +335,18 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
   };
 
   return (
-    <div className="fixed inset-0 bg-stone-100/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-8 border border-stone-200 relative overflow-hidden">
+    <div className="fixed inset-0 bg-gray-100/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl p-8 border border-gray-200 relative overflow-hidden">
         {/* Progress Bar */}
         {step > 0 && (
-            <div className="absolute top-0 left-0 h-1 bg-emerald-500 transition-all duration-300" style={{ width: `${(step / (flow === 'A' ? 4 : 7)) * 100}%`}}></div>
+            <div className="absolute top-0 left-0 h-1 bg-purple-500 transition-all duration-300" style={{ width: `${(step / (flow === 'A' ? 4 : 7)) * 100}%`}}></div>
         )}
         
         {/* Back Button */}
         {step > 0 && (
             <button 
                 onClick={handleBack}
-                className="absolute top-6 left-6 p-2 text-stone-400 hover:text-emerald-800 hover:bg-stone-100 rounded-full transition-colors z-10"
+                className="absolute top-6 left-6 p-2 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10"
                 aria-label="Go back"
             >
                 <ChevronLeft size={24} />

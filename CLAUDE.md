@@ -45,6 +45,26 @@ After making code changes to `funnel/`:
 - [ ] Back navigation works
 - [ ] Progress bar updates correctly
 
+### Build Smoke Test (required before handing off to user)
+
+After every push to Vercel or local server restart, run a smoke test **before** telling the user to test. Do not say "ready to test" until this passes.
+
+**Vercel:**
+```bash
+curl -s -o /dev/null -w "%{http_code} %{url_effective}" -L <url> --retry 8 --retry-delay 10 --retry-all-errors
+# Must return 200
+curl -s <url> | grep -o '<title>[^<]*</title>\|app\.js\|styles\.css'
+# Must show title + asset references (not an error page)
+```
+
+**Local:**
+```bash
+curl -s http://localhost:8080/funnel/funnels/v2/ | grep -o '<title>[^<]*</title>'
+# Must return <title>Mind Compass</title>
+```
+
+If the smoke test fails, diagnose and fix before involving the user.
+
 ### CSS Architecture Rules (funnel engine)
 
 **Full-width elements inside `.paywall`:**

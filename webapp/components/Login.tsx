@@ -139,10 +139,10 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   // ── Spinner while checking for stored tokens ─────────────────────────────
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="min-h-screen flex items-center justify-center bg-purple-50">
         <div className="flex flex-col items-center gap-3">
-          <Compass className="text-emerald-700 animate-spin" size={36} />
-          <p className="text-stone-400 text-sm">Loading your space…</p>
+          <Compass className="text-purple-600 animate-spin" size={36} />
+          <p className="text-gray-500 text-sm">Loading your space…</p>
         </div>
       </div>
     );
@@ -151,16 +151,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   // ── Supabase not configured (missing env vars) ────────────────────────────
   if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-stone-100 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-purple-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-purple-100 text-center">
           <div className="bg-amber-50 p-4 rounded-full inline-flex mb-4">
             <Compass className="text-amber-600" size={40} />
           </div>
-          <h1 className="text-xl font-bold text-stone-800 mb-2">Configuration needed</h1>
-          <p className="text-stone-500 text-sm">
+          <h1 className="text-xl font-bold text-gray-800 mb-2">Configuration needed</h1>
+          <p className="text-gray-500 text-sm">
             The app is not fully configured yet. If you're the developer, set{' '}
-            <code className="bg-stone-100 px-1 rounded text-xs">VITE_SUPABASE_URL</code> and{' '}
-            <code className="bg-stone-100 px-1 rounded text-xs">VITE_SUPABASE_ANON_KEY</code>{' '}
+            <code className="bg-gray-100 px-1 rounded text-xs">VITE_SUPABASE_URL</code> and{' '}
+            <code className="bg-gray-100 px-1 rounded text-xs">VITE_SUPABASE_ANON_KEY</code>{' '}
             in Vercel and redeploy.
           </p>
         </div>
@@ -170,31 +170,35 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   // ── Login form (direct URL access or expired session) ────────────────────
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-purple-50 p-4">
       <div className="max-w-md w-full space-y-4">
 
         {/* Branding card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-stone-100">
-          <div className="flex flex-col items-center mb-8">
-            <div className="bg-emerald-50 p-4 rounded-full mb-4">
-              <Compass className="text-emerald-800" size={48} />
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-purple-100">
+          <div className="h-32 md:h-48 w-full bg-purple-200 relative overflow-hidden">
+            <img src="/illustrations/login.png" alt="Welcome" className="w-full h-full object-cover scale-[1.4] origin-center" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-900/80" />
+            <div className="absolute inset-0 flex items-end p-6">
+              <h1 className="text-2xl font-bold text-white">Mind Compass</h1>
             </div>
-            <h1 className="text-2xl font-bold text-emerald-900">Compass</h1>
-            <p className="text-stone-500 mt-2 text-center text-sm">
-              Your private space for recovery and impulse control.
-            </p>
           </div>
+          <div className="p-8">
+            <div className="flex flex-col items-center mb-8">
+              <p className="text-gray-500 mt-2 text-center text-sm">
+                Your private space for recovery and impulse control.
+              </p>
+            </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 focus:ring-2 focus:ring-emerald-200 outline-none transition-colors text-stone-800"
+                className="w-full p-3 bg-purple-50 rounded-lg border border-purple-200 focus:ring-2 focus:ring-purple-300 outline-none transition-colors text-gray-800"
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
@@ -202,14 +206,14 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                 Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 focus:ring-2 focus:ring-emerald-200 outline-none transition-colors text-stone-800"
+                className="w-full p-3 bg-purple-50 rounded-lg border border-purple-200 focus:ring-2 focus:ring-purple-300 outline-none transition-colors text-gray-800"
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
@@ -227,25 +231,26 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           <div className="flex items-center gap-2 mt-6 justify-center">
             <ShieldCheck size={14} className="text-stone-300" />
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-gray-500">
               Private. Encrypted. No social logins.
             </p>
           </div>
         </div>
+        </div>
 
         {/* No account yet — prompt to go through funnel */}
-        <div className="bg-white rounded-2xl border border-stone-100 p-5 flex items-start gap-4">
-          <div className="bg-emerald-50 p-2 rounded-xl flex-shrink-0">
-            <ExternalLink size={20} className="text-emerald-700" />
+        <div className="bg-white rounded-2xl border border-purple-100 p-5 flex items-start gap-4">
+          <div className="bg-purple-100 p-2 rounded-xl flex-shrink-0">
+            <ExternalLink size={20} className="text-purple-600" />
           </div>
           <div>
             <p className="text-sm font-semibold text-stone-700">Don't have an account yet?</p>
-            <p className="text-xs text-stone-400 mt-0.5 mb-2">
+            <p className="text-xs text-gray-500 mt-0.5 mb-2">
               Access is created automatically when you complete the Compass program.
             </p>
             <a
               href={FUNNEL_URL}
-              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors underline underline-offset-2"
+              className="text-xs font-semibold text-purple-600 hover:text-purple-900 transition-colors underline underline-offset-2"
             >
               Start my Compass journey →
             </a>

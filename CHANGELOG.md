@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #22)
+- **Purple visual theme** — full color system overhaul; emerald/stone replaced with purple/gray across all components
+- **Edge-to-edge illustration headers** — Dashboard, AI Coach, Urge Help, and Login now open with full-width hero images (gradient fade into background)
+- **Tailwind v3 (Play CDN)** — upgraded from v2 CDN; unlocks full token support (`purple-*`, `rose-*`, arbitrary values)
+- **Time-based greeting** — Dashboard shows "Good morning / afternoon / evening" based on current hour
+- **Settings in main nav** — Settings moved from sidebar footer/mobile header into primary nav (both desktop and mobile bottom bar); replaces "Future" placeholder
+
+### Fixed (Issue #22)
+- **Logout bypassed app state reset** — new Log Out button in Settings was calling `supabase.auth.signOut()` directly; fixed by wiring `onLogout` prop through `Settings` → `ProfileSettings` so full state cleanup runs
+- **Mobile content hidden behind bottom nav** — `pb-[4.5rem] md:pb-0` was accidentally removed from `<main>` during redesign; restored
+- **Urge Help shortcut used global event bus** — Dashboard's "Urge Help" quick button was dispatching a `CustomEvent` on `window`; replaced with direct `onChangeView` prop call
+
+### Changed (Issue #22)
+- **Desktop sidebar** — logout button restored to footer; redundant `MobileHeader` removed
+- **Plan28 `completedTasks`/`onTaskToggle`** — changed from optional to required props (always provided by App.tsx)
+
+### Added (Issue #21)
+- **Supabase data persistence** — all webapp user data now survives page refresh: check-ins, plan task completions, AI coach conversation history
+- **`check_ins` table** — each daily check-in (status, triggers, emotions, reaction, coping strategies, notes, AI insight, time of day) inserted on completion; loaded on login ordered by date
+- **`plan_progress` table** — individual task completions stored per day per plan cycle (`plan_started_at`); reconstructed into `Record<number, Set<string>>` on login; optimistic UI update fires before DB write
+- **`user_app_state` table** — single row per user storing active `plan_started_at`; auto-created on first login; supports plan restart (old rows preserved, new cycle timestamp scopes queries)
+- **`coach_messages` table** — full AI coach conversation upserted after each assistant reply (jsonb array, one row per user); welcome message excluded from storage, always prepended at load time
+
+### Fixed (Issue #21)
+- **Page-refresh logout** — added `supabase.auth.getSession()` as first check in `Login.tsx` auto-auth; native Supabase session (persisted in `sb-*` localStorage keys) now restores without re-login
+- **Coach messages stale-closure bug** — upsert used closure-captured `messages` state which could be stale on rapid sends; replaced with `messagesRef` kept current via `useEffect`
+
+### Changed (Issue #21)
+- `Plan28` `completedTasks` and `onTaskToggle` props changed from optional to required (always provided by `App.tsx`)
+
 ### Added (Issue #20)
 - **Settings → Access tab** — live subscription data from Supabase `subscriptions` table: plan label, amount paid, begin date, renewal/access-until date, active/cancelled badge
 - **Cancel Membership flow** — single-step confirmation modal; calls `POST /api/cancel-subscription` which sets `cancel_at_period_end: true` in Stripe and mirrors to Supabase; user retains access until period end

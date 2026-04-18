@@ -100,12 +100,17 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
   // Screen 1: Timer
   if (step === 1) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-stone-50 animate-in fade-in duration-500">
-        <h2 className="text-xl md:text-2xl font-medium text-emerald-900 mb-10 text-center max-w-md leading-relaxed">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-rose-50 animate-in fade-in duration-500 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-64 md:h-80 z-0 overflow-hidden">
+          <img src="/illustrations/urge.png" alt="Calm" className="w-full h-full object-cover mix-blend-multiply opacity-40 scale-[1.4] origin-center" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-rose-50/60 to-rose-50" />
+        </div>
+        
+        <h2 className="text-xl md:text-2xl font-medium text-rose-900 mb-10 text-center max-w-md leading-relaxed relative z-10 mt-12">
           You don't need to decide right now.
         </h2>
 
-        <div className="relative w-72 h-72 mb-10">
+        <div className="relative w-72 h-72 mb-10 z-10">
           <svg className="w-full h-full transform -rotate-90" viewBox={`0 0 ${size} ${size}`}>
             {/* Background Ring */}
             <circle
@@ -115,7 +120,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
               stroke="currentColor"
               strokeWidth={strokeWidth}
               fill="transparent"
-              className="text-stone-200"
+              className="text-rose-200"
             />
             {/* Progress Ring */}
             <circle
@@ -128,15 +133,15 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
-              className="text-emerald-800 transition-all duration-1000 ease-linear"
+              className="text-rose-800 transition-all duration-1000 ease-linear"
             />
           </svg>
           
           <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
-            <span className="text-7xl font-light text-emerald-900 tracking-tighter tabular-nums">
+            <span className="text-7xl font-light text-rose-900 tracking-tighter tabular-nums">
               {timeLeft}
             </span>
-             <span className="text-xs font-bold text-emerald-800/40 uppercase tracking-widest mt-2">
+             <span className="text-xs font-bold text-rose-800/40 uppercase tracking-widest mt-2">
               Seconds
             </span>
           </div>
@@ -157,8 +162,8 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
   // Screen 2: Feelings
   if (step === 2) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-4 bg-stone-50 animate-in slide-in-from-right-8 duration-300">
-        <h2 className="text-2xl md:text-3xl font-bold text-emerald-900 mb-8 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 bg-rose-50 animate-in slide-in-from-right-8 duration-300">
+        <h2 className="text-2xl md:text-3xl font-bold text-rose-900 mb-8 text-center">
           What are you feeling?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
@@ -166,7 +171,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
             <button
               key={feeling}
               onClick={() => handleFeelingSelect(feeling)}
-              className="p-6 bg-white border border-stone-200 rounded-xl text-lg font-medium text-emerald-900 hover:border-emerald-300 hover:shadow-md transition-all text-center"
+              className="p-6 bg-white border border-rose-200 rounded-xl text-lg font-medium text-rose-900 hover:border-rose-400 hover:shadow-md transition-all text-center"
             >
               {feeling}
             </button>
@@ -179,11 +184,11 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
   // Screen 3: Urge Emergency Actions
   if (step === 3) {
     return (
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-stone-50 flex flex-col items-center justify-center animate-in slide-in-from-right-8 duration-300">
+      <div className="flex-1 p-4 md:p-8 overflow-y-auto bg-rose-50 flex flex-col items-center justify-center animate-in slide-in-from-right-8 duration-300">
         <div className="max-w-2xl w-full space-y-6">
             <div className="text-center space-y-2">
-                <h2 className="text-2xl md:text-3xl font-bold text-emerald-900">Urge Emergency</h2>
-                <p className="text-emerald-800/70">Don't fight the urge. Just delay the reaction. Pick one action now.</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-rose-900">Urge Emergency</h2>
+                <p className="text-rose-800/70">Don't fight the urge. Just delay the reaction. Pick one action now.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -193,15 +198,15 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
                         onClick={t.action}
                         className={`p-6 rounded-2xl border-2 text-left transition-all group relative overflow-hidden ${
                             activeTechnique === t.id 
-                            ? 'bg-emerald-50 border-emerald-500 shadow-md ring-1 ring-emerald-500' 
-                            : 'bg-white border-stone-200 hover:border-emerald-300'
+                            ? 'bg-rose-100 border-rose-500 shadow-md ring-1 ring-rose-500' 
+                            : 'bg-white border-rose-200 hover:border-rose-400'
                         }`}
                     >
                         <div className="flex items-center gap-4 mb-2 relative z-10">
-                            <div className={`p-3 rounded-full ${activeTechnique === t.id ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-emerald-800'}`}>
+                            <div className={`p-3 rounded-full ${activeTechnique === t.id ? 'bg-rose-600 text-white' : 'bg-white text-rose-800'}`}>
                                 <t.icon size={24} />
                             </div>
-                            <span className="font-bold text-emerald-900 text-lg">{t.title}</span>
+                            <span className="font-bold text-rose-900 text-lg">{t.title}</span>
                         </div>
                         <p className="text-stone-600 pl-[3.25rem] relative z-10">{t.desc}</p>
                     </button>
@@ -210,7 +215,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
 
             {/* Animation Area for specific techniques */}
             {activeTechnique === 1 && (
-                <div className="bg-emerald-900 text-stone-100 p-8 rounded-2xl text-center animate-in zoom-in duration-300">
+                <div className="bg-rose-700 text-stone-100 p-8 rounded-2xl text-center animate-in zoom-in duration-300">
                     <p className="text-xl font-light mb-4">Breathe In...</p>
                     <div className="w-full h-2 bg-emerald-800 rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-400 animate-[pulse_4s_infinite]"></div>
@@ -223,7 +228,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
                 <div className="pt-4 flex justify-end animate-in fade-in slide-in-from-bottom-4">
                      <button 
                         onClick={() => setStep(4)}
-                        className="flex items-center gap-2 px-6 py-3 bg-emerald-800 text-white rounded-xl hover:bg-emerald-900 transition-colors shadow-lg"
+                        className="flex items-center gap-2 px-6 py-3 bg-emerald-800 text-white rounded-xl hover:bg-rose-700 transition-colors shadow-lg"
                      >
                         <span>I did this</span>
                         <ArrowRight size={20} />
@@ -238,22 +243,22 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onChangeView }) => {
   // Screen 4: Feedback
   if (step === 4) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-4 bg-stone-50 animate-in slide-in-from-right-8 duration-300">
-         <h2 className="text-2xl md:text-3xl font-bold text-emerald-900 mb-8 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 bg-rose-50 animate-in slide-in-from-right-8 duration-300">
+         <h2 className="text-2xl md:text-3xl font-bold text-rose-900 mb-8 text-center">
             Did the urge decrease?
          </h2>
          
          <div className="w-full max-w-md space-y-4">
             <button 
                 onClick={() => handleFeedback('passed')}
-                className="w-full p-4 bg-emerald-900 text-white rounded-xl font-medium hover:bg-emerald-800 transition-colors shadow-md"
+                className="w-full p-4 bg-rose-700 text-white rounded-xl font-medium hover:bg-rose-800 transition-colors shadow-md"
             >
                 Yes, it passed
             </button>
             
             <button 
                 onClick={() => handleFeedback('still_there')}
-                className="w-full p-4 bg-white border-2 border-emerald-900 text-emerald-900 rounded-xl font-medium hover:bg-stone-50 transition-colors"
+                className="w-full p-4 bg-white border-2 border-rose-700 text-rose-900 rounded-xl font-medium hover:bg-rose-50 transition-colors"
             >
                 It's still there (Try another)
             </button>

@@ -33,9 +33,8 @@ interface Plan28Props {
   streak: number;
   onOpenCheckIn: (payload: { tasksCompleted: boolean }) => void;
   hasCheckedInToday: boolean;
-  // completedTasks and onTaskToggle passed from App.tsx (reserved for future persistence)
-  completedTasks?: Record<number, Set<string>>;
-  onTaskToggle?: (dayNumber: number, taskKey: string) => void;
+  completedTasks: Record<number, Set<string>>;
+  onTaskToggle: (dayNumber: number, taskKey: string) => void;
 }
 
 // Helper component to render formatted text for OLD unstructured days
@@ -73,30 +72,39 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
     if (isCompleted) {
       statusIcon = <Check size={20} className="text-emerald-500" />;
       dayLabelColor = 'text-emerald-600';
-      textColor = 'text-emerald-900';
-      bgColor = isSelected ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white hover:bg-stone-50 border-stone-200';
+      textColor = 'text-purple-900';
+      bgColor = isSelected ? 'bg-purple-50 border-emerald-300 ring-1 ring-emerald-300' : 'bg-white hover:bg-gray-50 border-gray-200';
     } else if (isCurrent) {
       statusIcon = <Star size={20} className="text-yellow-500 fill-yellow-500" />;
       dayLabelColor = 'text-yellow-600';
-      textColor = 'text-emerald-900';
-      bgColor = isSelected ? 'bg-yellow-50 border-yellow-400 ring-1 ring-yellow-400' : 'bg-white hover:bg-stone-50 border-stone-200';
+      textColor = 'text-purple-900';
+      bgColor = isSelected ? 'bg-yellow-50 border-yellow-400 ring-1 ring-yellow-400' : 'bg-white hover:bg-gray-50 border-gray-200';
     } else { // isFuture, but now unlocked
       statusIcon = <div className="w-5 h-5" />; // A spacer instead of a lock icon
-      dayLabelColor = 'text-stone-500';
-      textColor = 'text-emerald-900'; // Make text look active
-      bgColor = isSelected ? 'bg-stone-100 border-stone-300 ring-1 ring-stone-300' : 'bg-white hover:bg-stone-50 border-stone-200';
+      dayLabelColor = 'text-gray-500';
+      textColor = 'text-purple-900'; // Make text look active
+      bgColor = isSelected ? 'bg-gray-100 border-stone-300 ring-1 ring-stone-300' : 'bg-white hover:bg-gray-50 border-gray-200';
     }
 
+    const bgImageIndex = (day.day % 3) + 1;
+    
     return (
       <button
         ref={isSelected ? selectedDayRef : null}
         onClick={() => setSelectedDay(day)}
-        className={`flex-shrink-0 w-48 md:w-full p-4 rounded-xl border text-left flex items-start gap-4 transition-all ${bgColor}`}
+        className={`flex-shrink-0 w-56 md:w-full p-4 rounded-xl border text-left flex flex-col gap-3 transition-all relative overflow-hidden group ${bgColor}`}
       >
-        <div className="flex-shrink-0 mt-0.5">{statusIcon}</div>
-        <div className="flex-1">
+        {/* Subtle background image */}
+        <div className="absolute right-0 top-0 w-24 h-24 opacity-20 group-hover:opacity-40 transition-opacity pointer-events-none translate-x-4 -translate-y-4">
+            <img src={`/illustrations/day-bg-${bgImageIndex}.png`} alt="" className="w-full h-full object-cover rounded-full mix-blend-multiply" />
+        </div>
+        
+        <div className="flex items-center gap-3 relative z-10">
+            <div className="flex-shrink-0 bg-white/50 backdrop-blur-sm rounded-full p-1">{statusIcon}</div>
             <span className={`text-xs font-bold uppercase tracking-wider ${dayLabelColor}`}>Day {day.day}</span>
-            <p className={`font-semibold text-sm leading-tight mt-1 ${textColor}`}>{day.title}</p>
+        </div>
+        <div className="relative z-10">
+            <p className={`font-semibold text-sm leading-tight ${textColor}`}>{day.title}</p>
         </div>
       </button>
     );
@@ -113,7 +121,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
     }, [day]);
 
     // Task completion state comes from persisted props — no local state needed
-    const checkedTasks: Set<string> = completedTasks?.[day.day] ?? new Set<string>();
+    const checkedTasks: Set<string> = completedTasks[day.day] ?? new Set<string>();
 
     const handleAccordionToggle = (accordionId: string) => {
       if (accordionId === 'tip') {
@@ -124,7 +132,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
 
     // Delegate to App.tsx which handles both optimistic UI update and DB write
     const handleCheck = (task: string) => {
-      onTaskToggle?.(day.day, task);
+      onTaskToggle(day.day, task);
     };
 
     const morningTasksCompleted = day.morningProtocol?.reduce((acc, item, index) => checkedTasks.has(`m-${index}`) ? acc + 1 : acc, 0) ?? 0;
@@ -150,14 +158,14 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
       return (
         <div
           onClick={() => handleCheck(uniqueKey)}
-          className="flex items-start gap-4 p-3 rounded-lg hover:bg-stone-50 cursor-pointer transition-colors"
+          className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
           role="checkbox"
           aria-checked={isChecked}
         >
           <div className={`mt-1 w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${isChecked ? 'bg-emerald-600 border-emerald-600' : 'border-stone-300'}`}>
             {isChecked && <Check size={14} className="text-white" />}
           </div>
-          <p className={`flex-1 text-sm leading-relaxed ${isChecked ? 'text-stone-400 line-through' : 'text-stone-700'}`}>
+          <p className={`flex-1 text-sm leading-relaxed ${isChecked ? 'text-gray-400 line-through' : 'text-stone-700'}`}>
             <span className="font-bold">{item.main}</span>
             {' '}
             {item.details}
@@ -166,21 +174,24 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
       );
     };
 
-    const AccordionCard = ({ title, subtitle, isComplete, checkmarkColor, checkmarkFill, isOpen, onToggle, children }: { title: string; subtitle: string; isComplete?: boolean; checkmarkColor?: string; checkmarkFill?: string; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) => {
+    const AccordionCard = ({ title, subtitle, isComplete, checkmarkColor, checkmarkFill, isOpen, onToggle, children, iconIndex = 1 }: { title: string; subtitle: string; isComplete?: boolean; checkmarkColor?: string; checkmarkFill?: string; isOpen: boolean; onToggle: () => void; children: React.ReactNode; iconIndex?: number }) => {
       const color = checkmarkColor || (isComplete ? 'rgb(16, 185, 129)' : 'rgb(214, 211, 209)');
       const fill = checkmarkFill || (isComplete ? 'rgb(240, 253, 244)' : 'rgb(255, 255, 255)');
       
       return (
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden transition-all">
-          <button onClick={onToggle} className="w-full flex items-center justify-between p-4 text-left hover:bg-stone-50/50">
+        <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden transition-all relative">
+          <div className="absolute right-0 top-0 w-32 h-32 opacity-10 pointer-events-none translate-x-8 -translate-y-8">
+            <img src={`/illustrations/day-bg-${iconIndex}.png`} alt="" className="w-full h-full object-cover rounded-full mix-blend-multiply" />
+          </div>
+          <button onClick={onToggle} className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50/50 relative z-10">
             <div>
-              <h3 className="text-lg font-bold text-emerald-900">{title}</h3>
-              <p className="text-sm text-stone-500">{subtitle}</p>
+              <h3 className="text-lg font-bold text-purple-900">{title}</h3>
+              <p className="text-sm text-gray-500">{subtitle}</p>
             </div>
-            <CheckCircle size={28} style={{ color, fill }} className="transition-all duration-300" />
+            <CheckCircle size={28} style={{ color, fill }} className="transition-all duration-300 bg-white rounded-full" />
           </button>
           {isOpen && (
-            <div className="px-4 pb-4 animate-in fade-in duration-300">
+            <div className="px-5 pb-5 animate-in fade-in duration-300 relative z-10">
               {children}
             </div>
           )}
@@ -191,16 +202,16 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
     // Render the new structured view if data exists
     if (day.morningProtocol && day.eveningProtocol) {
       return (
-        <div className="space-y-3 animate-in fade-in duration-300">
-          <header className="mb-4">
+        <div className="space-y-4 animate-in fade-in duration-300">
+          <header className="mb-6">
             <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Day {day.day}</span>
             <div className="flex items-center gap-2 mt-1">
-                <h2 className="text-2xl md:text-3xl font-bold text-emerald-900">{day.title}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-purple-900">{day.title}</h2>
                 {day.whatToExpectToday && (
                     <div className="relative group flex items-center">
-                        <Info size={18} className="text-stone-400 cursor-pointer hover:text-emerald-700 transition-colors" />
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-emerald-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible group-hover:visible z-10 pointer-events-none">
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-emerald-900"></div>
+                        <Info size={18} className="text-gray-400 cursor-pointer hover:text-purple-700 transition-colors" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible group-hover:visible z-10 pointer-events-none">
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-gray-900"></div>
                             <span className="font-bold block mb-1">What to Expect Today:</span>
                             <div className="mt-1 space-y-1">
                                 {day.whatToExpectToday.map((line, index) => <p key={index}>{line}</p>)}
@@ -209,7 +220,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
                     </div>
                 )}
             </div>
-            {day.subtitle && <p className="text-stone-500 mt-2">{day.subtitle}</p>}
+            {day.subtitle && <p className="text-gray-500 mt-2">{day.subtitle}</p>}
           </header>
 
           {day.morningProtocol && (
@@ -220,6 +231,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
               checkmarkFill={morningCompletionColors.fill}
               isOpen={openAccordion === 'morning'}
               onToggle={() => handleAccordionToggle('morning')}
+              iconIndex={1}
             >
               <div className="space-y-1 border-t border-stone-100 pt-4 mt-2">
                 {day.morningProtocol.map((item, index) => <ChecklistItem key={`m-${index}`} item={item} prefix={`m-${index}`} />)}
@@ -234,6 +246,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
               isComplete={isTipRead}
               isOpen={openAccordion === 'tip'}
               onToggle={() => handleAccordionToggle('tip')}
+              iconIndex={2}
             >
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-sm text-yellow-800 mt-2">
                 {typeof day.tipOfTheDay === 'string' ? day.tipOfTheDay : (
@@ -254,6 +267,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
               checkmarkFill={eveningCompletionColors.fill}
               isOpen={openAccordion === 'evening'}
               onToggle={() => handleAccordionToggle('evening')}
+              iconIndex={3}
             >
               <div className="space-y-1 border-t border-stone-100 pt-4 mt-2">
                 {day.eveningProtocol.map((item, index) => <ChecklistItem key={`e-${index}`} item={item} prefix={`e-${index}`} />)}
@@ -263,13 +277,13 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
 
           <button
             onClick={handleOpenCheckIn}
-            className="w-full flex items-center justify-between p-4 text-left bg-white rounded-xl border border-stone-200 shadow-sm hover:bg-stone-50 transition-colors"
+            className="w-full flex items-center justify-between p-5 text-left bg-white rounded-2xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors mt-2"
           >
             <div>
-              <h3 className="text-lg font-bold text-emerald-900">Daily Check-In</h3>
-              <p className="text-sm text-stone-500">Track. Reflect. Adjust.</p>
+              <h3 className="text-lg font-bold text-purple-900">Daily Check-In</h3>
+              <p className="text-sm text-gray-500">Track. Reflect. Adjust.</p>
             </div>
-            <CheckCircle size={28} className={`transition-colors ${hasCheckedInToday ? 'text-emerald-500' : 'text-stone-300'}`} />
+            <CheckCircle size={28} className={`transition-colors ${hasCheckedInToday ? 'text-emerald-500' : 'text-gray-300'}`} />
           </button>
         </div>
       );
@@ -277,16 +291,16 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
 
     // Fallback to old view for unstructured days
     return (
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-stone-200 shadow-sm animate-in fade-in duration-300">
+        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm animate-in fade-in duration-300">
             <div className="mb-6">
                 <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Day {day.day}</span>
                  <div className="flex items-center gap-2 mt-1">
-                    <h2 className="text-2xl md:text-3xl font-bold text-emerald-900">{day.title}</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-purple-900">{day.title}</h2>
                     {day.whatToExpectToday && (
                         <div className="relative group flex items-center">
-                            <Info size={18} className="text-stone-400 cursor-pointer hover:text-emerald-700 transition-colors" />
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-emerald-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible group-hover:visible z-10 pointer-events-none">
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-emerald-900"></div>
+                            <Info size={18} className="text-gray-400 cursor-pointer hover:text-purple-700 transition-colors" />
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible group-hover:visible z-10 pointer-events-none">
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-gray-900"></div>
                                 <span className="font-bold block mb-1">What to Expect Today:</span>
                                 <div className="mt-1 space-y-1">
                                     {day.whatToExpectToday.map((line, index) => <p key={index}>{line}</p>)}
@@ -295,14 +309,14 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
                         </div>
                     )}
                 </div>
-                {day.subtitle && <p className="text-stone-500 mt-2">{day.subtitle}</p>}
+                {day.subtitle && <p className="text-gray-500 mt-2">{day.subtitle}</p>}
             </div>
             
             {(day.description || day.task) ? (
               <div className="text-stone-700">
                   {day.task && (
-                    <div className="bg-emerald-50/70 border-l-4 border-emerald-400 p-4 rounded-r-lg mb-6">
-                        <h4 className="font-bold text-emerald-900 !mt-0">Today's Task:</h4>
+                    <div className="bg-purple-50/70 border-l-4 border-emerald-400 p-4 rounded-r-lg mb-6">
+                        <h4 className="font-bold text-purple-900 !mt-0">Today's Task:</h4>
                         <p className="!mb-0">{day.task}</p>
                     </div>
                   )}
@@ -310,7 +324,7 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
               </div>
             ) : (
                <div className="text-center py-12 border-t border-stone-100 mt-6">
-                <p className="text-stone-500">Content for this day will be available soon.</p>
+                <p className="text-gray-500">Content for this day will be available soon.</p>
               </div>
             )}
 
@@ -325,17 +339,36 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-full w-full overflow-hidden bg-stone-50/50">
-        {/* Mobile: Horizontal Scroll | Desktop: Vertical Sidebar */}
-        <aside className="p-4 md:w-72 md:h-full md:border-r md:border-stone-200 bg-stone-50 md:bg-white/60">
-            <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto pb-2 md:pb-0 md:h-full md:pr-2">
+    <div className="flex flex-col md:flex-row h-full w-full overflow-hidden bg-purple-50">
+        {/* Desktop: Vertical Sidebar (Hidden on Mobile) */}
+        <aside className="hidden md:block p-4 w-72 h-full border-r border-gray-200 bg-white/60">
+            <div className="flex flex-col gap-3 overflow-y-auto h-full pr-2">
                 {planData.map(day => <DaySelector key={day.day} day={day} />)}
             </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 pt-0 md:p-8 overflow-y-auto">
-            {selectedDay && <DayDetails day={selectedDay} onOpenCheckIn={onOpenCheckIn} hasCheckedInToday={hasCheckedInToday} />}
+        <main className="flex-1 pb-28 md:pb-8 overflow-y-auto">
+            {/* Edge-to-Edge Header Image */}
+            <div className="w-full h-56 md:h-64 relative mb-4 overflow-hidden">
+              <img src="/illustrations/plan.png" alt="28-Day Plan" className="w-full h-full object-cover scale-[2.2] origin-center" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
+              <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phase 1</span>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-purple-900 mt-1">Your Journey</h2>
+              </div>
+            </div>
+            
+            {/* Mobile: Horizontal Scroll (Below Header) */}
+            <div className="md:hidden px-4 mb-4 -mt-8 relative z-10">
+                <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar">
+                    {planData.map(day => <div key={day.day} className="snap-start"><DaySelector day={day} /></div>)}
+                </div>
+            </div>
+
+            <div className="px-4 md:px-8 max-w-3xl mx-auto">
+              {selectedDay && <DayDetails day={selectedDay} onOpenCheckIn={onOpenCheckIn} hasCheckedInToday={hasCheckedInToday} />}
+            </div>
         </main>
     </div>
   );

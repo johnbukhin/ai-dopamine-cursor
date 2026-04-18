@@ -38,7 +38,7 @@ function formatDate(iso: string | null): string {
 // ---------------------------------------------------------------------------
 // Profile tab
 // ---------------------------------------------------------------------------
-const ProfileSettings: React.FC = () => {
+const ProfileSettings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -100,7 +100,7 @@ const ProfileSettings: React.FC = () => {
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
             placeholder="Min. 8 characters"
           />
         </div>
@@ -110,7 +110,7 @@ const ProfileSettings: React.FC = () => {
             type="password"
             value={confirm}
             onChange={e => setConfirm(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
             placeholder="Repeat password"
           />
         </div>
@@ -119,17 +119,28 @@ const ProfileSettings: React.FC = () => {
           <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{errorMsg}</p>
         )}
         {status === 'success' && (
-          <p className="text-sm text-emerald-700 bg-emerald-50 rounded-md px-3 py-2">Password updated successfully.</p>
+          <p className="text-sm text-purple-700 bg-purple-50 rounded-md px-3 py-2">Password updated successfully.</p>
         )}
 
         <button
           type="submit"
           disabled={status === 'saving' || !password}
-          style={{ backgroundColor: '#065f46', color: '#ffffff', padding: '10px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: (status === 'saving' || !password) ? 'not-allowed' : 'pointer', opacity: (status === 'saving' || !password) ? 0.5 : 1 }}
+          style={{ backgroundColor: '#9333EA', color: '#ffffff', padding: '10px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: (status === 'saving' || !password) ? 'not-allowed' : 'pointer', opacity: (status === 'saving' || !password) ? 0.5 : 1 }}
         >
           {status === 'saving' ? 'Saving…' : 'Save Password'}
         </button>
       </form>
+
+      <div className="mt-12 pt-8 border-t border-gray-200 max-w-md">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">Account Actions</h3>
+        <button
+          onClick={onLogout}
+          className="w-full flex justify-center items-center gap-2 px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Log Out
+        </button>
+      </div>
     </div>
   );
 };
@@ -320,15 +331,15 @@ const TermsSettings: React.FC = () => (
 // ---------------------------------------------------------------------------
 // Settings shell
 // ---------------------------------------------------------------------------
-export const Settings: React.FC = () => {
+export const Settings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Profile');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'Profile': return <ProfileSettings />;
+      case 'Profile': return <ProfileSettings onLogout={onLogout} />;
       case 'Access':  return <AccessSettings />;
       case 'Terms':   return <TermsSettings />;
-      default:        return <ProfileSettings />;
+      default:        return <ProfileSettings onLogout={onLogout} />;
     }
   };
 
@@ -337,7 +348,7 @@ export const Settings: React.FC = () => {
       onClick={() => setActiveTab(tabName)}
       className={`px-4 py-2 text-sm font-medium rounded-md ${
         activeTab === tabName
-          ? 'bg-emerald-100 text-emerald-700'
+          ? 'bg-purple-100 text-purple-700'
           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
       }`}
     >
@@ -346,7 +357,7 @@ export const Settings: React.FC = () => {
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 h-full bg-gray-50 flex flex-col">
+    <div className="p-4 pt-12 md:pt-8 sm:p-6 lg:p-8 h-full bg-gray-50 flex flex-col pb-28 md:pb-8">
       <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 min-h-0">
         <div className="mb-8 flex-shrink-0">
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>

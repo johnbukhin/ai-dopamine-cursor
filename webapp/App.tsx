@@ -236,7 +236,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-stone-50 text-emerald-900 font-sans overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen w-full bg-purple-50 text-gray-900 font-sans overflow-hidden">
       <Sidebar
         currentView={currentView}
         onChangeView={setCurrentView}
@@ -249,6 +249,7 @@ export default function App() {
             checkIns={checkIns}
             streak={streak}
             onOpenCheckIn={() => handleOpenCheckIn({ tasksCompleted: false })}
+            onChangeView={setCurrentView}
           />
         )}
 
@@ -284,7 +285,7 @@ export default function App() {
         )}
 
         {currentView === View.SETTINGS && (
-          <Settings />
+          <Settings onLogout={handleLogout} />
         )}
 
         {showCheckInModal && (
