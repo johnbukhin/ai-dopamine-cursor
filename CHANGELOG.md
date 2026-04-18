@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #20)
+- **Settings → Access tab** — live subscription data from Supabase `subscriptions` table: plan label, amount paid, begin date, renewal/access-until date, active/cancelled badge
+- **Cancel Membership flow** — single-step confirmation modal; calls `POST /api/cancel-subscription` which sets `cancel_at_period_end: true` in Stripe and mirrors to Supabase; user retains access until period end
+- **Renew Subscription** — green button shown when subscription is cancelled; calls `POST /api/renew-subscription` which flips `cancel_at_period_end: false` in Stripe and Supabase; UI reverts to active state immediately
+- **Settings → Profile tab** — email pre-filled from Supabase auth (read-only); password change via `supabase.auth.updateUser({ password })` with validation and success/error feedback
+- **`webapp/api/cancel-subscription.js`** — ownership-verified cancellation endpoint; releases Stripe subscription schedule if present before updating, logs schedule+subscription IDs on partial failure
+- **`webapp/api/renew-subscription.js`** — ownership-verified renewal endpoint; re-enables auto-renew on an already-cancelled subscription
+- **Webhook enrichment** (`funnel/api/webhook.js`) — `invoice.payment_succeeded` now writes `current_period_end`, `plan_label`, `cancel_at_period_end: false` to `subscriptions` table; resolves human-readable label from `PRICE_LABEL_MAP` with `description` fallback
+
+### Fixed (Issue #20)
+- **Stripe schedule error on cancel** — subscriptions managed by a schedule rejected direct `cancel_at_period_end` update; fixed by releasing the schedule first
+- **Button text invisible** — `Button.tsx` used `text-stone-50`/`stone-*`/`rose-*` (Tailwind v3-only); replaced with `text-white`/`gray-*`/`red-*` (v2-compatible)
+- **Cancel API on wrong domain** — `CancelFlow` called `/api/cancel-subscription` as relative URL; this resolved to the webapp domain (`mind-compass-webapp.vercel.app`) not the funnel project; fixed by adding the endpoint to `webapp/api/`
+- **`paid_at` null crash in webhook** — `new Date(null * 1000)` stored Unix epoch `1970-01-01`; guarded to store `null` when `status_transitions.paid_at` is missing
+
+### Security (Issue #20)
+- CORS on `cancel-subscription` and `renew-subscription` restricted from wildcard `*` to `https://mind-compass-webapp.vercel.app`
+
 ### Added (Issue #19)
 - **Structured quiz data in `users_profile`** — 10 new queryable columns written on account creation: `gender`, `age_group`, `main_challenge`, `goal`, `score_overall`, `score_dopamine_sensitivity`, `score_emotional_regulation`, `score_pattern_stage`, `score_physical_impact`, `funnel_version`
 - **Dev mock for account creation** — on localhost, `handleAccountFormSubmit` skips the `/api/create-user` API call and navigates forward; real API runs on Vercel only
