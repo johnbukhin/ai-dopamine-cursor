@@ -43,8 +43,14 @@ export default async function handler(req, res) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
     try {
+        // Subscriptions managed by a schedule can't be updated directly.
+        // Release the schedule first (leaves subscription active), then cancel.
+        const existing = await stripe.subscriptions.retrieve(stripe_subscription_id);
+        if (existing.schedule) {
+            await stripe.subscriptionSchedules.release(existing.schedule);
+        }
+
         // Schedule cancellation at end of current billing period.
-        // User retains access until current_period_end — not cut off immediately.
         const subscription = await stripe.subscriptions.update(stripe_subscription_id, {
             cancel_at_period_end: true,
         });
