@@ -7,7 +7,7 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'https://mind-compass-webapp.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -41,13 +41,23 @@ export default async function handler(req, res) {
         // Subscriptions managed by a schedule can't be updated directly.
         // Release the schedule first (leaves subscription active), then cancel.
         const existing = await stripe.subscriptions.retrieve(stripe_subscription_id);
-        if (existing.schedule) {
-            await stripe.subscriptionSchedules.release(existing.schedule);
+        const scheduleId = existing.schedule;
+        if (scheduleId) {
+            await stripe.subscriptionSchedules.release(scheduleId);
         }
 
-        const subscription = await stripe.subscriptions.update(stripe_subscription_id, {
-            cancel_at_period_end: true,
-        });
+        let subscription;
+        try {
+            subscription = await stripe.subscriptions.update(stripe_subscription_id, {
+                cancel_at_period_end: true,
+            });
+        } catch (updateErr) {
+            // Schedule was released but cancellation failed — log for manual recovery.
+            if (scheduleId) {
+                console.error('[cancel-subscription] Schedule released but update failed — manual recovery needed. schedule:', scheduleId, 'subscription:', stripe_subscription_id);
+            }
+            throw updateErr;
+        }
 
         const { error: updateError } = await supabase
             .from('subscriptions')

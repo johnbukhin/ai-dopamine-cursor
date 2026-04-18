@@ -95,7 +95,9 @@ export default async function handler(req, res) {
                 stripe_subscription_id: invoice.subscription,
                 user_email:             invoice.customer_email,
                 status:                 'active',
-                paid_at:                new Date(invoice.status_transitions?.paid_at * 1000).toISOString(),
+                paid_at:                invoice.status_transitions?.paid_at
+                    ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+                    : null,
                 amount_paid:            invoice.amount_paid,    // in cents
                 currency:               invoice.currency,
                 current_period_end:     currentPeriodEnd,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { CancelFlow } from './CancelFlow';
-import { Button } from './Button';
+
 
 type SettingsTab = 'Profile' | 'Access' | 'Terms';
 
