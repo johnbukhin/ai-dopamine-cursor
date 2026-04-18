@@ -3,24 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Compass</title>
-    <!-- Tailwind CSS (PlayCDN for v3 to support all extended colors like purple, emerald, rose) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: #FAF5FF; /* Purple-50 */
-        color: #111827; /* Gray-900 */
-      }
-      .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-    </style>
+    <title>Mind Compass</title>
+
+    <!-- PWA: Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- PWA: Status bar color — matches app background so iOS blends seamlessly -->
+    <meta name="theme-color" content="#FAF5FF" />
+
+    <!-- PWA: iOS-specific meta tags -->
+    <!-- Enables full-screen launch from homescreen on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- "default" = light status bar with dark text/icons, matches #FAF5FF background -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Mind Compass" />
+    <!-- Apple touch icon (used when adding to homescreen on iOS) -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Inter font — loaded early to avoid FOUT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Rounded-square background matching app background color -->
+  <rect width="512" height="512" rx="108" fill="#FAF5FF"/>
+
+  <!-- Subtle compass dial ring in purple-200 -->
+  <circle cx="256" cy="256" r="176" fill="none" stroke="#DDD6FE" stroke-width="6"/>
+
+  <!-- Cardinal tick marks -->
+  <line x1="256" y1="68"  x2="256" y2="92"  stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+  <line x1="256" y1="420" x2="256" y2="444" stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+  <line x1="68"  y1="256" x2="92"  y2="256" stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+  <line x1="420" y1="256" x2="444" y2="256" stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+
+  <!--
+    Compass needle — two teardrop halves sharing the center point.
+    North half (emerald): broader base near center, tapers to north tip.
+    South half (purple):  broader base near center, tapers to south tip.
+  -->
+
+  <!-- North needle (emerald) -->
+  <path d="M256 108
+           L282 248
+           L256 262
+           L230 248
+           Z"
+        fill="#10B981"/>
+
+  <!-- South needle (purple) -->
+  <path d="M256 404
+           L278 266
+           L256 252
+           L234 266
+           Z"
+        fill="#7C3AED"/>
+
+  <!-- Center cap — white disc with purple ring to cleanly join the two halves -->
+  <circle cx="256" cy="256" r="16" fill="#FAF5FF" stroke="#7C3AED" stroke-width="5"/>
+</svg>

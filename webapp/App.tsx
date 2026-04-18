@@ -244,6 +244,11 @@ export default function App() {
       />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative pb-[4.5rem] md:pb-0 w-full">
+        {/* Gradient fade from status-bar color (#FAF5FF) into content — mobile only.
+            Masks the hard edge between the iOS status bar and the tab content.
+            pointer-events-none so it never blocks scroll or tap targets. */}
+        <div className="md:hidden pointer-events-none absolute top-0 left-0 right-0 h-10 z-20
+                        bg-gradient-to-b from-[#FAF5FF] to-transparent" />
         {currentView === View.DASHBOARD && (
           <Dashboard
             checkIns={checkIns}

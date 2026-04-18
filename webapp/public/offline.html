@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FAF5FF" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Mind Compass</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: -apple-system, 'Inter', sans-serif;
+        background-color: #FAF5FF;
+        color: #111827;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      /* Compass icon reused from brand SVG */
+      .icon {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: #581C87; /* purple-900 */
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        font-size: 0.9375rem;
+        color: #6B7280; /* gray-500 */
+        line-height: 1.6;
+        max-width: 280px;
+        margin-bottom: 2rem;
+      }
+
+      button {
+        background-color: #7C3AED; /* purple-600 */
+        color: #fff;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.15s;
+      }
+
+      button:hover  { background-color: #6D28D9; }
+      button:active { background-color: #5B21B6; }
+    </style>
+  </head>
+  <body>
+    <!-- Inline SVG keeps the branded compass visible with no network required -->
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="108" fill="#FAF5FF"/>
+      <circle cx="256" cy="256" r="176" fill="none" stroke="#DDD6FE" stroke-width="6"/>
+      <line x1="256" y1="68"  x2="256" y2="92"  stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+      <line x1="256" y1="420" x2="256" y2="444" stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+      <line x1="68"  y1="256" x2="92"  y2="256" stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+      <line x1="420" y1="256" x2="444" y2="256" stroke="#C4B5FD" stroke-width="7" stroke-linecap="round"/>
+      <path d="M256 108 L282 248 L256 262 L230 248 Z" fill="#10B981"/>
+      <path d="M256 404 L278 266 L256 252 L234 266 Z" fill="#7C3AED"/>
+      <circle cx="256" cy="256" r="16" fill="#FAF5FF" stroke="#7C3AED" stroke-width="5"/>
+    </svg>
+
+    <h1>You're offline</h1>
+    <p>Check your connection and try again. Your progress is saved and will sync when you're back online.</p>
+    <button onclick="window.location.reload()">Try again</button>
+  </body>
+</html>

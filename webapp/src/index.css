@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Base font and background — mirrors the inline styles previously in index.html */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #FAF5FF; /* purple-50 */
+  color: #111827; /* gray-900 */
+}
+
+/* Hide scrollbar utility (used across multiple components) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
