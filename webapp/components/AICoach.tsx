@@ -49,7 +49,7 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     if (supabase) {
       const toStore: ChatMessage[] = [
         ...messages,
-        { role: 'user', content: userMsg },
+        { role: 'user' as const, content: userMsg },
         assistantMsg,
       ].slice(1);
 
