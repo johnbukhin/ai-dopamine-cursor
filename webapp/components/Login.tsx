@@ -46,6 +46,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
      * 2. localStorage tokens — same-origin fallback for local development.
      */
     const tryAutoAuth = async () => {
+      // ── 0. Check native Supabase session (survives page refresh) ─────────────
+      // Supabase JS v2 automatically persists the session in localStorage under
+      // sb-* keys and refreshes the token transparently. Checking this first
+      // means a page refresh never logs the user out when a valid session exists.
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (session) {
+        onLogin();
+        return;
+      }
+
       // ── 1. Check URL hash (cross-origin post-purchase redirect) ──────────────
       const hash = window.location.hash.slice(1); // strip leading '#'
       if (hash) {

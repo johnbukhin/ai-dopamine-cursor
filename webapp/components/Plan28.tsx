@@ -44,7 +44,7 @@ const FormattedContent = ({ text }: { text: string }) => {
 };
 
 
-export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasCheckedInToday }) => {
+export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasCheckedInToday, completedTasks, onTaskToggle }) => {
   const currentPlanDay = Math.min(streak + 1, 28);
   const [selectedDay, setSelectedDay] = useState<PlanDay>(planData[currentPlanDay - 1]);
   const selectedDayRef = useRef<HTMLButtonElement>(null);
@@ -103,16 +103,17 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
   };
 
   const DayDetails = ({ day, onOpenCheckIn, hasCheckedInToday }: { day: PlanDay, onOpenCheckIn: (payload: { tasksCompleted: boolean }) => void, hasCheckedInToday: boolean }) => {
-    const [checkedTasks, setCheckedTasks] = useState<Set<string>>(new Set());
     const [openAccordion, setOpenAccordion] = useState<string | null>(null);
     const [isTipRead, setIsTipRead] = useState(false);
 
-    // Reset state when day changes
+    // Reset accordion/tip state when the user navigates to a different day
     useEffect(() => {
-        setCheckedTasks(new Set());
         setOpenAccordion(null);
         setIsTipRead(false);
     }, [day]);
+
+    // Task completion state comes from persisted props — no local state needed
+    const checkedTasks: Set<string> = completedTasks?.[day.day] ?? new Set<string>();
 
     const handleAccordionToggle = (accordionId: string) => {
       if (accordionId === 'tip') {
@@ -121,16 +122,9 @@ export const Plan28: React.FC<Plan28Props> = ({ streak, onOpenCheckIn, hasChecke
       setOpenAccordion(prev => (prev === accordionId ? null : accordionId));
     };
 
+    // Delegate to App.tsx which handles both optimistic UI update and DB write
     const handleCheck = (task: string) => {
-      setCheckedTasks(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(task)) {
-          newSet.delete(task);
-        } else {
-          newSet.add(task);
-        }
-        return newSet;
-      });
+      onTaskToggle?.(day.day, task);
     };
 
     const morningTasksCompleted = day.morningProtocol?.reduce((acc, item, index) => checkedTasks.has(`m-${index}`) ? acc + 1 : acc, 0) ?? 0;

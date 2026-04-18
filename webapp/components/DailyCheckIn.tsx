@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckIn, CheckInStatus } from '../types';
 import { Button } from './Button';
+import { supabase } from '../src/lib/supabase';
 import { 
   POSITIVE_FEEDBACK, FLOW_A_HELPED_OPTIONS, EMOTIONS_POSITIVE, EMOTIONS_NEGATIVE, 
   TRIGGERS, TIME_OF_DAY, SLIP_REACTIONS, SLIP_LEARNINGS 
@@ -81,7 +82,29 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
     checkIn.aiInsight = insight;
 
     setIsSubmitting(false);
+
+    // Update UI immediately — DB write is fire-and-forget
     onComplete(checkIn);
+
+    // Persist to Supabase asynchronously (never blocks the UI)
+    if (supabase) {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!user) return;
+        supabase!.from('check_ins').insert({
+          user_id: user.id,
+          date: checkIn.date.toISOString(),
+          status: checkIn.status,
+          triggers: checkIn.triggers,
+          emotions: checkIn.emotions,
+          reaction: checkIn.reaction ?? null,
+          coping_strategies: checkIn.copingStrategies ?? null,
+          notes: checkIn.notes ?? null,
+          ai_insight: checkIn.aiInsight ?? null,
+          time_of_day: checkIn.timeOfDay ?? null,
+          tasks_completed: checkIn.tasksCompleted ?? false,
+        });
+      });
+    }
   };
 
   // ----------------------------------------------------------------------

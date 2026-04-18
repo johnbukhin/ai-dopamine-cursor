@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Send, User as UserIcon, Loader2 } from 'lucide-react';
 import { getCoachResponse } from '../services/geminiService';
 import { CheckIn, ChatMessage } from '../types';
+import { supabase } from '../src/lib/supabase';
 
 interface AICoachProps {
     checkInHistory: CheckIn[];
@@ -35,7 +36,27 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
 
     const response = await getCoachResponse(userMsg, recentHistory);
 
-    setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    const assistantMsg: ChatMessage = { role: 'assistant', content: response };
+    setMessages(prev => {
+      const updated = [...prev, assistantMsg];
+
+      // Persist after state update — fire-and-forget, never blocks UI.
+      // The welcome message (index 0) is a hardcoded system greeting and is
+      // excluded from storage; only real user↔AI exchanges are persisted.
+      if (supabase) {
+        const toStore = updated.slice(1); // strip welcome message
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (!user) return;
+          supabase!.from('coach_messages').upsert({
+            user_id: user.id,
+            messages: toStore,
+            updated_at: new Date().toISOString(),
+          });
+        });
+      }
+
+      return updated;
+    });
     setIsLoading(false);
   };
 
