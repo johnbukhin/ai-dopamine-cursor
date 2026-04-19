@@ -1,29 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Squircle background — rx=128 gives iOS-style rounded corners -->
+  <!-- Squircle background -->
   <rect width="512" height="512" rx="128" fill="#FAF5FF"/>
 
-  <!-- Bold compass dial ring — 20px stroke for clear visibility at small sizes -->
-  <circle cx="256" cy="256" r="176" fill="none" stroke="#E9D5FF" stroke-width="20"/>
+  <!-- Compass ring — purple-500 for solid, clearly visible bezel -->
+  <circle cx="256" cy="256" r="176" fill="none" stroke="#8B5CF6" stroke-width="22"/>
 
   <!--
-    Compass needle — two smooth lens (vesica) halves that meet exactly at center (256,256).
-    Each half is drawn with cubic beziers so edges curve softly outward instead of straight lines.
-    North half spans y 108→256, south half spans y 256→400.
-    Widest cross-section ≈ 93 px, giving clear legibility at 32 px icon sizes.
+    Cardinal tick marks at N / S / E / W.
+    Placed r=140–158, leaving a 7 px gap to the ring's inner edge (r=165).
+    Drawn before the needle so they sit behind it in the z-order.
   -->
+  <line x1="256" y1="116" x2="256" y2="98"  stroke="#7C3AED" stroke-width="14" stroke-linecap="round"/>
+  <line x1="256" y1="396" x2="256" y2="414" stroke="#7C3AED" stroke-width="14" stroke-linecap="round"/>
+  <line x1="396" y1="256" x2="414" y2="256" stroke="#7C3AED" stroke-width="14" stroke-linecap="round"/>
+  <line x1="116" y1="256" x2="98"  y2="256" stroke="#7C3AED" stroke-width="14" stroke-linecap="round"/>
 
-  <!-- North needle (emerald) — lens pointing up -->
-  <path d="M 256 108
-           C 316 140, 320 212, 256 256
-           C 192 212, 196 140, 256 108 Z"
-        fill="#10B981"/>
+  <!--
+    Needle — two smooth bezier lens halves meeting at (256, 256).
+    Wrapped in rotate(45) so the needle points NE (emerald) / SW (purple)
+    instead of straight up/down — more dynamic, less rigid.
+    North/emerald half spans y=108→256; south/purple half spans y=256→400.
+    Widest cross-section ≈ 93 px for legibility at small homescreen sizes.
+  -->
+  <g transform="rotate(45, 256, 256)">
+    <path d="M 256 108
+             C 316 140, 320 212, 256 256
+             C 192 212, 196 140, 256 108 Z"
+          fill="#10B981"/>
+    <path d="M 256 400
+             C 314 368, 318 300, 256 256
+             C 194 300, 198 368, 256 400 Z"
+          fill="#7C3AED"/>
+  </g>
 
-  <!-- South needle (purple) — slightly shorter lens pointing down -->
-  <path d="M 256 400
-           C 314 368, 318 300, 256 256
-           C 194 300, 198 368, 256 400 Z"
-        fill="#7C3AED"/>
-
-  <!-- Center cap — covers the junction of the two needle halves -->
+  <!-- Center cap — sits on top of needle junction -->
   <circle cx="256" cy="256" r="24" fill="#FAF5FF" stroke="#7C3AED" stroke-width="7"/>
 </svg>
