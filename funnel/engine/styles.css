@@ -985,7 +985,7 @@ body {
 /* Likert scale — bottom-anchored, larger buttons on mobile */
 .content--likert .likert-scale-wrapper {
     margin-top: auto;
-    padding-bottom: var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom, 0px));
 }
 
 .content--likert .likert-scale {
