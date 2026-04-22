@@ -98,6 +98,7 @@ All notable changes to this project will be documented in this file.
 ### Added (Issue #25)
 - **Paywall screen restored** — full pricing page back in v2 flow: pricing tiers (EUR), before/after comparison, FAQ, testimonials, money-back guarantee, company footer
 - **Personalized paywall headline** — `personalizedHeadline()` now uses `PersonalizedText.replace()` for `{gender}` and `{ageGroup}` substitution, consistent with goal_timeline and plan_ready
+- **Gender-aware before/after images** — paywall picks `before_state_male.png` / `before_state_female.png` based on quiz gender selection
 
 ### Changed (Issue #25)
 - Funnel v2 sequence: `scratch_card → paywall → checkout` (was `scratch_card → checkout`)

@@ -1793,6 +1793,11 @@ const Components = {
      * @returns {string} HTML string
      */
     beforeAfter(data) {
+        // Pick gender-specific images
+        const gender = (State.getAnswer('landing') || 'male').toLowerCase();
+        const nowImage  = data.nowImage.replace('before_state', `before_state_${gender}`);
+        const goalImage = data.goalImage.replace('after_state', `after_state_${gender}`);
+
         const makeSegments = (fill, variant) => {
             const total = 5;
             const filled = Math.max(1, Math.round(fill * total));
@@ -1822,7 +1827,7 @@ const Components = {
             <div class="before-after">
                 <div class="ba-images">
                     <div class="ba-image-col">
-                        <img src="${Security.escapeHtml(data.nowImage)}" alt="Current state" class="ba-image">
+                        <img src="${Security.escapeHtml(nowImage)}" alt="Current state" class="ba-image">
                         <span class="ba-label">${Security.escapeHtml(data.nowLabel || 'Now')}</span>
                     </div>
                     <div class="ba-arrow" aria-hidden="true">
@@ -1833,7 +1838,7 @@ const Components = {
                     </div>
                     <div class="ba-image-col">
                         <div class="ba-image ba-image--after"
-                             style="background-image: url('${Security.escapeHtml(data.goalImage)}');"
+                             style="background-image: url('${Security.escapeHtml(goalImage)}');"
                              role="img" aria-label="Goal state"></div>
                         <span class="ba-label ba-label--goal">${Security.escapeHtml(data.goalLabel || 'Your Goal')}</span>
                     </div>

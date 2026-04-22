@@ -4216,9 +4216,9 @@ body {
 /* .ba-image--after is a <div> with same layout as .ba-image (width/aspect-ratio/border-radius
    all inherited). Background-image set via inline style. */
 .ba-image--after {
-    background-size: auto 175%;
+    background-size: cover;
     background-repeat: no-repeat;
-    background-position: center -30px;
+    background-position: center center;
 }
 
 /* Metric rows: label + state text + progress bar for each column */
