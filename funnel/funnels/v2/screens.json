@@ -19,6 +19,7 @@
     "type": "age_selection",
     "screenType": "age",
     "headline": "What's your age?",
+    "subheadline": "We only use your age to personalize your plan",
     "options": [
       {
         "label": "18-24"
@@ -50,7 +51,8 @@
     "variant": "welcome",
     "headline": "We're glad you are here",
     "content": {
-      "description": "This quiz is a space for honest reflection — not judgment. Your answers help us understand your unique patterns so we can recommend the most effective, science-backed strategies for you.",
+      "description": "This journey is designed to help you better understand your patterns and take back control. We recommend treating this quiz as a moment of honest reflection.",
+      "disclaimer": "This quiz is not intended to replace professional diagnosis, treatment, or therapy. It is designed as a simple and mindful self-help tool. If you're in crisis, please reach out to a mental health professional.",
       "bulletPoints": [
         "Your responses are private and secure",
         "There are no right or wrong answers"
@@ -1210,7 +1212,7 @@
     "type": "trust_building",
     "screenType": "interstitial",
     "headline": "Mind Compass was developed using evidence-based psychological practices",
-    "subheadline": "Your journey is based on decades of research",
+    "subheadline": "Your journey is based on decades of research from the best institutions around the world",
     "credibilityLogos": [
       {
         "name": "Harvard University",
@@ -1312,7 +1314,7 @@
     "id": "interstitial_cbt",
     "type": "trust_building",
     "screenType": "interstitial",
-    "headline": "Your plan will be reviewed by a practicing therapist",
+    "headline": "Our plans are designed in collaboration with practicing therapists",
     "content": {
       "description": "Mind Compass meticulously incorporates the CBT model to deliver personalized content and resources to its users for enhanced emotional well-being",
       "cbtModel": {
@@ -1336,7 +1338,7 @@
     "id": "interstitial_social_proof",
     "type": "social_proof",
     "screenType": "interstitial",
-    "headline": "Join over 2,500,000 people",
+    "headline": "Join over 100,000 people",
     "subheadline": "Become part of a growing worldwide community and achieve your goals with us!",
     "visual": {
       "type": "world_map",
@@ -1489,7 +1491,7 @@
     "type": "loading_with_engagement",
     "screenType": "transition",
     "headline": "Creating your",
-    "dynamicSubheadline": "Porn Addiction Recovery Plan for {gender} {ageGroup}",
+    "dynamicSubheadline": "Porn Addiction Recovery Plan<br>for {gender} {ageGroup}",
     "progressSteps": [
       {
         "label": "Goals"
@@ -1618,250 +1620,6 @@
       "note": "Your promo code will be applied automatically in the next step"
     },
     "ctaButton": "Continue",
-    "nextScreenLogic": "paywall"
-  },
-  {
-    "id": "paywall",
-    "type": "paywall",
-    "screenType": "payment",
-    "headline": "Your Porn Addiction Recovery Plan for {gender} {ageGroup} is ready!",
-    "beforeAfter": {
-      "nowLabel": "Now",
-      "goalLabel": "Your Goal",
-      "nowImage": "../../assets/before_state.png",
-      "goalImage": "../../assets/after_state.png",
-      "metrics": [
-        {
-          "label": "Dopamine system",
-          "nowState": "Dysregulated",
-          "goalState": "Balanced",
-          "nowFill": 0.2,
-          "goalFill": 0.9
-        },
-        {
-          "label": "Self-control",
-          "nowState": "Hijacked",
-          "goalState": "Restored",
-          "nowFill": 0.2,
-          "goalFill": 0.9
-        },
-        {
-          "label": "Mental clarity",
-          "nowState": "Suppressed",
-          "goalState": "Sharp",
-          "nowFill": 0.2,
-          "goalFill": 0.9
-        }
-      ]
-    },
-    "personalizedInfo": {
-      "mainChallenge": {
-        "label": "Main challenge",
-        "icon": "brain",
-        "value": "dynamic"
-      },
-      "goal": {
-        "label": "Goal",
-        "icon": "target",
-        "value": "dynamic"
-      }
-    },
-    "pricingTiers": [
-      {
-        "id": "7_day",
-        "name": "7-DAY PLAN",
-        "originalPrice": "€49.99",
-        "discountedPrice": "€10.50",
-        "pricePerDay": "€1.50/day",
-        "recommended": false,
-        "savings": "79% OFF"
-      },
-      {
-        "id": "1_month",
-        "name": "1-MONTH PLAN",
-        "badge": "MOST POPULAR",
-        "originalPrice": "€49.99",
-        "discountedPrice": "€19.99",
-        "pricePerDay": "€0.66/day",
-        "recommended": true,
-        "savings": "60% OFF"
-      },
-      {
-        "id": "3_month",
-        "name": "3-MONTH PLAN",
-        "originalPrice": "€99.99",
-        "discountedPrice": "€34.99",
-        "pricePerDay": "€0.38/day",
-        "recommended": false,
-        "savings": "65% OFF"
-      }
-    ],
-    "ctaButton": {
-      "text": "GET MY PLAN",
-      "style": "primary_green"
-    },
-    "legalDisclaimer": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is €19.99, then €49.99/month (prices incl. VAT). Cancel via the app or email: support@mind-compass.app. See our Subscription Policy for details.",
-    "goalsList": [
-      "Build a healthier relationship with sexual desire",
-      "Reduce reliance on porn and strengthen real-world intimacy",
-      "Learn to understand and resist your urges",
-      "Reclaim your focus and energy",
-      "Take back control from your habits",
-      "Find healthy ways to cope with stress",
-      "Restore your natural motivation",
-      "Grow personal confidence"
-    ],
-    "contrastLists": {
-      "withoutHeadline": "How life might be without Mind Compass",
-      "withoutItems": [
-        "Powerless over your habits and urges",
-        "Trapped in a cycle of escape and guilt",
-        "Neglecting responsibilities and goals",
-        "Losing interest in passions",
-        "Feeling mentally exhausted and numb",
-        "Stuck in routines with no real payoff",
-        "Hiding your struggles out of shame",
-        "Life on autopilot, driven by urges"
-      ],
-      "withHeadline": "How life might be with Mind Compass",
-      "withItems": [
-        "Finally feel in control of your choices",
-        "Wake up with a clear, guilt-free mind",
-        "Rediscover joy in everyday life",
-        "Build unshakable self-respect",
-        "Regain energy for your passions",
-        "Develop healthy coping skills",
-        "Be present with the people you love",
-        "Build a future you can be proud of"
-      ]
-    },
-    "trustElements": {
-      "paymentSecurity": {
-        "headline": "Pay Safe & Secure",
-        "icons": [
-          "PayPal",
-          "Apple Pay",
-          "Visa",
-          "Mastercard",
-          "Maestro",
-          "Discover",
-          "Amex"
-        ]
-      },
-      "goals": {
-        "headline": "Our goals",
-        "items": [
-          "Build a healthier relationship with sexual desire",
-          "Reduce reliance on porn and strengthen real-world intimacy",
-          "Learn to understand and resist your urges",
-          "Reclaim your focus and energy",
-          "Take back control from your habits",
-          "Find healthy ways to cope with stress",
-          "Restore your natural motivation",
-          "Grow personal confidence"
-        ]
-      },
-      "statistics": [
-        {
-          "percentage": "83%",
-          "description": "of users were able to manage dopamine levels after just 6 weeks",
-          "bold": "manage dopamine levels"
-        },
-        {
-          "percentage": "77%",
-          "description": "of users started with similar level of dopamine dependence as you",
-          "bold": "similar level of dopamine dependence"
-        },
-        {
-          "percentage": "45%",
-          "description": "of users suffer from the same excessive dopamine trigger as you",
-          "bold": "excessive dopamine trigger"
-        }
-      ],
-      "lifeComparison": {
-        "without": {
-          "headline": "How life might be without Mind Compass",
-          "items": [
-            "Powerless over your habits and urges",
-            "Trapped in a cycle of escape and guilt",
-            "Neglecting responsibilities and goals",
-            "Losing interest in passions",
-            "Feeling mentally exhausted and numb",
-            "Stuck in routines with no real payoff",
-            "Hiding your struggles out of shame",
-            "Life on autopilot, driven by urges"
-          ]
-        },
-        "with": {
-          "headline": "How life might be with Mind Compass",
-          "items": [
-            "Finally feel in control of your choices",
-            "Wake up with a clear, guilt-free mind",
-            "Rediscover joy in everyday life",
-            "Build unshakable self-respect",
-            "Regain energy for your passions",
-            "Develop healthy coping skills",
-            "Be present with the people you love",
-            "Build a future you can be proud of"
-          ]
-        }
-      },
-      "moneyBackGuarantee": {
-        "duration": "30 days",
-        "headline": "30-Day Money-Back Guarantee",
-        "description": "Our plan is backed by a money-back guarantee. We believe that our plan will work for you, that we guarantee a full refund within 30 days after purchase if you don't see visible results in your ability to reduce negative effects despite following your plan as directed. Find more about applicable limitations in our money-back policy."
-      }
-    },
-    "faq": {
-      "headline": "People often ask",
-      "questions": [
-        {
-          "question": "What if my willpower is gone? I've tried to quit before and failed.",
-          "answer": "This plan isn't another test of willpower. Instead, it's designed to teach you the skills to manage urges and rebuild your brain's reward system from the ground up. We help you build new patterns gradually, so you don't have to rely on willpower alone to succeed."
-        },
-        {
-          "question": "What if my triggers are everywhere and I can't escape them?",
-          "answer": "Our plan focuses on helping you build resilience. You'll learn practical, in-the-moment strategies to identify your triggers, navigate cravings when they strike, and redirect your focus without feeling overwhelmed. The goal isn't to eliminate triggers, but to take away their power over you."
-        },
-        {
-          "question": "What if I'm afraid I'll just fail again?",
-          "answer": "Our plan is different because it breaks the journey into small, manageable daily steps that are easy to follow. You're not alone in this. We provide constant support and guidance to help you build momentum, celebrate small wins, and stay motivated even when it feels hard."
-        }
-      ]
-    },
-    "testimonials": [
-      {
-        "rating": 5,
-        "title": "Concise and easy",
-        "content": "Concise and easy. Those are the action words that are needed when you're trying to detox your dopamine dependence. Really glad to try this.",
-        "author": "skrupert",
-        "handle": "@skrupert"
-      },
-      {
-        "rating": 5,
-        "title": "Finally taking control of my screen time",
-        "content": "Before I started using this app, I used to procrastinate a lot by watching stuff like YouTube and Facebook. Now, with this app, I feel like I can finally start breaking away from media addiction.",
-        "author": "qzi",
-        "handle": "@qzi"
-      },
-      {
-        "rating": 5,
-        "title": "The Mind Compass app is like ...",
-        "content": "The Mind Compass app is like a personal wellbeing coach. It's convenient to have everything in one place and I don't have to look for other resources. Definitely worth using it.",
-        "author": "Paul Vizer",
-        "handle": "@Paul Vizer"
-      }
-    ],
-    "companyInfo": {
-      "name": "Chesmint Limited",
-      "address": "Flat/Office 102, Lekorpouzier 12a, Limassol, 3075, Cyprus",
-      "links": [
-        "Terms of Use",
-        "Privacy Policy",
-        "Subscription Policy",
-        "Cookie Policy"
-      ]
-    },
     "nextScreenLogic": "checkout"
   }
 ]

@@ -149,6 +149,42 @@ const Scoring = {
             if (first.includes('wellbeing')) return 'General wellbeing';
         }
         return 'Focus levels';
+    },
+
+    /**
+     * Generate a detailed, personalized description based on all quiz answers
+     */
+    getDetailedDescription(scores, overallLevel, gender) {
+        const parts = [];
+
+        // Opening — overall assessment
+        const openings = {
+            Low: 'Your responses suggest that your dopamine regulation is largely within a healthy range. While you may notice occasional patterns, your reward system appears to be functioning well overall.',
+            Normal: 'Your responses suggest some early signs of dopamine pattern shifts. Your brain\'s reward system is beginning to adapt to higher-intensity stimulation, which is worth paying attention to.',
+            Medium: 'Your brain\'s reward system may be caught in a compulsive loop, forcing you to seek stimulation just to feel normal. This pattern is often driven by years of escalating use that has gradually reshaped your dopamine pathways.',
+            High: 'Your responses indicate significant dopamine dysregulation. Your brain\'s reward system has been substantially rewired by high-intensity stimulation, creating a powerful cycle that feels impossible to break through willpower alone.'
+        };
+        parts.push(openings[overallLevel] || openings.Medium);
+
+        // Toll — general impact
+        const tolls = {
+            Low: 'Staying mindful of your habits now can help you avoid the gradual shifts that many people don\'t notice until they become patterns.',
+            Normal: 'Over time, this can take a measurable toll — reduced motivation, difficulty concentrating, and subtle emotional shifts that build up gradually.',
+            Medium: 'Over time, this can take a measurable toll in various forms — chronic fatigue, emotional numbness, and a steady decline in motivation and focus.',
+            High: 'The toll is often visible across multiple areas — chronic fatigue, emotional numbness, difficulty forming connections, and a steady erosion of motivation and self-trust.'
+        };
+        parts.push(tolls[overallLevel] || tolls.Medium);
+
+        // Closing — hope and direction
+        const closings = {
+            Low: 'Building awareness now puts you in a strong position to maintain healthy patterns.',
+            Normal: 'The good news is that early intervention is highly effective — your brain\'s neuroplasticity works in your favor at this stage.',
+            Medium: 'This can lock you into a cycle of craving and shame that is extremely difficult to break free from through willpower alone, as your neurology prioritizes the familiar reward over long-term wellbeing.',
+            High: 'However, neuroplasticity means your brain can be rewired. With the right structured approach, recovery is not only possible — it\'s predictable.'
+        };
+        parts.push(closings[overallLevel] || closings.Medium);
+
+        return parts.join(' ');
     }
 };
 
@@ -282,10 +318,8 @@ const Icons = {
 
         // Arrows icon - for "Sometimes" (bidirectional)
         arrows: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m17 3 4 4-4 4"/>
-            <path d="M3 11h14.5a3.5 3.5 0 0 0 0-7h-.5"/>
-            <path d="m7 21-4-4 4-4"/>
-            <path d="M21 13H6.5a3.5 3.5 0 0 0 0 7h.5"/>
+            <path d="M3 12c2-3 4-4 6-2s4 1 6-2 4-4 6-2"/>
+            <path d="M3 17c2-3 4-4 6-2s4 1 6-2 4-4 6-2"/>
         </svg>`,
 
         // ========================================
@@ -296,15 +330,94 @@ const Icons = {
         thumbs_down_x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 14V2"/>
             <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/>
-            <path d="m3 3 4 4" stroke="#ef4444" stroke-width="2.5"/>
-            <path d="m7 3-4 4" stroke="#ef4444" stroke-width="2.5"/>
+            <path d="m3 17 2 2" stroke="#ef4444" stroke-width="1.8"/>
+            <path d="m5 17-2 2" stroke="#ef4444" stroke-width="1.8"/>
         </svg>`,
 
-        // Thumbs up with stars - "Strongly agree" (position 5)
+        // Thumbs up with sparkles - "Strongly agree" (position 5)
         thumbs_up_star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M7 10v12"/>
             <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>
-            <path d="M19 2l1 2 2 .5-1.5 1.5.5 2-2-1-2 1 .5-2L16 4.5l2-.5 1-2z" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"/>
+            <path d="M19 3v3" stroke="#22c55e" stroke-width="1.8"/>
+            <path d="M17.5 4.5h3" stroke="#22c55e" stroke-width="1.8"/>
+            <path d="M22 7v2" stroke="#22c55e" stroke-width="1.5"/>
+            <path d="M21 8h2" stroke="#22c55e" stroke-width="1.5"/>
+        </svg>`,
+
+        // ========================================
+        // Checkbox list SVG icons (replacing emojis)
+        // ========================================
+
+        // Relationships — two people
+        couple_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="7" r="3"/>
+            <circle cx="17" cy="7" r="3"/>
+            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+            <path d="M17 11a4 4 0 0 1 4 4v6"/>
+        </svg>`,
+
+        // Confidence — shield with checkmark
+        confident_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+        </svg>`,
+
+        // Self-control — hand/fist
+        bicep_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/>
+            <path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/>
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+        </svg>`,
+
+        // Focus and productivity — target/crosshair
+        target_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+        </svg>`,
+
+        // General wellbeing — heart
+        heart_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>`,
+
+        // Trophy
+        trophy_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+        </svg>`,
+
+        // Energized — lightning bolt
+        lightning_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>`,
+
+        // Calm — lotus/meditation
+        meditation_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22c-4 0-8-2-8-6 0-3 2-5 4-6"/>
+            <path d="M12 22c4 0 8-2 8-6 0-3-2-5-4-6"/>
+            <path d="M12 2a5 5 0 0 1 3 9"/>
+            <path d="M12 2a5 5 0 0 0-3 9"/>
+            <path d="M12 11v11"/>
+        </svg>`,
+
+        // Motivated — flame/fire
+        flame_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14 0-5.5 2-6.5 0 3.5 2.56 5.06 4.5 8.5C17.43 12.97 17 16 14.5 18c-1.23.97-2.79 1.5-4.5 1.5A6.5 6.5 0 0 1 3.5 13c0-1.85.8-3.45 2-4.5 0 2.5 1 4 3 6z"/>
+        </svg>`,
+
+        // Free — bird
+        bird_emoji: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 7h.01"/>
+            <path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/>
+            <path d="m20 7 2 .5-2 .5"/>
+            <path d="M10 18v3"/>
+            <path d="M14 17.75V21"/>
         </svg>`,
 
         // ========================================
@@ -668,7 +781,6 @@ const Components = {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
-                Back
             </button>
         `;
     },
@@ -729,11 +841,6 @@ const Components = {
                  aria-label="Select ${safeLabel}">
                 ${hasIcon ? `<div class="answer-card__icon">${iconSvg}</div>` : ''}
                 <span class="answer-card__label">${safeLabel}</span>
-                <div class="answer-card__arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18l6-6-6-6"/>
-                    </svg>
-                </div>
             </div>
         `;
     },
@@ -752,12 +859,12 @@ const Components = {
             <label class="checkbox-answer ${isSelected ? 'checkbox-answer--selected' : ''}"
                    data-screen="${Security.escapeHtml(screenId)}"
                    data-answer="${safeLabel}">
+                <span class="checkbox-answer__label">${safeLabel}</span>
                 <div class="checkbox-answer__checkbox">
                     ${isSelected ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                         <path d="M20 6 9 17l-5-5"/>
                     </svg>` : ''}
                 </div>
-                <span class="checkbox-answer__label">${safeLabel}</span>
             </label>
         `;
     },
@@ -770,20 +877,20 @@ const Components = {
      */
     iconCheckboxAnswer(option, screenId) {
         const safeLabel = Security.escapeHtml(option.label);
-        const emoji = option.icon ? Icons.getEmoji(option.icon) : '';
+        const iconSvg = option.icon ? (Icons.get(option.icon) || '') : '';
         const isSelected = State.isSelected(screenId, option.label);
 
         return `
             <label class="checkbox-answer checkbox-answer--icon ${isSelected ? 'checkbox-answer--selected' : ''}"
                    data-screen="${Security.escapeHtml(screenId)}"
                    data-answer="${safeLabel}">
+                ${iconSvg ? `<div class="checkbox-answer__icon">${iconSvg}</div>` : ''}
+                <span class="checkbox-answer__label">${safeLabel}</span>
                 <div class="checkbox-answer__checkbox">
                     ${isSelected ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                         <path d="M20 6 9 17l-5-5"/>
                     </svg>` : ''}
                 </div>
-                ${emoji ? `<span class="checkbox-answer__emoji">${emoji}</span>` : ''}
-                <span class="checkbox-answer__label">${safeLabel}</span>
             </label>
         `;
     },
@@ -805,16 +912,16 @@ const Components = {
         return `
             <div class="text-input-field ${isSelected ? 'text-input-field--active' : ''}"
                  data-screen="${Security.escapeHtml(screenId)}">
+                <input type="text"
+                       class="text-input-field__input"
+                       placeholder="${Security.escapeHtml(placeholder)}"
+                       value="${Security.escapeHtml(textValue)}"
+                       data-screen="${Security.escapeHtml(screenId)}">
                 <div class="text-input-field__checkbox">
                     ${isSelected ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                         <path d="M20 6 9 17l-5-5"/>
                     </svg>` : ''}
                 </div>
-                <input type="text" 
-                       class="text-input-field__input"
-                       placeholder="${Security.escapeHtml(placeholder)}"
-                       value="${Security.escapeHtml(textValue)}"
-                       data-screen="${Security.escapeHtml(screenId)}">
             </div>
         `;
     },
@@ -847,8 +954,7 @@ const Components = {
     infoCard(content) {
         return `
             <div class="info-card">
-                <div class="info-card__icon">${Icons.get('heart')}</div>
-                <h2 class="info-card__title">${Security.escapeHtml(content.title || '')}</h2>
+                <div class="info-card__illustration">\u{1F64F}</div>
                 <p class="info-card__description">${Security.escapeHtml(content.description || '')}</p>
             </div>
         `;
@@ -910,16 +1016,142 @@ const Components = {
      */
     universityLogos(logos) {
         const logosHtml = logos.map(logo => {
-            const initial = logo.name.charAt(0);
+            const name = logo.name;
+            // Split into prefix ("University of") and main name
+            const parts = name.match(/^(University of )?(.+)$/i);
+            const prefix = parts[1] ? parts[1].toUpperCase().trim() : '';
+            const mainName = parts[2].toUpperCase().trim();
+            // For "Harvard University" → prefix = "", main = "HARVARD UNIVERSITY"
+            // For "University of Oxford" → prefix = "UNIVERSITY OF", main = "OXFORD"
+            let topLine, bottomLine, topIsMain;
+            if (name.match(/^University of /i)) {
+                // "University of Oxford" → UNIVERSITY OF (gray) + OXFORD (black)
+                topLine = 'UNIVERSITY OF';
+                bottomLine = name.replace(/^University of /i, '').toUpperCase();
+                topIsMain = false;
+            } else if (name.match(/ University$/i)) {
+                // "Harvard University" → HARVARD (black) + UNIVERSITY (gray)
+                topLine = name.replace(/ University$/i, '').toUpperCase();
+                bottomLine = 'UNIVERSITY';
+                topIsMain = true;
+            } else {
+                topLine = name.toUpperCase();
+                bottomLine = '';
+                topIsMain = true;
+            }
+
             return `
-                <div class="university-logo">
-                    <div class="university-logo__shield">${Security.escapeHtml(initial)}</div>
-                    <span class="university-logo__name">${Security.escapeHtml(logo.name)}</span>
+                <div class="university-card">
+                    <span class="university-card__${topIsMain ? 'name' : 'prefix'}">${Security.escapeHtml(topLine)}</span>
+                    <span class="university-card__${topIsMain ? 'prefix' : 'name'}">${Security.escapeHtml(bottomLine)}</span>
                 </div>
             `;
         }).join('');
 
-        return `<div class="university-logos">${logosHtml}</div>`;
+        return `<div class="university-cards">${logosHtml}</div>`;
+    },
+
+    /**
+     * Render profile illustration — same character with 4 emotional states
+     * @param {string} gender - 'male' or 'female'
+     * @param {string} level - 'Low', 'Normal', 'Medium', 'High'
+     * @returns {string} SVG HTML string
+     */
+    profileIllustration(gender, level) {
+        const isMale = gender === 'male';
+        const skin = '#F2CEB1';
+        const skinShadow = '#DEBA9C';
+        const hairColor = isMale ? '#4A3728' : '#6B4226';
+        const shirtColor = '#7C5CFC';
+        const bgColors = { Low: '#C8E6C9', Normal: '#DCEDC8', Medium: '#FFE082', High: '#FFAB91' };
+        const bg = bgColors[level] || bgColors.Medium;
+
+        // Eyes: white sclera + iris + pupil + upper lid
+        const makeEye = (cx, cy, irisOff, lidD) => `
+            <ellipse cx="${cx}" cy="${cy}" rx="5" ry="4.5" fill="white"/>
+            <circle cx="${cx + irisOff}" cy="${cy + 0.5}" r="2.8" fill="#5C4033"/>
+            <circle cx="${cx + irisOff}" cy="${cy + 0.5}" r="1.3" fill="#2A1F14"/>
+            <circle cx="${cx + irisOff + 0.8}" cy="${cy - 0.8}" r="0.7" fill="white" opacity="0.8"/>
+            <path d="${lidD}" stroke="${skinShadow}" stroke-width="1.2" fill="none"/>`;
+
+        const expressions = {
+            Low: {
+                browL: 'M69 76 Q74 73 80 76', browR: 'M96 76 Q102 73 107 76',
+                eyeL: makeEye(76, 84, 0, 'M71 81 Q76 79 81 81'),
+                eyeR: makeEye(100, 84, 0, 'M95 81 Q100 79 105 81'),
+                mouth: '<path d="M80 103 Q88 111 96 103" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
+                cheeks: '<circle cx="68" cy="97" r="5" fill="#F0A9A0" opacity="0.25"/><circle cx="108" cy="97" r="5" fill="#F0A9A0" opacity="0.25"/>',
+                extras: ''
+            },
+            Normal: {
+                browL: 'M70 75 Q75 72 80 75', browR: 'M96 75 Q101 72 106 75',
+                eyeL: makeEye(76, 84, 0, 'M71 81 Q76 79.5 81 81'),
+                eyeR: makeEye(100, 84, 0, 'M95 81 Q100 79.5 105 81'),
+                mouth: '<path d="M82 105 Q88 107 94 105" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
+                cheeks: '',
+                extras: ''
+            },
+            Medium: {
+                browL: 'M71 74 Q75 70 80 73', browR: 'M96 73 Q101 70 105 74',
+                eyeL: makeEye(76, 84, 0, 'M71 80.5 Q76 79 81 80.5'),
+                eyeR: makeEye(100, 84, 0, 'M95 80.5 Q100 79 105 80.5'),
+                mouth: '<path d="M82 107 Q88 103 94 107" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
+                cheeks: '',
+                extras: '<line x1="66" y1="89" x2="63" y2="87" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="110" y1="89" x2="113" y2="87" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/>'
+            },
+            High: {
+                browL: 'M72 72 Q75 68 80 72', browR: 'M96 72 Q101 68 104 72',
+                eyeL: makeEye(76, 84, 0, 'M71 80 Q76 78.5 81 80'),
+                eyeR: makeEye(100, 84, 0, 'M95 80 Q100 78.5 105 80'),
+                mouth: '<path d="M81 109 Q88 103 95 109" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
+                cheeks: '',
+                extras: '<circle cx="69" cy="96" r="1.2" fill="#7BBEDF" opacity="0.6"/><circle cx="107" cy="96" r="1.2" fill="#7BBEDF" opacity="0.6"/><line x1="66" y1="89" x2="62" y2="86" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="110" y1="89" x2="114" y2="86" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/>'
+            }
+        };
+        const expr = expressions[level] || expressions.Medium;
+
+        // Hair — simple smooth shapes, no bangs
+        let hair;
+        if (isMale) {
+            // Short hair: smooth cap on top of head
+            hair = `<path d="M58 80 Q58 52 88 48 Q118 52 118 80" fill="${hairColor}"/>`;
+        } else {
+            // Longer hair: smooth cap + side waves flowing down
+            hair = `<path d="M55 82 Q54 50 88 45 Q122 50 121 82" fill="${hairColor}"/>
+                    <path d="M55 82 Q52 105 56 132" stroke="${hairColor}" stroke-width="14" fill="none" stroke-linecap="round"/>
+                    <path d="M121 82 Q124 105 120 132" stroke="${hairColor}" stroke-width="14" fill="none" stroke-linecap="round"/>`;
+        }
+
+        // Hands near face for Medium/High
+        let hands = '';
+        if (level === 'Medium') {
+            hands = `<ellipse cx="56" cy="92" rx="7" ry="5.5" fill="${skin}" transform="rotate(-10 56 92)"/>
+                     <ellipse cx="120" cy="92" rx="7" ry="5.5" fill="${skin}" transform="rotate(10 120 92)"/>`;
+        } else if (level === 'High') {
+            hands = `<ellipse cx="60" cy="84" rx="8" ry="6" fill="${skin}" transform="rotate(-15 60 84)"/>
+                     <ellipse cx="116" cy="84" rx="8" ry="6" fill="${skin}" transform="rotate(15 116 84)"/>`;
+        }
+
+        return `
+            <div class="profile-summary__illustration">
+                <svg viewBox="0 0 176 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="88" cy="85" r="82" fill="${bg}"/>
+                    <path d="M50 148 Q50 132 70 126 L88 122 L106 126 Q126 132 126 148 L126 180 L50 180 Z" fill="${shirtColor}" opacity="0.85"/>
+                    <rect x="81" y="114" width="14" height="12" rx="5" fill="${skin}"/>
+                    <ellipse cx="88" cy="88" rx="29" ry="33" fill="${skin}"/>
+                    ${hair}
+                    <path d="${expr.browL}" stroke="#4A3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="${expr.browR}" stroke="#4A3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    ${expr.eyeL}
+                    ${expr.eyeR}
+                    <path d="M86 94 Q88 97 90 94" stroke="${skinShadow}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                    ${expr.mouth}
+                    ${expr.cheeks}
+                    ${expr.extras}
+                    ${hands}
+                </svg>
+            </div>
+        `;
     },
 
     /**
@@ -932,31 +1164,20 @@ const Components = {
         const elements = cbtModel.elements || ['Thoughts', 'Feelings', 'Behavior'];
         return `
             <div class="cbt-diagram">
-                <svg viewBox="0 0 200 180" class="cbt-diagram__svg">
-                    <!-- Connecting arrows (circular) -->
-                    <defs>
-                        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
-                                markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-primary)"/>
-                        </marker>
-                    </defs>
-                    <!-- Top to right -->
-                    <line x1="120" y1="35" x2="160" y2="110" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow)"/>
-                    <!-- Right to left -->
-                    <line x1="145" y1="140" x2="55" y2="140" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow)"/>
-                    <!-- Left to top -->
-                    <line x1="40" y1="110" x2="80" y2="35" stroke="var(--color-primary)" stroke-width="2" marker-end="url(#arrow)"/>
-
-                    <!-- Node circles -->
-                    <circle cx="100" cy="25" r="22" fill="var(--color-primary)" opacity="0.15" stroke="var(--color-primary)" stroke-width="2"/>
-                    <circle cx="165" cy="140" r="22" fill="var(--color-primary)" opacity="0.15" stroke="var(--color-primary)" stroke-width="2"/>
-                    <circle cx="35" cy="140" r="22" fill="var(--color-primary)" opacity="0.15" stroke="var(--color-primary)" stroke-width="2"/>
-
-                    <!-- Labels -->
-                    <text x="100" y="29" text-anchor="middle" fill="var(--color-primary)" font-size="10" font-weight="600">${Security.escapeHtml(elements[0])}</text>
-                    <text x="165" y="144" text-anchor="middle" fill="var(--color-primary)" font-size="10" font-weight="600">${Security.escapeHtml(elements[1])}</text>
-                    <text x="35" y="144" text-anchor="middle" fill="var(--color-primary)" font-size="10" font-weight="600">${Security.escapeHtml(elements[2])}</text>
-                </svg>
+                <div class="cbt-diagram__wrapper">
+                    <img src="../../assets/cbt_head_brain.png" class="cbt-diagram__image" alt="CBT Model">
+                    <div class="cbt-diagram__orbit">
+                        <div class="cbt-diagram__anchor" style="--angle: 300deg">
+                            <span class="cbt-diagram__label">${Security.escapeHtml(elements[0])}</span>
+                        </div>
+                        <div class="cbt-diagram__anchor" style="--angle: 60deg">
+                            <span class="cbt-diagram__label">${Security.escapeHtml(elements[1])}</span>
+                        </div>
+                        <div class="cbt-diagram__anchor" style="--angle: 180deg">
+                            <span class="cbt-diagram__label">${Security.escapeHtml(elements[2])}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     },
@@ -1003,44 +1224,38 @@ const Components = {
      * @returns {string} HTML string
      */
     worldMap(locations) {
-        // Marker positions mapped to approximate continent centers
-        const markerPositions = {
-            'North America': { x: 120, y: 100 },
-            'South America': { x: 170, y: 220 },
-            'Europe': { x: 330, y: 85 },
-            'Africa': { x: 330, y: 180 },
-            'Asia': { x: 440, y: 110 },
-            'Australia': { x: 490, y: 240 }
-        };
+        // Pin positions as % of map (real cities)
+        const pins = [
+            { left: 15, top: 35 },
+            { left: 29, top: 41 },
+            { left: 48, top: 38 },
+            { left: 56, top: 42 },
+            { left: 85, top: 48 },
+            { left: 88, top: 80 },
+            { left: 34, top: 72 },
+            { left: 63, top: 55 },
+            { left: 55, top: 84 }
+        ];
+        const pinColor = 'var(--color-primary)';
 
-        const markersHtml = locations.map(loc => {
-            const pos = markerPositions[loc] || { x: 300, y: 150 };
-            return `
-                <circle cx="${pos.x}" cy="${pos.y}" r="6" fill="var(--color-primary)" opacity="0.8" class="avatar-marker"/>
-                <circle cx="${pos.x}" cy="${pos.y}" r="12" fill="var(--color-primary)" opacity="0.2" class="avatar-marker__pulse"/>
-            `;
-        }).join('');
+        // Shuffle pin order for random appearance
+        const shuffled = pins.map((p, i) => ({ ...p, i })).sort(() => Math.random() - 0.5);
+        const pinsHtml = shuffled.map((p, idx) => `
+            <div class="map-pin" style="left:${p.left}%;top:${p.top}%;animation-delay:${0.2 + idx * 0.3}s">
+                <svg width="18" height="24" viewBox="0 0 24 32">
+                    <path d="M12,0 C5.4,0 0,5.4 0,12 C0,21 12,32 12,32 C12,32 24,21 24,12 C24,5.4 18.6,0 12,0 Z" fill="${pinColor}" opacity="0.7"/>
+                    <circle cx="12" cy="11" r="5.5" fill="white" opacity="0.85"/>
+                    <circle cx="12" cy="11" r="3.5" fill="${pinColor}" opacity="0.2"/>
+                </svg>
+            </div>
+        `).join('');
 
         return `
             <div class="world-map">
-                <svg viewBox="0 0 600 320" class="world-map__svg">
-                    <!-- Simplified continent outlines -->
-                    <!-- North America -->
-                    <path d="M80,50 Q100,30 140,40 L160,60 Q170,80 160,100 L140,120 Q120,140 100,130 L80,110 Q60,90 70,70 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
-                    <!-- South America -->
-                    <path d="M150,160 Q165,150 175,165 L185,200 Q190,230 180,250 L165,260 Q150,255 148,240 L145,210 Q140,180 150,160 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
-                    <!-- Europe -->
-                    <path d="M300,50 Q320,40 340,50 L350,70 Q355,85 345,95 L325,100 Q310,95 305,80 L300,65 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
-                    <!-- Africa -->
-                    <path d="M310,120 Q330,110 350,120 L355,150 Q360,180 350,210 L335,230 Q320,235 310,220 L305,190 Q300,160 305,140 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
-                    <!-- Asia -->
-                    <path d="M370,40 Q400,30 440,45 L470,60 Q490,80 485,110 L470,130 Q450,145 420,140 L390,130 Q370,115 365,90 L360,70 Q360,50 370,40 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
-                    <!-- Australia -->
-                    <path d="M470,210 Q490,200 510,210 L515,230 Q510,250 495,255 L480,250 Q465,240 468,225 Z" fill="var(--color-primary)" opacity="0.12" stroke="var(--color-primary)" stroke-width="0.5"/>
-
-                    <!-- Avatar markers -->
-                    ${markersHtml}
-                </svg>
+                <div class="world-map__container">
+                    <img src="../../assets/world-map-dots.svg" class="world-map__img" alt="World map">
+                    ${pinsHtml}
+                </div>
             </div>
         `;
     },
@@ -1053,10 +1268,9 @@ const Components = {
      * @param {boolean} isLast - True if last option (show label below)
      * @returns {string} HTML string
      */
-    likertOption(option, screenId, isFirst = false, isLast = false) {
+    likertOption(option, screenId) {
         const isSelected = State.isSelected(screenId, option.value);
         const iconSvg = option.icon ? Icons.get(option.icon) : '';
-        const showLabel = (isFirst || isLast) && option.label;
 
         return `
             <div class="likert-option ${isSelected ? 'likert-option--selected' : ''}"
@@ -1068,27 +1282,34 @@ const Components = {
                 <div class="likert-option__icon">
                     ${iconSvg}
                 </div>
-                ${showLabel ? `<span class="likert-option__label">${Security.escapeHtml(option.label)}</span>` : ''}
             </div>
         `;
     },
 
     /**
      * Render horizontal likert scale with 5 options
+     * Labels for first/last options render outside the buttons
      * @param {Array} options - Array of option objects
      * @param {string} screenId - Current screen ID
      * @returns {string} HTML string
      */
     likertScale(options, screenId) {
-        const optionsHtml = options.map((option, index) => {
-            const isFirst = index === 0;
-            const isLast = index === options.length - 1;
-            return this.likertOption(option, screenId, isFirst, isLast);
+        const optionsHtml = options.map(option => {
+            return this.likertOption(option, screenId);
         }).join('');
 
+        const firstLabel = options[0]?.label || '';
+        const lastLabel = options[options.length - 1]?.label || '';
+
         return `
-            <div class="likert-scale" data-screen="${Security.escapeHtml(screenId)}">
-                ${optionsHtml}
+            <div class="likert-scale-wrapper">
+                <div class="likert-scale" data-screen="${Security.escapeHtml(screenId)}">
+                    ${optionsHtml}
+                </div>
+                <div class="likert-labels">
+                    <span class="likert-labels__start">${Security.escapeHtml(firstLabel)}</span>
+                    <span class="likert-labels__end">${Security.escapeHtml(lastLabel)}</span>
+                </div>
             </div>
         `;
     },
@@ -1942,8 +2163,12 @@ const Screens = {
      */
     singleChoice(screenData) {
         const safeHeadline = Security.escapeHtml(screenData.headline);
+        const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
         const questionNumber = screenData.questionNumber;
         const showProgress = screenData.hasProgressIndicator !== false && questionNumber;
+        const isAgeScreen = screenData.type === 'age_selection';
+        const isQuestionScreen = !!questionNumber;
+        const contentClass = (isAgeScreen || isQuestionScreen) ? 'content' : 'content content--left';
 
         // Determine previous screen for back button
         const previousScreen = State.data.history.length > 0
@@ -1955,18 +2180,34 @@ const Screens = {
             .map(option => Components.answerCard(option, screenData.id))
             .join('');
 
+        // Build progress bar (inline counter for question screens)
+        let progressHtml = '';
+        if (showProgress) {
+            const totalQuestions = Router.screens.filter(s => s.questionNumber).length;
+            const percentage = (questionNumber / totalQuestions) * 100;
+            progressHtml = `
+                <div class="progress-container progress-container--compact">
+                    <div class="progress-bar">
+                        <div class="progress-bar__fill" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
         return `
             <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
                 ${Components.header()}
 
-                <nav class="question-nav">
+                <nav class="question-nav ${showProgress ? 'question-nav--spread' : ''}">
                     ${Components.backButton(previousScreen)}
+                    ${showProgress ? `<span class="progress-text--inline">${questionNumber} / ${Router.screens.filter(s => s.questionNumber).length}</span>` : ''}
                 </nav>
 
-                ${showProgress ? Components.progressBar(questionNumber) : ''}
+                ${progressHtml}
 
-                <main class="content content--left">
+                <main class="${contentClass}">
                     <h1 class="headline headline--question">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--question subheadline--age">${safeSubheadline}</p>` : ''}
 
                     <div class="answer-cards">
                         ${answerCardsHtml}
@@ -1987,6 +2228,8 @@ const Screens = {
         const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
         const questionNumber = screenData.questionNumber || 1;
         const isIconStyle = screenData.optionStyle === 'icon_checkbox_list';
+        const totalQuestions = Router.screens.filter(s => s.questionNumber).length;
+        const percentage = (questionNumber / totalQuestions) * 100;
 
         // Determine previous screen for back button
         const previousScreen = State.data.history.length > 0
@@ -2011,21 +2254,25 @@ const Screens = {
             <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
                 ${Components.header()}
 
-                <nav class="question-nav">
+                <nav class="question-nav question-nav--spread">
                     ${Components.backButton(previousScreen)}
+                    <span class="progress-text--inline">${questionNumber} / ${totalQuestions}</span>
                 </nav>
 
-                ${Components.progressBar(questionNumber)}
+                <div class="progress-container progress-container--compact">
+                    <div class="progress-bar">
+                        <div class="progress-bar__fill" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
 
-                <main class="content content--left">
+                <main class="content">
                     <h1 class="headline headline--question">${safeHeadline}</h1>
                     ${safeSubheadline ? `<p class="subheadline subheadline--question">${safeSubheadline}</p>` : ''}
 
                     <div class="checkbox-answers ${isIconStyle ? 'checkbox-answers--icon' : ''}">
                         ${checkboxesHtml}
+                        ${hasTextInput ? Components.textInputField(screenData.id) : ''}
                     </div>
-
-                    ${hasTextInput ? Components.textInputField(screenData.id) : ''}
 
                     <div class="continue-container">
                         ${Components.continueButton(!hasSelection, screenData.id)}
@@ -2044,6 +2291,8 @@ const Screens = {
         const safeHeadline = Security.escapeHtml(screenData.headline);
         const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
         const questionNumber = screenData.questionNumber || 1;
+        const totalQuestions = Router.screens.filter(s => s.questionNumber).length;
+        const percentage = (questionNumber / totalQuestions) * 100;
 
         // Determine previous screen for back button
         const previousScreen = State.data.history.length > 0
@@ -2051,18 +2300,25 @@ const Screens = {
             : 'landing';
 
         return `
-            <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
+            <div class="screen screen--likert" data-screen="${Security.escapeHtml(screenData.id)}">
                 ${Components.header()}
 
-                <nav class="question-nav">
+                <nav class="question-nav question-nav--spread">
                     ${Components.backButton(previousScreen)}
+                    <span class="progress-text--inline">${questionNumber} / ${totalQuestions}</span>
                 </nav>
 
-                ${Components.progressBar(questionNumber)}
+                <div class="progress-container progress-container--compact">
+                    <div class="progress-bar">
+                        <div class="progress-bar__fill" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
 
-                <main class="content content--left">
-                    <h1 class="headline headline--question headline--likert">${safeHeadline}</h1>
-                    ${safeSubheadline ? `<p class="subheadline subheadline--question">${safeSubheadline}</p>` : ''}
+                <main class="content content--likert">
+                    <div class="likert-question-area">
+                        <h1 class="headline headline--question headline--likert">${safeHeadline}</h1>
+                        ${safeSubheadline ? `<p class="subheadline subheadline--question">${safeSubheadline}</p>` : ''}
+                    </div>
 
                     ${Components.likertScale(screenData.options, screenData.id)}
                 </main>
@@ -2086,6 +2342,7 @@ const Screens = {
     trustBuilding(screenData) {
         const safeHeadline = Security.escapeHtml(screenData.headline);
         const safeSubheadline = screenData.subheadline ? Security.escapeHtml(screenData.subheadline) : '';
+        const isWelcome = screenData.variant === 'welcome';
 
         // Determine previous screen for back button
         const previousScreen = State.data.history.length > 0
@@ -2102,9 +2359,7 @@ const Screens = {
             // Variant: interstitial_4 — CBT diagram + therapist
             bodyHtml = `
                 ${Components.cbtDiagram(screenData.content.cbtModel)}
-                <p class="interstitial__description">${Security.escapeHtml(screenData.content.description || '')}</p>
-                ${screenData.content.expertReview ? Components.expertBadge(screenData.content.expertReview) : ''}
-                ${screenData.content.expertReview ? Components.therapistCard(screenData.content.expertReview) : ''}
+                <p class="interstitial__description interstitial__description--small">${Security.escapeHtml(screenData.content.description || '')}</p>
             `;
         } else if (screenData.content) {
             // Variant: interstitial_1 — info card + checkmark bullets
@@ -2112,7 +2367,16 @@ const Screens = {
                 ${Components.infoCard(screenData.content)}
                 ${screenData.content.bulletPoints ? Components.checkmarkBullets(screenData.content.bulletPoints) : ''}
             `;
+            // Disclaimer goes right above Continue button
+            if (screenData.content.disclaimer) {
+                bodyHtml += `<p class="interstitial__disclaimer">${Security.escapeHtml(screenData.content.disclaimer)}</p>`;
+            }
         }
+
+        const isCbt = !!screenData.content?.cbtModel;
+        const contentClass = isWelcome || isCbt
+            ? 'content interstitial interstitial--welcome'
+            : 'content content--left interstitial';
 
         return `
             <div class="screen" data-screen="${Security.escapeHtml(screenData.id)}">
@@ -2122,7 +2386,7 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content content--left interstitial">
+                <main class="${contentClass}">
                     <h1 class="headline headline--interstitial">${safeHeadline}</h1>
                     ${safeSubheadline ? `<p class="subheadline subheadline--interstitial">${safeSubheadline}</p>` : ''}
 
@@ -2257,7 +2521,7 @@ const Screens = {
         const dynamicSub = screenData.dynamicSubheadline
             ? PersonalizedText.replace(screenData.dynamicSubheadline)
             : '';
-        const safeSubheadline = dynamicSub || Security.escapeHtml(screenData.subheadline || '');
+        const safeSubheadline = (dynamicSub || Security.escapeHtml(screenData.subheadline || '')).replace(/\n/g, '<br>');
 
         // Render progress checklist
         const checklistHtml = screenData.progressSteps
@@ -2266,7 +2530,14 @@ const Screens = {
 
         // Render testimonial cards (profile_creation only)
         const testimonialsHtml = screenData.testimonials
-            ? `<div class="testimonial-cards">${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}</div>`
+            ? `<div class="testimonial-cards">
+                <div class="testimonial-cards__track">
+                    ${screenData.testimonials.map(t => Components.testimonialCard(t)).join('')}
+                </div>
+                <div class="testimonial-cards__dots">
+                    ${screenData.testimonials.map((_, i) => `<div class="testimonial-cards__dot${i === 0 ? ' testimonial-cards__dot--active' : ''}" data-index="${i}"></div>`).join('')}
+                </div>
+               </div>`
             : '';
 
         return `
@@ -2321,9 +2592,9 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content">
-                    <h1 class="headline">${safeHeadline}</h1>
-                    ${safeSubheadline ? `<p class="subheadline subheadline--accent">${safeSubheadline}</p>` : ''}
+                <main class="content content--centered">
+                    <h1 class="headline headline--capture">${safeHeadline}</h1>
+                    ${safeSubheadline ? `<p class="subheadline subheadline--capture">${safeSubheadline}</p>` : ''}
 
                     <div class="form-capture">
                         <input type="email"
@@ -2376,8 +2647,8 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content">
-                    <h1 class="headline">${safeHeadline}</h1>
+                <main class="content content--centered">
+                    <h1 class="headline headline--capture headline--capture-tail">What's your <span class="highlight-primary">first name</span>?</h1>
 
                     <div class="form-capture">
                         <input type="text"
@@ -2415,19 +2686,44 @@ const Screens = {
         const scores = Scoring.calculate();
         const overallLevel = Scoring.getOverallLevel(scores.overall.pct);
         const overallPct = Math.round(scores.overall.pct * 100);
+        const levelIndex = Scoring.toLevelIndex(scores.overall.pct);
 
-        // Level description from JSON data
-        const levelDesc = screenData.scoring?.levelDescriptions?.[overallLevel] || '';
+        // Gender for photo selection
+        const gender = (State.getAnswer('landing') || 'male').toLowerCase();
 
-        // Sub-category metrics
+        // Level emoji and color
+        const levelEmojis = ['🟢', '🟡', '🟠', '🔴'];
+        const levelEmoji = levelEmojis[levelIndex];
+
+        // Illustration based on gender and level
+        const illustrationHtml = Components.profileIllustration(gender, overallLevel);
+
+        // Generate personalized description
+        const levelDesc = Scoring.getDetailedDescription(scores, overallLevel, gender);
+
+        // Sub-category metrics with icons
+        const categoryIcons = {
+            // Brain with signal waves — dopamine sensitivity
+            dopamine_sensitivity: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C9.8 2 8 3.8 8 6c0 1 .4 2 1 2.7V10H9c-1.7 0-3 1.3-3 3v1c0 .6.4 1 1 1h1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1v-2h1c.6 0 1-.4 1-1v-1c0-1.7-1.3-3-3-3h0V8.7c.6-.7 1-1.7 1-2.7 0-2.2-1.8-4-4-4zm-1 8V7.5c0-.3.2-.5.5-.5h1c.3 0 .5.2.5.5V10h-2z"/><path d="M3 7h2M19 7h2M4.2 4.2l1.4 1.4M18.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>',
+            // Face with wavy mood line — emotional regulation
+            emotional_regulation: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1.2" fill="white"/><circle cx="15" cy="10" r="1.2" fill="white"/><path d="M8 15 Q10 13 12 15 Q14 17 16 15" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>',
+            // Clock with circular arrow — pattern stage
+            pattern_stage: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><path d="M12.5 7H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/></svg>',
+            // Body with pulse line — physical impact
+            physical_impact: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="4" r="2.5"/><path d="M15 8H9c-1.1 0-2 .9-2 2v4h2v8h6v-8h2v-4c0-1.1-.9-2-2-2z"/><path d="M1 14h4l1.5-3 2 6 2-4.5L12 14h4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/></svg>'
+        };
         const categories = screenData.scoring?.categories || {};
         const metricsHtml = Object.entries(categories).map(([key, cat]) => {
             const catScore = scores[key];
             const level = catScore ? Scoring.getCategoryLevel(key, catScore.pct) : 'Unknown';
+            const icon = categoryIcons[key] || '';
             return `
                 <div class="profile-metric">
-                    <div class="profile-metric__label">${Security.escapeHtml(cat.label)}</div>
-                    <div class="profile-metric__value">${Security.escapeHtml(level)}</div>
+                    <div class="profile-metric__icon">${icon}</div>
+                    <div class="profile-metric__text">
+                        <div class="profile-metric__label">${Security.escapeHtml(cat.label)}</div>
+                        <div class="profile-metric__value">${Security.escapeHtml(level)}</div>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -2440,18 +2736,25 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content">
+                <main class="content content--centered">
                     <div class="profile-summary">
-                        <h1 class="headline">${safeHeadline}</h1>
+                        <h1 class="headline headline--capture">${safeHeadline}</h1>
 
                         <!-- Overall dysregulation level -->
                         <div class="dysregulation-bar">
-                            <div class="dysregulation-bar__label">Dopamine dysregulation level</div>
+                            <div class="dysregulation-bar__header">
+                                <div class="dysregulation-bar__label">Estimated level of dopamine dysregulation</div>
+                                <span class="dysregulation-bar__badge dysregulation-bar__badge--${overallLevel.toLowerCase()}">${Security.escapeHtml(overallLevel)}</span>
+                            </div>
+
+                            <!-- Profile illustration -->
+                            ${illustrationHtml}
+
                             <div class="dysregulation-bar__track">
                                 <div class="dysregulation-bar__gradient"></div>
                                 <div class="dysregulation-bar__marker" style="left: ${overallPct}%">
-                                    <div class="dysregulation-bar__marker-dot"></div>
                                     <div class="dysregulation-bar__marker-label">Your level</div>
+                                    <div class="dysregulation-bar__marker-dot"></div>
                                 </div>
                             </div>
                             <div class="dysregulation-bar__scale">
@@ -2464,7 +2767,7 @@ const Screens = {
 
                         <!-- Level explanation -->
                         <div class="profile-summary__level-card">
-                            <h3 class="profile-summary__level-title">${Security.escapeHtml(overallLevel)} level</h3>
+                            <h3 class="profile-summary__level-title">${levelEmoji} ${Security.escapeHtml(overallLevel)} level</h3>
                             <p class="profile-summary__level-desc">${Security.escapeHtml(levelDesc)}</p>
                         </div>
 
@@ -2474,7 +2777,9 @@ const Screens = {
                         </div>
                     </div>
 
-                    ${Components.continueButton(false, safeId)}
+                    <div class="continue-container">
+                        ${Components.continueButton(false, safeId)}
+                    </div>
                 </main>
             </div>
         `;
@@ -2494,21 +2799,40 @@ const Screens = {
 
         // Generate dynamic month labels from current date
         const now = new Date();
+        const numBars = 6;
         const months = [];
-        for (let i = 0; i < (screenData.chartMonths || 3); i++) {
+        for (let i = 0; i < numBars; i++) {
             const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
             months.push(d.toLocaleString('en', { month: 'long' }));
         }
 
-        // Decreasing bar heights
-        const barHeights = [90, 55, 25];
+        // Target month = current + 2 months
+        const targetDate = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+        const targetMonth = targetDate.toLocaleString('en', { month: 'long' });
+        const targetYear = targetDate.getFullYear();
 
-        const barsHtml = months.map((month, i) => `
-            <div class="bar-chart__bar-wrapper">
-                <div class="bar-chart__bar" style="height: ${barHeights[i]}%"></div>
-                <div class="bar-chart__label">${Security.escapeHtml(month)}</div>
-            </div>
-        `).join('');
+        // Decreasing bar heights & colors matching screenshot
+        const barHeights = [88, 70, 72, 55, 38, 22];
+        const barColors = ['#E8A0A0', '#E0BFA0', '#E8CCA0', '#E8DDA0', '#A8D8A0', '#A0BDE8'];
+
+        const firstMonth = months[0];
+        const barsHtml = months.map((month, i) => {
+            const isFirst = i === 0;
+            const isGoal = i === numBars - 2;
+            const isLast = i === numBars - 1;
+            let label = '';
+            if (isFirst) label = firstMonth;
+            if (isLast) label = targetMonth;
+            return `
+                <div class="bar-chart__bar-wrapper">
+                    <div class="bar-chart__bar-track">
+                        <div class="bar-chart__bar" style="height: ${barHeights[i]}%; background: ${barColors[i]};"></div>
+                        ${isGoal ? '<div class="bar-chart__goal-wrapper" style="bottom: ' + barHeights[i] + '%;"><div class="bar-chart__goal-badge">Goal</div><div class="bar-chart__goal-dot"></div></div>' : ''}
+                    </div>
+                    <div class="bar-chart__label">${label ? Security.escapeHtml(label) : ''}</div>
+                </div>
+            `;
+        }).join('');
 
         const disclaimer = Security.escapeHtml(screenData.disclaimer || '');
 
@@ -2520,8 +2844,11 @@ const Screens = {
                     ${Components.backButton(previousScreen)}
                 </nav>
 
-                <main class="content">
-                    <h1 class="headline">${headline}</h1>
+                <main class="content content--centered">
+                    <h1 class="headline headline--timeline">${headline}</h1>
+
+                    <p class="timeline__subtitle">Based on your answers, we expect you to decrease your dopamine dysregulation level by</p>
+                    <p class="timeline__target-month">${Security.escapeHtml(targetMonth)} ${targetYear}</p>
 
                     <div class="bar-chart">
                         <div class="bar-chart__bars">
@@ -2531,7 +2858,9 @@ const Screens = {
 
                     ${disclaimer ? `<p class="chart-disclaimer">${disclaimer}</p>` : ''}
 
-                    ${Components.continueButton(false, safeId)}
+                    <div class="continue-container">
+                        ${Components.continueButton(false, safeId)}
+                    </div>
                 </main>
             </div>
         `;
@@ -2546,7 +2875,12 @@ const Screens = {
      */
     planReady(screenData) {
         const safeId = Security.escapeHtml(screenData.id);
-        const headline = PersonalizedText.replace(screenData.headline || '');
+        const rawHeadline = PersonalizedText.replace(screenData.headline || '');
+        // Wrap "{name}," and "Porn Addiction Recovery Plan for {gender} {ageGroup}" in purple
+        const headline = rawHeadline.replace(
+            /^(.+?,\s)(Your\s)(.+?\s)(is ready!?)$/i,
+            '<span class="highlight-primary">$1</span>$2<span class="highlight-primary">$3</span>$4'
+        );
         const chartTitle = Security.escapeHtml(screenData.chartTitle || '');
         const ctaText = screenData.ctaButton || 'Continue';
         const disclaimer = Security.escapeHtml(screenData.disclaimer || '');
@@ -2560,30 +2894,85 @@ const Screens = {
         const labels = screenData.chartLabels || [];
 
         // SVG dimensions
-        const svgW = 320, svgH = 200, padX = 40, padY = 30;
-        const plotW = svgW - 2 * padX, plotH = svgH - 2 * padY;
+        const svgW = 340, svgH = 220, padX = 40, padY = 40, padBottom = 30;
+        const plotW = svgW - 2 * padX, plotH = svgH - padY - padBottom;
 
-        // Map points to SVG coordinates
-        const coords = points.map((p, i) => ({
-            x: padX + (i / (points.length - 1)) * plotW,
-            y: padY + plotH - (p.value / 100) * plotH,
-            ...p
-        }));
+        // Define start/end from first and last chart points
+        const startX = padX, startY = padY + plotH - (points[0].value / 100) * plotH;
+        const endX = padX + plotW, endY = padY + plotH - (points[points.length - 1].value / 100) * plotH;
 
-        // Build smooth curve path
-        let pathD = `M ${coords[0].x} ${coords[0].y}`;
-        for (let i = 1; i < coords.length; i++) {
-            const cpx = (coords[i - 1].x + coords[i].x) / 2;
-            pathD += ` C ${cpx} ${coords[i - 1].y}, ${cpx} ${coords[i].y}, ${coords[i].x} ${coords[i].y}`;
-        }
+        // Control points for single smooth S-curve
+        const cp1x = startX + plotW * 0.28;
+        const cp1y = startY;
+        const cp2x = endX - plotW * 0.28;
+        const cp2y = endY;
+
+        // Cubic bezier helper: B(t) = (1-t)^3*P0 + 3(1-t)^2*t*P1 + 3(1-t)*t^2*P2 + t^3*P3
+        const bezierAt = (t) => {
+            const mt = 1 - t;
+            return {
+                x: mt*mt*mt*startX + 3*mt*mt*t*cp1x + 3*mt*t*t*cp2x + t*t*t*endX,
+                y: mt*mt*mt*startY + 3*mt*mt*t*cp1y + 3*mt*t*t*cp2y + t*t*t*endY
+            };
+        };
+
+        // Place dots along the curve at evenly spaced t values
+        const coords = points.map((p, i) => {
+            const t = i / (points.length - 1);
+            const pos = bezierAt(t);
+            return { x: pos.x, y: pos.y, ...p };
+        });
+
+        const pathD = `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`;
 
         // Build gradient area path (fill below curve)
         const areaD = pathD + ` L ${coords[coords.length - 1].x} ${padY + plotH} L ${coords[0].x} ${padY + plotH} Z`;
 
-        const dotsHtml = coords.map(c => `
-            <circle cx="${c.x}" cy="${c.y}" r="6" fill="${c.color}" stroke="white" stroke-width="2"/>
-            ${c.label ? `<text x="${c.x}" y="${c.y - 15}" text-anchor="middle" class="recovery-chart__label" fill="${c.color}">${Security.escapeHtml(c.label)}</text>` : ''}
-        `).join('');
+        // Dotted horizontal grid lines
+        const gridCount = 4;
+        const gridLinesHtml = Array.from({ length: gridCount + 1 }, (_, i) => {
+            const y = padY + (i / gridCount) * plotH;
+            return `<line x1="${padX}" y1="${y}" x2="${padX + plotW}" y2="${y}" stroke="#D5D0C8" stroke-width="0.5" stroke-dasharray="4,3"/>`;
+        }).join('');
+
+        // Vertical axis line
+        const axisHtml = `<line x1="${padX}" y1="${padY}" x2="${padX}" y2="${padY + plotH}" stroke="#D5D0C8" stroke-width="1"/>
+            <line x1="${padX}" y1="${padY + plotH}" x2="${padX + plotW}" y2="${padY + plotH}" stroke="#D5D0C8" stroke-width="1"/>`;
+
+        // Dots with white center + colored ring
+        const dotsHtml = coords.map((c, i) => {
+            const isFirst = i === 0;
+            const isLast = i === coords.length - 1;
+            let labelHtml = '';
+
+            if (isFirst && c.label) {
+                // "Today" badge — red pill
+                labelHtml = `
+                    <rect x="${c.x - 2}" y="${c.y - 30}" width="46" height="20" rx="10" fill="#E57373"/>
+                    <text x="${c.x + 21}" y="${c.y - 17}" text-anchor="middle" fill="white" font-size="11" font-weight="600">${Security.escapeHtml(c.label)}</text>
+                `;
+            } else if (isLast && c.label) {
+                // "After using Mind Compass" badge — green rectangle
+                const badgeW = 100, badgeH = 36, badgeX = c.x - badgeW + 12, badgeY = c.y - 54;
+                labelHtml = `
+                    <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="4" fill="#4CAF50"/>
+                    <text x="${badgeX + badgeW / 2}" y="${badgeY + 15}" text-anchor="middle" fill="white" font-size="10" font-weight="600">After using</text>
+                    <text x="${badgeX + badgeW / 2}" y="${badgeY + 28}" text-anchor="middle" fill="white" font-size="10" font-weight="600">Mind Compass</text>
+                `;
+            }
+
+            return `
+                <circle cx="${c.x}" cy="${c.y}" r="7" fill="white" stroke="${c.color}" stroke-width="3"/>
+                ${labelHtml}
+            `;
+        }).join('');
+
+        // Vertical dotted grid lines + gray dots on x-axis
+        const xAxisDotsHtml = labels.map((_, i) => {
+            const x = padX + (i / (labels.length - 1)) * plotW;
+            return `<line x1="${x}" y1="${padY}" x2="${x}" y2="${padY + plotH}" stroke="#D5D0C8" stroke-width="0.5" stroke-dasharray="4,3"/>
+                    <circle cx="${x}" cy="${padY + plotH}" r="3" fill="#C8C3BA"/>`;
+        }).join('');
 
         const xLabelsHtml = labels.map((l, i) => {
             const x = padX + (i / (labels.length - 1)) * plotW;
@@ -2606,24 +2995,28 @@ const Screens = {
                     <div class="recovery-chart">
                         <svg viewBox="0 0 ${svgW} ${svgH}" class="recovery-chart__svg">
                             <defs>
-                                <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#E57373" stop-opacity="0.3"/>
-                                    <stop offset="50%" stop-color="#FFD54F" stop-opacity="0.3"/>
-                                    <stop offset="100%" stop-color="#66BB6A" stop-opacity="0.3"/>
+                                <linearGradient id="curveGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                                    <stop offset="0%" stop-color="#FFFDE7" stop-opacity="0.1"/>
+                                    <stop offset="40%" stop-color="#FFF9C4" stop-opacity="0.4"/>
+                                    <stop offset="100%" stop-color="#C8E6C9" stop-opacity="0.6"/>
                                 </linearGradient>
                                 <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#E57373"/>
-                                    <stop offset="50%" stop-color="#FFB74D"/>
-                                    <stop offset="100%" stop-color="#66BB6A"/>
+                                    <stop offset="35%" stop-color="#FFB74D"/>
+                                    <stop offset="65%" stop-color="#FFD54F"/>
+                                    <stop offset="100%" stop-color="#8BC34A"/>
                                 </linearGradient>
                             </defs>
-                            <!-- Grid lines -->
-                            <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${padY + plotH}" stroke="#e0e0e0" stroke-width="1"/>
-                            <line x1="${padX}" y1="${padY + plotH}" x2="${padX + plotW}" y2="${padY + plotH}" stroke="#e0e0e0" stroke-width="1"/>
+                            <!-- Grid lines (dotted) -->
+                            ${gridLinesHtml}
+                            <!-- Axes -->
+                            ${axisHtml}
                             <!-- Gradient fill -->
                             <path d="${areaD}" fill="url(#curveGrad)"/>
                             <!-- Curve line -->
                             <path d="${pathD}" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round"/>
+                            <!-- X-axis dots -->
+                            ${xAxisDotsHtml}
                             <!-- Data points -->
                             ${dotsHtml}
                             <!-- X-axis labels -->
@@ -2633,7 +3026,9 @@ const Screens = {
 
                     ${disclaimer ? `<p class="chart-disclaimer">${disclaimer}</p>` : ''}
 
-                    ${Components.continueButton(false, safeId)}
+                    <div class="continue-container">
+                        ${Components.continueButton(false, safeId)}
+                    </div>
                 </main>
             </div>
         `;
@@ -2645,9 +3040,9 @@ const Screens = {
     scratchCard(screenData) {
         const safeId = Security.escapeHtml(screenData.id);
         const headline = PersonalizedText.replace(screenData.headline || '');
-        const badge = Security.escapeHtml(screenData.badge || '');
+        const badge = screenData.badge || '';
         const subheadline = Security.escapeHtml(screenData.subheadline || '');
-        const description = Security.escapeHtml(screenData.description || '');
+        const description = screenData.description || '';
         const discount = screenData.scratchCard?.revealedDiscount || '50%';
         const revealedText = Security.escapeHtml(screenData.scratchCard?.revealedText || '');
         const modalData = screenData.discountModal || {};
@@ -2657,14 +3052,14 @@ const Screens = {
                 ${Components.header()}
 
                 <main class="content scratch-screen">
-                    ${badge ? `<div class="scratch-badge">${badge}</div>` : ''}
+                    ${badge ? `<div class="scratch-badge">\u{1F381} ${Security.escapeHtml(badge)}</div>` : ''}
 
                     <h1 class="headline headline--personalized">
                         <span class="headline--accent">${PersonalizedText.replace('{name}')},</span><br/>
                         ${headline.replace(PersonalizedText.replace('{name}') + ',', '').trim()}
                     </h1>
                     <p class="scratch-subheadline accent-text">${subheadline}</p>
-                    <p class="scratch-description">${description}</p>
+                    <p class="scratch-description">${Security.escapeHtml(description)}\u{2602}\u{FE0F}</p>
 
                     <!-- Scratch card -->
                     <div class="scratch-card" id="scratch-card">
@@ -2674,7 +3069,14 @@ const Screens = {
                             <div class="scratch-card__discount-sub">${revealedText}</div>
                         </div>
                         <canvas class="scratch-card__overlay" id="scratch-canvas" width="340" height="200"></canvas>
-                        <div class="scratch-card__instruction">Scratch your discount</div>
+                        <div class="scratch-card__instruction">
+                            <svg class="scratch-card__instruction-icon" viewBox="0 0 48 48" fill="none">
+                                <path d="M24 4C23 4 22 5 22 6.5V22L18.5 18.5C17.5 17.5 15.5 17.5 14.5 18.5C13.5 19.5 13.5 21 14.5 22L23 33C23.5 33.5 24.5 33.5 25 33L33.5 22C34.5 21 34.5 19.5 33.5 18.5C32.5 17.5 30.5 17.5 29.5 18.5L26 22V6.5C26 5 25 4 24 4Z" fill="white" opacity="0.9"/>
+                                <path d="M14 38H34" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 4" opacity="0.7"/>
+                                <path d="M16 42H32" stroke="white" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 4" opacity="0.5"/>
+                            </svg>
+                            Scratch your discount
+                        </div>
                     </div>
                 </main>
 
@@ -3278,6 +3680,142 @@ const CountdownTimer = {
             this.timerId = null;
         }
         log.info('[Timer] Cleaned up');
+    }
+};
+
+// ========================================
+// Testimonial Carousel Controller
+// ========================================
+const TestimonialCarousel = {
+    timerId: null,
+    currentIndex: 0,
+    totalSlides: 0,
+    _abortCtrl: null,
+
+    start() {
+        this.cleanup();
+        const container = document.querySelector('.testimonial-cards');
+        if (!container) return;
+
+        const track = container.querySelector('.testimonial-cards__track');
+        const dots = container.querySelectorAll('.testimonial-cards__dot');
+        if (!track || dots.length === 0) return;
+
+        this.totalSlides = dots.length;
+        this.currentIndex = 0;
+        this._abortCtrl = new AbortController();
+        const signal = this._abortCtrl.signal;
+
+        // Auto-scroll every 5 seconds
+        this.timerId = setInterval(() => this.next(), 5000);
+
+        // Dot clicks
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                this.goTo(parseInt(dot.dataset.index, 10));
+                this.resetTimer();
+            }, { signal });
+        });
+
+        // Swipe support
+        let startX = 0;
+        let isDragging = false;
+
+        track.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            track.style.transition = 'none';
+        }, { passive: true, signal });
+
+        track.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const diff = e.touches[0].clientX - startX;
+            const offset = -(this.currentIndex * 100) + (diff / track.offsetWidth) * 100;
+            track.style.transform = `translateX(${offset}%)`;
+        }, { passive: true, signal });
+
+        track.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            track.style.transition = 'transform 0.4s ease';
+            const diff = e.changedTouches[0].clientX - startX;
+            if (Math.abs(diff) > 50) {
+                if (diff < 0 && this.currentIndex < this.totalSlides - 1) {
+                    this.currentIndex++;
+                } else if (diff > 0 && this.currentIndex > 0) {
+                    this.currentIndex--;
+                }
+            }
+            this.updatePosition();
+            this.resetTimer();
+        }, { signal });
+
+        // Mouse drag support
+        track.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            isDragging = true;
+            track.style.transition = 'none';
+            e.preventDefault();
+        }, { signal });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const diff = e.clientX - startX;
+            const offset = -(this.currentIndex * 100) + (diff / track.offsetWidth) * 100;
+            track.style.transform = `translateX(${offset}%)`;
+        }, { signal });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            track.style.transition = 'transform 0.4s ease';
+            const diff = e.clientX - startX;
+            if (Math.abs(diff) > 50) {
+                if (diff < 0 && this.currentIndex < this.totalSlides - 1) {
+                    this.currentIndex++;
+                } else if (diff > 0 && this.currentIndex > 0) {
+                    this.currentIndex--;
+                }
+            }
+            this.updatePosition();
+            this.resetTimer();
+        }, { signal });
+    },
+
+    next() {
+        this.currentIndex = (this.currentIndex + 1) % this.totalSlides;
+        this.updatePosition();
+    },
+
+    goTo(index) {
+        this.currentIndex = index;
+        this.updatePosition();
+    },
+
+    updatePosition() {
+        const track = document.querySelector('.testimonial-cards__track');
+        const dots = document.querySelectorAll('.testimonial-cards__dot');
+        if (track) track.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('testimonial-cards__dot--active', i === this.currentIndex);
+        });
+    },
+
+    resetTimer() {
+        if (this.timerId) clearInterval(this.timerId);
+        this.timerId = setInterval(() => this.next(), 5000);
+    },
+
+    cleanup() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+        if (this._abortCtrl) {
+            this._abortCtrl.abort();
+            this._abortCtrl = null;
+        }
+        this.currentIndex = 0;
     }
 };
 
@@ -4524,35 +5062,38 @@ const App = {
         canvas.height = rect.height * 2;
         ctx.scale(2, 2);
 
-        // Draw gold overlay
-        ctx.fillStyle = '#D4A853';
+        // Draw gold overlay with ticket notches
+        ctx.fillStyle = '#E8BE6A';
         const w = rect.width, h = rect.height;
-        // Rounded rectangle
-        const r = 12;
+        const r = 14;
+        const notchR = 13;
+        const midY = h / 2;
         ctx.beginPath();
         ctx.moveTo(r, 0);
         ctx.lineTo(w - r, 0);
         ctx.quadraticCurveTo(w, 0, w, r);
+        // Right side with notch
+        ctx.lineTo(w, midY - notchR);
+        ctx.arc(w, midY, notchR, -Math.PI / 2, Math.PI / 2, true);
         ctx.lineTo(w, h - r);
         ctx.quadraticCurveTo(w, h, w - r, h);
         ctx.lineTo(r, h);
         ctx.quadraticCurveTo(0, h, 0, h - r);
+        // Left side with notch
+        ctx.lineTo(0, midY + notchR);
+        ctx.arc(0, midY, notchR, Math.PI / 2, -Math.PI / 2, true);
         ctx.lineTo(0, r);
         ctx.quadraticCurveTo(0, 0, r, 0);
         ctx.fill();
-
-        // Add "Scratch your discount" text
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.font = '18px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Scratch your discount', w / 2, h / 2 + 6);
 
         // Scratch logic
         let isDrawing = false;
         let scratched = 0;
         const totalPixels = w * h;
 
+        let isRevealed = false;
         const scratch = (x, y) => {
+            if (isRevealed) return;
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
             ctx.arc(x, y, 20, 0, Math.PI * 2);
@@ -4562,6 +5103,7 @@ const App = {
 
             // Check if enough scratched (>40%)
             if (scratched / totalPixels > 0.4) {
+                isRevealed = true;
                 canvas.style.opacity = '0';
                 setTimeout(() => {
                     canvas.style.display = 'none';
@@ -4569,7 +5111,32 @@ const App = {
                     if (instruction) instruction.style.display = 'none';
                     // Show discount modal
                     const modal = document.getElementById('discount-modal');
-                    if (modal) modal.style.display = 'flex';
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        // Generate confetti
+                        const confettiEl = modal.querySelector('.discount-modal__confetti');
+                        if (confettiEl) {
+                            const colors = ['#E57373','#FF8A65','#FFD54F','#81C784','#4FC3F7','#7986CB','#BA68C8','#F06292','#4DB6AC','#AED581'];
+                            const shapes = ['8px', '6px', '10px'];
+                            const fragment = document.createDocumentFragment();
+                            for (let i = 0; i < 60; i++) {
+                                const span = document.createElement('span');
+                                const color = colors[i % colors.length];
+                                const w = shapes[i % 3];
+                                const h = parseInt(w) + Math.random() * 8 + 'px';
+                                span.style.left = Math.random() * 100 + '%';
+                                span.style.width = w;
+                                span.style.height = h;
+                                span.style.background = color;
+                                span.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                                span.style.animationName = Math.random() > 0.5 ? 'confettiFall' : 'confettiFallAlt';
+                                span.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+                                span.style.animationDelay = Math.random() * 1 + 's';
+                                fragment.appendChild(span);
+                            }
+                            confettiEl.appendChild(fragment);
+                        }
+                    }
                 }, 300);
             }
         };
@@ -4774,6 +5341,7 @@ const App = {
 
         // Clean up any running controllers before DOM swap
         LoadingController.cleanup();
+        TestimonialCarousel.cleanup();
         CountdownTimer.cleanup(); // Phase 3c
         this._stripeInitializing = false;
 
@@ -4783,6 +5351,7 @@ const App = {
         // Start loading animation for transition screens
         if ((screenData.screenType || screenData.type) === 'transition') {
             LoadingController.start(screenData);
+            TestimonialCarousel.start();
         }
 
         // Start countdown timer for paywall screen (Phase 3c)

@@ -96,6 +96,43 @@ All notable changes to this project will be documented in this file.
 
 
 ### Added
+- **Funnel v2 UI/UX redesign** (Issue #24)
+  - Testimonial horizontal carousel with auto-scroll, touch/mouse drag, dot navigation
+  - Profile illustration — SVG character with 4 emotional states based on score level
+  - Personalized diagnostic text generator (`getDetailedDescription`) — 3-part level-based copy
+  - SVG icons for checkbox lists replacing emoji icons (couple, shield, bicep, target, heart, trophy, lightning, meditation, flame, bird)
+  - Animated map pins with staggered pinDrop animation on social proof screen
+  - Scratch card ticket shape with CSS notch pseudo-elements, pulsing instruction, confetti on reveal
+  - Likert scale redesign — full-screen layout, bottom-anchored scale, external labels
+  - University logo cards with prefix/name typographic split
+  - Recovery chart — single cubic bezier S-curve, dotted grid, "Today"/"After using Mind Compass" badges
+  - Dysregulation bar level badges on profile summary
+
+### Changed
+- **Funnel v2 layout & components** (Issue #24)
+  - Global content alignment: centered → left-aligned with per-screen overrides
+  - Back button: removed text label, icon-only
+  - Answer cards: removed right arrows, centered labels
+  - Checkbox answers: flat list style with separator lines, label before checkbox
+  - Landing screen: centered text, black colors, top margin
+  - Welcome interstitial: 🙏 emoji, disclaimer below bullets, rounded card with purple checkmarks
+  - Goal timeline: 6-bar chart with color gradient and Goal badge
+  - Continue buttons wrapped in `continue-container` for consistent fixed positioning
+  - Social proof headline: "2,500,000" → "100,000"
+  - CBT headline: "reviewed by" → "designed in collaboration with"
+  - Profile summary: compact layout, purple metric icons
+  - Plan creation: line break in dynamic subheadline
+
+### Removed
+- **Old paywall screen** (Issue #24) — removed from v2 sequence and screens.json (using shared checkout screen instead)
+
+### Fixed
+- **Event listener cleanup** (Issue #24) — TestimonialCarousel uses AbortController to remove all listeners on screen transition
+- **Scratch card accumulation** (Issue #24) — added `isRevealed` guard to stop scratch events after discount reveal
+- **Confetti performance** (Issue #24) — batch DOM insertion via DocumentFragment
+- **Unescaped profile description** (Issue #24) — `levelDesc` now passes through `Security.escapeHtml()`
+
+### Added
 - **Mind Compass funnel v2** (Issue #16, `funnel/liven-funnel-2/`)
   - Complete quiz-to-paywall funnel: 54 screens, 36 questions (27 likert + 9 mixed type)
   - Real scoring engine: 4 sub-metrics (dopamine_sensitivity, emotional_regulation, pattern_stage, physical_impact) calculated from user answers Q1-Q14, overall score from Q1-Q27
