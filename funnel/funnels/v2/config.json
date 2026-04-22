@@ -50,6 +50,7 @@
     "plan_creation",
     "plan_ready",
     "scratch_card",
+    "paywall",
     "checkout",
     "thank_you",
     "create_account",

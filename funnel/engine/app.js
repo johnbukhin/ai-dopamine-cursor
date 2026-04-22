@@ -1944,12 +1944,16 @@ const Components = {
      * Render personalized headline for paywall.
      * @returns {string} HTML string
      */
-    personalizedHeadline() {
-        return `
-            <h2 class="paywall-headline">
-                Your <span class="paywall-headline__highlight">Porn Addiction Recovery Plan</span> is ready!
-            </h2>
-        `;
+    personalizedHeadline(rawHeadline) {
+        const text = PersonalizedText.replace(
+            rawHeadline || 'Your Porn Addiction Recovery Plan is ready!'
+        );
+        // Wrap "Porn Addiction Recovery Plan" in highlight span
+        const highlighted = text.replace(
+            'Porn Addiction Recovery Plan',
+            '<span class="paywall-headline__highlight">Porn Addiction Recovery Plan</span>'
+        );
+        return `<h2 class="paywall-headline">${highlighted}</h2>`;
     },
 
     /**
@@ -3460,7 +3464,7 @@ const Screens = {
                     ${screenData.beforeAfter ? Components.beforeAfter(screenData.beforeAfter) : ''}
 
                     <!-- 3. Personalized headline -->
-                    ${Components.personalizedHeadline()}
+                    ${Components.personalizedHeadline(screenData.headline)}
 
                     <!-- 4. Promo ticket (with embedded live timer) -->
                     ${Components.promoTicket(promoCode, initialMins)}
@@ -3523,7 +3527,7 @@ const Screens = {
                             selectedTierId,
                             ctaText,
                             safeId,
-                            Components.personalizedHeadline(),
+                            Components.personalizedHeadline(screenData.headline),
                             Components.promoTicket(promoCode, initialMins),
                             Components.contextTags(mainChallenge, goal),
                             screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : '',

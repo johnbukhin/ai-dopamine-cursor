@@ -95,6 +95,16 @@ All notable changes to this project will be documented in this file.
 
 
 
+### Added (Issue #25)
+- **Paywall screen restored** — full pricing page back in v2 flow: pricing tiers (EUR), before/after comparison, FAQ, testimonials, money-back guarantee, company footer
+- **Personalized paywall headline** — `personalizedHeadline()` now uses `PersonalizedText.replace()` for `{gender}` and `{ageGroup}` substitution, consistent with goal_timeline and plan_ready
+
+### Changed (Issue #25)
+- Funnel v2 sequence: `scratch_card → paywall → checkout` (was `scratch_card → checkout`)
+
+### Removed (Issue #25)
+- Dead data from paywall screens.json: `personalizedInfo`, `trustElements.goals` (duplicate of `goalsList`), `trustElements.lifeComparison` (duplicate of `contrastLists`)
+
 ### Added
 - **Funnel v2 UI/UX redesign** (Issue #24)
   - Testimonial horizontal carousel with auto-scroll, touch/mouse drag, dot navigation
