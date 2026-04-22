@@ -1292,7 +1292,7 @@ body {
 .university-cards {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     width: 100%;
     margin-bottom: var(--spacing-xl);
 }
@@ -1303,14 +1303,14 @@ body {
     align-items: center;
     justify-content: center;
     background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg) var(--spacing-md);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-md);
     text-align: center;
-    gap: 2px;
+    gap: 1px;
 }
 
 .university-card__prefix {
-    font-size: var(--font-size-sm);
+    font-size: 11px;
     color: var(--color-text-secondary);
     font-weight: 400;
     letter-spacing: 1px;
@@ -1318,7 +1318,7 @@ body {
 }
 
 .university-card__name {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
     font-weight: 700;
     color: var(--color-text-primary);
     letter-spacing: 1px;
