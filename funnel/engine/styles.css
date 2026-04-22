@@ -2986,6 +2986,10 @@ body {
         margin-top: 0;
     }
 
+    .screen:not(.paywall-screen) .content {
+        padding-bottom: 90px;
+    }
+
     .screen:not(.paywall-screen) .continue-container .continue-button,
     .screen:not(.paywall-screen) .cta-container .cta-button {
         border-radius: 28px;
