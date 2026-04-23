@@ -1422,16 +1422,16 @@ const Components = {
         let safeText = Security.escapeHtml(text);
         
         const policyLinks = {
-            'Terms of Use and Service': '#terms',
-            'Privacy Policy': '#privacy',
-            'Subscription Policy': '#subscription',
-            'Cookie Policy': '#cookies'
+            'Terms of Use and Service': 'terms-of-use.html',
+            'Privacy Policy': 'privacy-policy.html',
+            'Subscription Policy': 'subscription-policy.html',
+            'Cookie Policy': 'cookie-policy.html'
         };
         
         // Replace policy names with links using regex for robustness
         Object.entries(policyLinks).forEach(([name, url]) => {
             const regex = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-            safeText = safeText.replace(regex, `<a href="${url}">${name}</a>`);
+            safeText = safeText.replace(regex, `<a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a>`);
         });
         
         return `

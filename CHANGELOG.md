@@ -95,6 +95,14 @@ All notable changes to this project will be documented in this file.
 
 
 
+### Added (Issue #26)
+- **Legal policy pages** — 4 standalone HTML pages: Terms of Use, Privacy Policy, Subscription Policy, Cookie Policy
+- **Clickable policy links** — landing screen legal text now links to real policy pages (opens in new tab)
+
+### Changed (Issue #26)
+- `legalDisclaimer()` links updated from `#hash` anchors to actual HTML files with `target="_blank" rel="noopener noreferrer"`
+- Paywall company info synced: "Chesmint Limited" → "Compass Limited", address and email updated
+
 ### Added (Issue #25)
 - **Paywall screen restored** — full pricing page back in v2 flow: pricing tiers (EUR), before/after comparison, FAQ, testimonials, money-back guarantee, company footer
 - **Personalized paywall headline** — `personalizedHeadline()` now uses `PersonalizedText.replace()` for `{gender}` and `{ageGroup}` substitution, consistent with goal_timeline and plan_ready
