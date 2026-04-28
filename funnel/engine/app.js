@@ -4779,6 +4779,9 @@ const Events = {
             const radio = c.querySelector('.pricing-card__radio');
             if (radio) radio.classList.toggle('pricing-card__radio--selected', isSelected);
         });
+
+        // Re-prefetch PI for the newly selected tier so checkout stays instant
+        this.prefetchCheckout();
     },
 
     /**
@@ -4860,10 +4863,57 @@ const App = {
     },
 
     /**
+     * Start create-checkout API call in background while user is still on paywall.
+     * Stores the in-flight promise so initStripe() can await it (usually already
+     * resolved by the time checkout renders) instead of waiting on checkout screen.
+     * Also pre-initialises stripe.elements() as soon as the clientSecret arrives,
+     * giving Stripe a head start on loading payment form assets.
+     *
+     * Called from App.render() on paywall render, and on every tier change.
+     */
+    prefetchCheckout() {
+        const tierId = State.data.selectedTier || '1_month';
+        const email  = State.getAnswer('email_capture') || '';
+        if (!email || isDev()) return;
+
+        // Cancel any in-flight prefetch for a stale tier
+        if (this._prefetchAbort) this._prefetchAbort.abort();
+        this._prefetchAbort    = new AbortController();
+        this._prefetchElements = null;
+
+        this._checkoutPrefetch = {
+            tierId,
+            promise: fetch('../api/create-checkout', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ tierId, email }),
+                signal:  this._prefetchAbort.signal,
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Pre-init elements as soon as PI is ready — starts Stripe background loading
+                if (data.clientSecret && typeof window.Stripe !== 'undefined') {
+                    const stripe   = window.Stripe(CONFIG.stripePk);
+                    const elements = stripe.elements({ clientSecret: data.clientSecret });
+                    this._prefetchElements = { stripe, elements, tierId };
+                    log.info('[Prefetch] Stripe elements pre-initialised for tier:', tierId);
+                }
+                return data;
+            })
+            .catch(err => {
+                if (err.name !== 'AbortError') log.warn('[Prefetch] create-checkout failed:', err.message);
+                return null;
+            }),
+        };
+        log.info('[Prefetch] create-checkout started for tier:', tierId);
+    },
+
+    /**
      * Bootstrap Stripe Payment Element on the checkout screen.
      *
      * Flow:
-     *   1. POST /api/create-checkout → returns clientSecret + plan metadata
+     *   1. Use prefetched clientSecret if available (started on paywall), else POST
+     *      /api/create-checkout — returns clientSecret + plan metadata
      *   2. Mount Stripe Payment Element into #payment-element
      *   3. Enable the "Complete Payment" button
      *   4. Button click → stripe.confirmPayment() → on success navigate to thank_you
@@ -4920,28 +4970,38 @@ const App = {
         }
 
         try {
-            // ── Step 1: create Stripe Customer + Subscription Schedule ──────
-            const response = await fetch('../api/create-checkout', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ tierId, email }),
-            });
-            const raw = await response.text();
-            let data = {};
-            try {
-                data = raw ? JSON.parse(raw) : {};
-            } catch {
-                // Non-JSON response (commonly local static server returning HTML/501)
-                showCheckoutError(
-                    'Checkout API is unavailable in this local server mode. ' +
-                    'Use Vercel deployment or run with serverless APIs enabled.'
-                );
-                return;
+            // ── Step 1: resolve clientSecret (prefetch or fresh fetch) ───────
+            // prefetchCheckout() fires when the user lands on the paywall, so by
+            // the time they reach checkout the PI is usually already created and
+            // the promise resolves instantly.
+            let data = null;
+            if (this._checkoutPrefetch?.tierId === tierId) {
+                log.info('[Checkout] Awaiting prefetched create-checkout result');
+                data = await this._checkoutPrefetch.promise;
             }
 
-            if (!response.ok || !data.clientSecret) {
-                showCheckoutError(data.error || 'Payment setup failed. Please try again.');
-                return;
+            if (!data?.clientSecret) {
+                // Fallback: prefetch unavailable, timed out, or returned an error
+                log.info('[Checkout] Prefetch miss — fetching create-checkout now');
+                const response = await fetch('../api/create-checkout', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ tierId, email }),
+                });
+                const raw = await response.text();
+                try {
+                    data = raw ? JSON.parse(raw) : {};
+                } catch {
+                    showCheckoutError(
+                        'Checkout API is unavailable in this local server mode. ' +
+                        'Use Vercel deployment or run with serverless APIs enabled.'
+                    );
+                    return;
+                }
+                if (!response.ok || !data.clientSecret) {
+                    showCheckoutError(data.error || 'Payment setup failed. Please try again.');
+                    return;
+                }
             }
 
             // ── Step 2: mount Stripe Payment Element ────────────────────────
@@ -4950,8 +5010,14 @@ const App = {
                 return;
             }
 
-            const stripe    = window.Stripe(CONFIG.stripePk);
-            const elements  = stripe.elements({ clientSecret: data.clientSecret });
+            // Reuse pre-initialised elements instance if available (already has a
+            // head start on loading payment form assets from the paywall stage).
+            const stripe   = this._prefetchElements?.tierId === tierId
+                ? this._prefetchElements.stripe
+                : window.Stripe(CONFIG.stripePk);
+            const elements = this._prefetchElements?.tierId === tierId
+                ? this._prefetchElements.elements
+                : stripe.elements({ clientSecret: data.clientSecret });
             const paymentEl = elements.create('payment');
 
             paymentEl.mount('#payment-element');
@@ -5354,6 +5420,15 @@ const App = {
         CountdownTimer.cleanup(); // Phase 3c
         this._stripeInitializing = false;
 
+        // Clear prefetch state when leaving the paywall→checkout flow.
+        // Prefetch is re-triggered automatically when paywall renders next time.
+        const newScreenType = screenData.screenType || screenData.type;
+        if (newScreenType !== 'payment' && newScreenType !== 'checkout') {
+            this._checkoutPrefetch = null;
+            this._prefetchElements = null;
+            if (this._prefetchAbort) { this._prefetchAbort.abort(); this._prefetchAbort = null; }
+        }
+
         // Update DOM
         document.getElementById('app').innerHTML = html;
 
@@ -5361,6 +5436,11 @@ const App = {
         if ((screenData.screenType || screenData.type) === 'transition') {
             LoadingController.start(screenData);
             TestimonialCarousel.start();
+        }
+
+        // Prefetch Stripe PI when paywall renders so checkout is instant
+        if ((screenData.screenType || screenData.type) === 'payment') {
+            this.prefetchCheckout();
         }
 
         // Start countdown timer for paywall screen (Phase 3c)
