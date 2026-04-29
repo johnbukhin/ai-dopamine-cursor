@@ -88,11 +88,39 @@ export default async function handler(req, res) {
     const priceId = firstLine?.price?.id;
     const planLabel = PRICE_LABEL_MAP[priceId] || firstLine?.description || null;
 
+    // invoice.subscription is null for the first invoice produced by a
+    // Subscription Schedule (2-phase intro/regular flow). Look up the active
+    // subscription via the customer so we always have the correct ID.
+    let subscriptionId = invoice.subscription || null;
+    if (!subscriptionId && invoice.customer) {
+        try {
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
+            const subs = await stripe.subscriptions.list({
+                customer: invoice.customer,
+                status: 'active',
+                limit: 1,
+            });
+            subscriptionId = subs.data[0]?.id || null;
+            if (!subscriptionId) {
+                // No active sub yet — try all statuses (trialing, past_due, etc.)
+                const allSubs = await stripe.subscriptions.list({ customer: invoice.customer, limit: 1 });
+                subscriptionId = allSubs.data[0]?.id || null;
+            }
+        } catch (lookupErr) {
+            console.error('[webhook] Subscription lookup failed:', lookupErr.message);
+        }
+    }
+
+    if (!subscriptionId) {
+        console.error('[webhook] Could not resolve subscription ID for invoice', invoice.id, '— skipping upsert');
+        return res.status(200).json({ received: true });
+    }
+
     try {
         const { error } = await supabase.from('subscriptions').upsert(
             {
                 stripe_customer_id:     invoice.customer,
-                stripe_subscription_id: invoice.subscription,
+                stripe_subscription_id: subscriptionId,
                 user_email:             invoice.customer_email,
                 status:                 'active',
                 paid_at:                invoice.status_transitions?.paid_at
