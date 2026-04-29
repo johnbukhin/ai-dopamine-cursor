@@ -76,8 +76,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               onLogin();
               return;
             }
-          } catch {
-            // Invalid/expired hash tokens — fall through to existing session check
+          } catch (hashErr) {
+            console.warn('[Login] Hash token exchange failed:', hashErr);
           }
         }
       }

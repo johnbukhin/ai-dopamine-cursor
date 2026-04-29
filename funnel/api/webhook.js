@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     try {
         const rawBody = await getRawBody(req);
 
-        if (webhookSecret && webhookSecret !== 'whsec_todo') {
+        if (webhookSecret) {
             // Verify HMAC signature — rawBody is a Buffer which constructEvent accepts.
             event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
         } else {
@@ -107,10 +107,6 @@ export default async function handler(req, res) {
                 limit: 1,
             });
             subscriptionId = subs.data[0]?.id || null;
-            if (!subscriptionId) {
-                const allSubs = await stripe.subscriptions.list({ customer: invoice.customer, limit: 1 });
-                subscriptionId = allSubs.data[0]?.id || null;
-            }
         } catch (lookupErr) {
             console.error('[webhook] Subscription lookup failed:', lookupErr.message);
         }
@@ -143,7 +139,7 @@ export default async function handler(req, res) {
         if (error) {
             console.error('[webhook] Supabase upsert error:', error.message, error.code);
         } else {
-            console.log('[webhook] Subscription upserted for', invoice.customer_email, subscriptionId);
+            console.info('[webhook] Subscription upserted for', invoice.customer_email, subscriptionId);
         }
     } catch (err) {
         console.error('[webhook] Unexpected error:', err.message);

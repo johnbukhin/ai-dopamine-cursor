@@ -4897,6 +4897,8 @@ const App = {
                     const elements = stripe.elements({ clientSecret: data.clientSecret });
                     this._prefetchElements = { stripe, elements, tierId };
                     log.info('[Prefetch] Stripe elements pre-initialised for tier:', tierId);
+                } else if (data.clientSecret) {
+                    log.warn('[Prefetch] Stripe.js not loaded yet — elements pre-init skipped for tier:', tierId);
                 }
                 return data;
             })

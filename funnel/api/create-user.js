@@ -6,7 +6,7 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'https://ai-dopamine-addict.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -26,6 +26,10 @@ export default async function handler(req, res) {
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  if (quizAnswers && JSON.stringify(quizAnswers).length > 50_000) {
+    return res.status(400).json({ error: 'Quiz answers payload too large' });
   }
 
   if (password.length < 8) {

@@ -31,7 +31,7 @@ const PLAN_MAP = {
 };
 
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'https://ai-dopamine-addict.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -61,6 +61,17 @@ export default async function handler(req, res) {
         const customer = existing.data.length > 0
             ? existing.data[0]
             : await stripe.customers.create({ email });
+
+        // 1b. Cancel any open subscription schedules for this customer so that
+        //     prefetch calls (which fire on paywall load and on tier change) do not
+        //     accumulate dangling schedules in Stripe. Only active/not_started
+        //     schedules are cancelled; completed/released ones are left alone.
+        const openSchedules = await stripe.subscriptionSchedules.list({ customer: customer.id, limit: 10 });
+        for (const s of openSchedules.data) {
+            if (s.status === 'active' || s.status === 'not_started') {
+                await stripe.subscriptionSchedules.cancel(s.id);
+            }
+        }
 
         // 2. Create a 2-phase Subscription Schedule:
         //    Phase 1: introductory price × 1 billing period
