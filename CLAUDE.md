@@ -47,23 +47,32 @@ After making code changes to `funnel/`:
 
 ### Build Smoke Test (required before handing off to user)
 
-After every push to Vercel or local server restart, run a smoke test **before** telling the user to test. Do not say "ready to test" until this passes.
+After every push to Vercel, the smoke test runs **automatically** via Claude Code hook.
+You can also run it manually at any time:
 
-**Vercel:**
 ```bash
-curl -s -o /dev/null -w "%{http_code} %{url_effective}" -L <url> --retry 8 --retry-delay 10 --retry-all-errors
-# Must return 200
-curl -s <url> | grep -o '<title>[^<]*</title>\|app\.js\|styles\.css'
-# Must show title + asset references (not an error page)
+bash scripts/smoke-test.sh
 ```
 
-**Local:**
+Do not say "ready to test" until all checks pass (exit code 0).
+
+The script tests 5 areas — all regressions from the purchase/login flow fixes:
+
+| # | Check | What it catches |
+|---|-------|-----------------|
+| 1 | Funnel + webapp return HTTP 200 with correct title | Broken deploy, wrong routing |
+| 2 | `create-checkout` returns `clientSecret`; rejects missing fields | Stripe env vars missing, API broken |
+| 3 | Webhook returns 400 for unsigned POST | Body parser re-enabled (signature check broken) |
+| 4 | Full E2E: Stripe purchase → Supabase row appears within 20s | Webhook URL wrong, secret missing, body parse bug, subscription ID null |
+| 5 | `Login.tsx` hash check before `getSession()`, `signOut()` present | Auth priority regression (new buyer logged in as old user) |
+
+**Local page load check:**
 ```bash
 curl -s http://localhost:8080/funnel/funnels/v2/ | grep -o '<title>[^<]*</title>'
 # Must return <title>Mind Compass</title>
 ```
 
-If the smoke test fails, diagnose and fix before involving the user.
+If any critical check fails, diagnose and fix before involving the user.
 
 ### CSS Architecture Rules (funnel engine)
 

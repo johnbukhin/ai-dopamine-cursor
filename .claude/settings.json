@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; cmd=json.load(sys.stdin).get('command',''); exit(0 if 'git push' in cmd else 1)\" && echo '' && echo '🔍 Running smoke test after push...' && bash /Users/yevhen/cursor-projects/ClaudeCode/scripts/smoke-test.sh || true"
+          }
+        ]
+      }
+    ]
+  }
+}
