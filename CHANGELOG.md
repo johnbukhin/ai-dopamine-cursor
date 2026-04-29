@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #27)
+- **Checkout prefetch** — `prefetchCheckout()` fires `/api/create-checkout` in the background the moment the paywall renders; `stripe.elements({ clientSecret })` pre-initialized as soon as the PI resolves, giving Stripe a head-start loading payment form assets before the user reaches checkout
+- **Tier-change re-prefetch** — clicking a different pricing plan aborts the in-flight prefetch and starts a fresh one immediately via `AbortController`; `initStripe()` awaits the prefetch promise (instant if already resolved) then falls back to a fresh fetch with zero regression risk
+- **Apple Pay / Google Pay** — automatically surfaces in Stripe Payment Element on supported devices; requires one-time domain registration in Stripe Dashboard → Settings → Payment Method Domains (no code changes needed)
+- **Smoke test** (`scripts/smoke-test.sh`) — 5-category post-deploy check: (1) page health (HTTP 200 + correct title for funnel and webapp), (2) `create-checkout` returns `clientSecret` and rejects missing fields; webhook rejects unsigned POST, (3) Supabase `subscriptions` table readable via service role, (4) full E2E Stripe mock purchase → Supabase row appears within 20 s, (5) `Login.tsx` hash-before-session order and `signOut()` present
+- **Auto smoke test on push** (`.claude/settings.json`) — Claude Code PostToolUse hook runs smoke test automatically after every `git push`
+
+### Fixed (Issue #27)
+- **New buyer logged in as previous user** — `Login.tsx` `tryAutoAuth` was calling `getSession()` before reading URL hash tokens; a cached session from a prior user was returned before the new buyer's tokens were consumed. Fixed by checking URL hash first, then calling `supabase.auth.signOut()` before `setSession()` so the correct user is always active after a purchase redirect
+- **"No active subscription found" for new users** — three-part root cause: (1) Stripe webhook URL pointed to decommissioned Vercel project (corrected in Stripe Dashboard); (2) `STRIPE_WEBHOOK_SECRET` was missing from Vercel env vars (added); (3) Vercel's default JSON body parser converted `req.body` to an object before `stripe.webhooks.constructEvent()` could verify the HMAC signature — fixed with `export const config = { api: { bodyParser: false } }` and a `getRawBody()` stream reader
+- **Subscription ID null for some invoices** — `invoice.subscription` moved to `invoice.parent.subscription_details.subscription` in Stripe API 2025-03+; webhook now resolves via three-path fallback: old field → new field → live `subscriptions.list` API call
+- **Orphaned subscription schedules** — `create-checkout` now lists and cancels any `active`/`not_started` schedules for the customer before creating a new one, preventing dangling Stripe objects from paywall prefetch bursts or tier switches
+
+### Security (Issue #27)
+- CORS on `create-checkout` and `create-user` restricted from wildcard `*` to `https://ai-dopamine-addict.vercel.app`
+- `quizAnswers` payload capped at 50 KB in `create-user` — oversized JSONB rejected at API boundary before reaching Supabase
+- Removed `whsec_todo` placeholder bypass from webhook signature check — secret must be a real value; placeholder can no longer silently skip HMAC verification
+
 ### Added (Issue #22)
 - **Purple visual theme** — full color system overhaul; emerald/stone replaced with purple/gray across all components
 - **Edge-to-edge illustration headers** — Dashboard, AI Coach, Urge Help, and Login now open with full-width hero images (gradient fade into background)
