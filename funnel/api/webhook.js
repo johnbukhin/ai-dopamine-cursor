@@ -88,10 +88,13 @@ export default async function handler(req, res) {
     const priceId = firstLine?.price?.id;
     const planLabel = PRICE_LABEL_MAP[priceId] || firstLine?.description || null;
 
-    // invoice.subscription is null for the first invoice produced by a
-    // Subscription Schedule (2-phase intro/regular flow). Look up the active
-    // subscription via the customer so we always have the correct ID.
-    let subscriptionId = invoice.subscription || null;
+    // invoice.subscription is null for Subscription Schedule invoices in older
+    // API versions, and in newer Stripe API versions (2025-03+) the subscription
+    // reference moved to invoice.parent.subscription_details.subscription.
+    // Check both paths before falling back to a live API lookup.
+    let subscriptionId = invoice.subscription
+        || invoice.parent?.subscription_details?.subscription
+        || null;
     if (!subscriptionId && invoice.customer) {
         try {
             const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
