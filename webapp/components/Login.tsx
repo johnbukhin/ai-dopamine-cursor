@@ -13,12 +13,13 @@ interface LoginProps {
 /**
  * Login component with three rendering states:
  *
- * 1. Checking (spinner) — silently tries to restore session:
+ * 1. Checking (spinner) — silently tries to restore session in priority order:
  *    a. URL hash tokens (#access_token=...&refresh_token=...) — written by the funnel
- *       when redirecting cross-origin after account creation. Hash is stripped from the
- *       URL after consumption so tokens don't persist in browser history.
- *    b. localStorage tokens (compass_access_token / compass_refresh_token) — same-origin
- *       fallback used in local dev where funnel and webapp share an origin.
+ *       when redirecting cross-origin after purchase. Always takes priority; any existing
+ *       session is signed out first so a new buyer never inherits a stale session.
+ *       Hash is stripped from the URL after consumption to keep tokens out of history.
+ *    b. Native Supabase session (sb-* localStorage keys) — covers page refresh.
+ *    c. compass_access_token / compass_refresh_token — same-origin local dev fallback.
  * 2. Login form — shown when no valid tokens exist (direct URL access, expired session).
  * 3. Not configured — shown when Supabase env vars are missing (dev/build misconfiguration).
  */
@@ -46,17 +47,11 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
      * 2. localStorage tokens — same-origin fallback for local development.
      */
     const tryAutoAuth = async () => {
-      // ── 0. Check native Supabase session (survives page refresh) ─────────────
-      // Supabase JS v2 automatically persists the session in localStorage under
-      // sb-* keys and refreshes the token transparently. Checking this first
-      // means a page refresh never logs the user out when a valid session exists.
-      const { data: { session } } = await supabase!.auth.getSession();
-      if (session) {
-        onLogin();
-        return;
-      }
-
       // ── 1. Check URL hash (cross-origin post-purchase redirect) ──────────────
+      // Must be checked FIRST — a hash token is an explicit login intent (just
+      // purchased) and must always win over any cached session. Without this
+      // priority a stale session from a previous user would be returned by
+      // getSession() and the new buyer would silently log in as someone else.
       const hash = window.location.hash.slice(1); // strip leading '#'
       if (hash) {
         const params = new URLSearchParams(hash);
@@ -69,6 +64,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
         if (hashAccessToken && hashRefreshToken) {
           try {
+            // Sign out any existing session before applying the new tokens so
+            // the correct user is always active after a purchase redirect.
+            await supabase!.auth.signOut();
             const { error: sessionError } = await supabase!.auth.setSession({
               access_token: hashAccessToken,
               refresh_token: hashRefreshToken,
@@ -79,12 +77,22 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               return;
             }
           } catch {
-            // Invalid/expired hash tokens — fall through to localStorage check
+            // Invalid/expired hash tokens — fall through to existing session check
           }
         }
       }
 
-      // ── 2. Check localStorage (same-origin local dev fallback) ────────────────
+      // ── 2. Check native Supabase session (survives page refresh) ─────────────
+      // Only reached when there are no URL hash tokens (i.e. not a fresh purchase
+      // redirect). Supabase JS v2 persists sessions in localStorage under sb-* keys
+      // and refreshes them transparently, so a page reload never logs the user out.
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (session) {
+        onLogin();
+        return;
+      }
+
+      // ── 3. Check localStorage (same-origin local dev fallback) ────────────────
       const accessToken = localStorage.getItem('compass_access_token');
       const refreshToken = localStorage.getItem('compass_refresh_token');
 
