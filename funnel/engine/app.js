@@ -690,10 +690,19 @@ const Router = {
      * Navigate to a specific screen
      * @param {string} screenId - Target screen ID
      */
-    navigate(screenId) {
+    navigate(screenId, opts = {}) {
         log.info(`[Router] Navigating to: ${screenId}`);
-        State.set('currentScreen', screenId);
-        App.render();
+        const doNav = () => {
+            State.set('currentScreen', screenId);
+            App.render();
+        };
+        // Small artificial delay on forward navigation to suggest data is being processed.
+        // Back navigation passes { instant: true } for snappy UX.
+        if (opts.instant) {
+            doNav();
+        } else {
+            setTimeout(doNav, 280);
+        }
     },
 
     /**
@@ -2761,7 +2770,7 @@ const Screens = {
 
                             <div class="dysregulation-bar__track">
                                 <div class="dysregulation-bar__gradient"></div>
-                                <div class="dysregulation-bar__marker" style="left: ${overallPct}%">
+                                <div class="dysregulation-bar__marker" data-target-left="${overallPct}">
                                     <div class="dysregulation-bar__marker-label">Your level</div>
                                     <div class="dysregulation-bar__marker-dot"></div>
                                 </div>
@@ -2835,8 +2844,8 @@ const Screens = {
             return `
                 <div class="bar-chart__bar-wrapper">
                     <div class="bar-chart__bar-track">
-                        <div class="bar-chart__bar" style="height: ${barHeights[i]}%; background: ${barColors[i]};"></div>
-                        ${isGoal ? '<div class="bar-chart__goal-wrapper" style="bottom: ' + barHeights[i] + '%;"><div class="bar-chart__goal-badge">Goal</div><div class="bar-chart__goal-dot"></div></div>' : ''}
+                        <div class="bar-chart__bar" data-target-height="${barHeights[i]}" style="height: 0%; background: ${barColors[i]}; transition-delay: ${i * 100}ms;"></div>
+                        ${isGoal ? '<div class="bar-chart__goal-wrapper bar-chart__goal-wrapper--enter" style="bottom: ' + barHeights[i] + '%;"><div class="bar-chart__goal-badge">Goal</div><div class="bar-chart__goal-dot"></div></div>' : ''}
                     </div>
                     <div class="bar-chart__label">${label ? Security.escapeHtml(label) : ''}</div>
                 </div>
@@ -2934,6 +2943,12 @@ const Screens = {
 
         const pathD = `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`;
 
+        // Arrow tip just before the last dot — small, slim, pointing right into the dot
+        const arrowTipX = endX - 8;
+        const arrowBaseX = arrowTipX - 8.75;
+        const arrowHalfH = 6.25;
+        const arrowD = `M ${arrowBaseX} ${endY - arrowHalfH} L ${arrowTipX} ${endY} L ${arrowBaseX} ${endY + arrowHalfH} Z`;
+
         // Build gradient area path (fill below curve)
         const areaD = pathD + ` L ${coords[coords.length - 1].x} ${padY + plotH} L ${coords[0].x} ${padY + plotH} Z`;
 
@@ -2948,30 +2963,34 @@ const Screens = {
         const axisHtml = `<line x1="${padX}" y1="${padY}" x2="${padX}" y2="${padY + plotH}" stroke="#D5D0C8" stroke-width="1"/>
             <line x1="${padX}" y1="${padY + plotH}" x2="${padX + plotW}" y2="${padY + plotH}" stroke="#D5D0C8" stroke-width="1"/>`;
 
-        // Dots with white center + colored ring
+        // Dots with white center + colored ring (animated in sequence with line draw)
+        const lineDuration = 1800; // ms — must match CSS keyframe duration
         const dotsHtml = coords.map((c, i) => {
             const isFirst = i === 0;
             const isLast = i === coords.length - 1;
+            const dotDelay = (i / (coords.length - 1)) * lineDuration;
             let labelHtml = '';
 
             if (isFirst && c.label) {
-                // "Today" badge — red pill
                 labelHtml = `
-                    <rect x="${c.x - 2}" y="${c.y - 30}" width="46" height="20" rx="10" fill="#E57373"/>
-                    <text x="${c.x + 21}" y="${c.y - 17}" text-anchor="middle" fill="white" font-size="11" font-weight="600">${Security.escapeHtml(c.label)}</text>
+                    <g class="recovery-chart__badge recovery-chart__badge--today" style="animation-delay: ${dotDelay}ms;">
+                        <rect x="${c.x - 2}" y="${c.y - 30}" width="46" height="20" rx="10" fill="#E57373"/>
+                        <text x="${c.x + 21}" y="${c.y - 17}" text-anchor="middle" fill="white" font-size="11" font-weight="600">${Security.escapeHtml(c.label)}</text>
+                    </g>
                 `;
             } else if (isLast && c.label) {
-                // "After using Mind Compass" badge — green rectangle
-                const badgeW = 100, badgeH = 36, badgeX = c.x - badgeW + 12, badgeY = c.y - 54;
+                const badgeW = 110, badgeH = 40, badgeX = c.x - badgeW + 12, badgeY = c.y - 57;
                 labelHtml = `
-                    <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="4" fill="#4CAF50"/>
-                    <text x="${badgeX + badgeW / 2}" y="${badgeY + 15}" text-anchor="middle" fill="white" font-size="10" font-weight="600">After using</text>
-                    <text x="${badgeX + badgeW / 2}" y="${badgeY + 28}" text-anchor="middle" fill="white" font-size="10" font-weight="600">Mind Compass</text>
+                    <g class="recovery-chart__badge recovery-chart__badge--end" style="animation-delay: ${lineDuration + 100}ms;">
+                        <rect x="${badgeX}" y="${badgeY}" width="${badgeW}" height="${badgeH}" rx="8" ry="8" fill="#4CAF50"/>
+                        <text x="${badgeX + badgeW / 2}" y="${badgeY + 16}" text-anchor="middle" fill="white" font-size="11" font-weight="600">After using</text>
+                        <text x="${badgeX + badgeW / 2}" y="${badgeY + 31}" text-anchor="middle" fill="white" font-size="11" font-weight="600">Mind Compass</text>
+                    </g>
                 `;
             }
 
             return `
-                <circle cx="${c.x}" cy="${c.y}" r="7" fill="white" stroke="${c.color}" stroke-width="3"/>
+                <circle class="recovery-chart__dot" style="animation-delay: ${dotDelay}ms;" cx="${c.x}" cy="${c.y}" r="7" fill="white" stroke="${c.color}" stroke-width="3"/>
                 ${labelHtml}
             `;
         }).join('');
@@ -2985,7 +3004,7 @@ const Screens = {
 
         const xLabelsHtml = labels.map((l, i) => {
             const x = padX + (i / (labels.length - 1)) * plotW;
-            return `<text x="${x}" y="${svgH - 5}" text-anchor="middle" class="recovery-chart__x-label">${Security.escapeHtml(l)}</text>`;
+            return `<text x="${x}" y="${svgH - 5}" text-anchor="middle" class="recovery-chart__x-label recovery-chart__x-label--enter" data-x-label-index="${i}">${Security.escapeHtml(l)}</text>`;
         }).join('');
 
         return `
@@ -3021,13 +3040,15 @@ const Screens = {
                             <!-- Axes -->
                             ${axisHtml}
                             <!-- Gradient fill -->
-                            <path d="${areaD}" fill="url(#curveGrad)"/>
+                            <path class="recovery-chart__area" d="${areaD}" fill="url(#curveGrad)"/>
                             <!-- Curve line -->
-                            <path d="${pathD}" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round"/>
+                            <path class="recovery-chart__line" d="${pathD}" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round"/>
                             <!-- X-axis dots -->
                             ${xAxisDotsHtml}
                             <!-- Data points -->
                             ${dotsHtml}
+                            <!-- Arrow tip at end of curve -->
+                            <path class="recovery-chart__arrow" d="${arrowD}" fill="#8BC34A"/>
                             <!-- X-axis labels -->
                             ${xLabelsHtml}
                         </svg>
@@ -3084,7 +3105,7 @@ const Screens = {
                                 <path d="M14 38H34" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 4" opacity="0.7"/>
                                 <path d="M16 42H32" stroke="white" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 4" opacity="0.5"/>
                             </svg>
-                            Scratch your discount
+                            <span class="scratch-card__instruction-text">Scratch your discount</span>
                         </div>
                     </div>
                 </main>
@@ -4288,11 +4309,11 @@ const Events = {
 
         if (previousScreen) {
             log.info(`[User Action] Back navigation to: ${previousScreen}`);
-            Router.navigate(previousScreen);
+            Router.navigate(previousScreen, { instant: true });
         } else {
             // Fallback to landing if history is empty
             log.info('[User Action] Back navigation (fallback) to: landing');
-            Router.navigate('landing');
+            Router.navigate('landing', { instant: true });
         }
     },
 
@@ -5460,6 +5481,74 @@ const App = {
         // Bootstrap Stripe Payment Element after DOM is ready for checkout screen
         if ((screenData.screenType || screenData.type) === 'checkout') {
             this.initStripe(screenData);
+        }
+
+        // Animate dysregulation bar marker from left to target position
+        const marker = document.querySelector('.dysregulation-bar__marker[data-target-left]');
+        if (marker) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    marker.style.left = marker.dataset.targetLeft + '%';
+                });
+            });
+        }
+
+        // Animate goal timeline bars growing from 0 to target height
+        const bars = document.querySelectorAll('.bar-chart__bar[data-target-height]');
+        if (bars.length) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    bars.forEach(b => { b.style.height = b.dataset.targetHeight + '%'; });
+                });
+            });
+        }
+
+        // Sync recovery chart line animation with dots based on actual arc length
+        const recoveryLine = document.querySelector('.recovery-chart__line');
+        if (recoveryLine) {
+            const totalLength = recoveryLine.getTotalLength();
+            const lineDuration = 1800;
+            recoveryLine.style.strokeDasharray = totalLength;
+            recoveryLine.style.strokeDashoffset = totalLength;
+            recoveryLine.style.animation = 'none';
+            // Force reflow then start animation with correct length
+            void recoveryLine.getBoundingClientRect();
+            recoveryLine.style.animation = `recoveryLineDraw ${lineDuration}ms linear forwards`;
+            recoveryLine.style.setProperty('--line-length', totalLength);
+
+            // For each dot, find its arc-length position and set delay
+            const dots = document.querySelectorAll('.recovery-chart__dot');
+            const todayBadge = document.querySelector('.recovery-chart__badge--today');
+            const xLabels = document.querySelectorAll('.recovery-chart__x-label--enter');
+            dots.forEach((dot, i) => {
+                const cx = parseFloat(dot.getAttribute('cx'));
+                const cy = parseFloat(dot.getAttribute('cy'));
+                // Binary search to find arc length closest to this dot
+                let lo = 0, hi = totalLength, bestLen = 0, bestDist = Infinity;
+                for (let step = 0; step < 30; step++) {
+                    const mid = (lo + hi) / 2;
+                    const pt = recoveryLine.getPointAtLength(mid);
+                    const d = Math.hypot(pt.x - cx, pt.y - cy);
+                    if (d < bestDist) { bestDist = d; bestLen = mid; }
+                    // Sample neighbors to decide direction
+                    const ptLo = recoveryLine.getPointAtLength(Math.max(0, mid - 1));
+                    const dLo = Math.hypot(ptLo.x - cx, ptLo.y - cy);
+                    if (dLo < d) hi = mid; else lo = mid;
+                }
+                const delay = (bestLen / totalLength) * lineDuration;
+                dot.style.animationDelay = delay + 'ms';
+                if (i === 0 && todayBadge) {
+                    todayBadge.style.animationDelay = delay + 'ms';
+                }
+                if (xLabels[i]) {
+                    xLabels[i].style.animationDelay = delay + 'ms';
+                }
+                // Arrow appears exactly when line completes drawing — the tip arrives at the dot
+                if (i === dots.length - 1) {
+                    const arrow = document.querySelector('.recovery-chart__arrow');
+                    if (arrow) arrow.style.animationDelay = delay + 'ms';
+                }
+            });
         }
 
         log.info(`[App] Rendered screen: ${currentScreenId}`);

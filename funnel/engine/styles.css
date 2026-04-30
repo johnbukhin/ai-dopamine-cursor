@@ -3252,24 +3252,33 @@ body {
 
 .dysregulation-bar__marker {
     position: absolute;
-    top: -26px;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    transition: left 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 5;
 }
 
 .dysregulation-bar__marker-label {
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 11px;
     font-weight: 600;
     color: var(--color-primary);
-    margin-bottom: 4px;
     white-space: nowrap;
+    padding: 3px 10px;
+    background: white;
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    z-index: 10;
 }
 
 .dysregulation-bar__marker-dot {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: white;
     border: 3px solid var(--color-primary);
@@ -3314,9 +3323,9 @@ body {
 }
 
 .profile-summary__level-desc {
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1.4;
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
 }
 
 /* Profile Metrics Grid (2x2) */
@@ -3356,7 +3365,7 @@ body {
 }
 
 .profile-metric__label {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--color-text-muted);
     margin-bottom: 1px;
@@ -3443,6 +3452,17 @@ body {
     z-index: 2;
 }
 
+@keyframes goalBadgeDrop {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.bar-chart__goal-wrapper--enter {
+    opacity: 0;
+    animation: goalBadgeDrop 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: 1.1s;
+}
+
 .bar-chart__goal-badge {
     font-size: 8px;
     font-weight: 700;
@@ -3513,6 +3533,68 @@ body {
 .recovery-chart__svg {
     width: 100%;
     height: auto;
+}
+
+/* Recovery chart animations */
+.recovery-chart__line {
+    /* stroke-dasharray, stroke-dashoffset, animation set by JS using actual path length */
+}
+
+.recovery-chart__area {
+    opacity: 0;
+    animation: recoveryFadeIn 1s ease-out 1s forwards;
+}
+
+.recovery-chart__dot {
+    opacity: 0;
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: recoveryDotPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.recovery-chart__badge--today {
+    opacity: 0;
+    animation: recoveryFadeIn 0.4s ease-out forwards;
+}
+
+.recovery-chart__x-label--enter {
+    opacity: 0;
+    animation: recoveryFadeIn 0.4s ease-out forwards;
+}
+
+.recovery-chart__arrow {
+    opacity: 0;
+    transform-origin: right center;
+    transform-box: fill-box;
+    animation: recoveryArrowEmerge 0.35s ease-out forwards;
+}
+
+@keyframes recoveryArrowEmerge {
+    0%   { opacity: 0; transform: translateX(-4px) scale(0.85); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.recovery-chart__badge--end {
+    opacity: 0;
+    transform: translateY(-25px);
+    animation: recoveryBadgeDrop 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes recoveryLineDraw {
+    to { stroke-dashoffset: 0; }
+}
+
+@keyframes recoveryFadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes recoveryDotPop {
+    0%   { opacity: 0; transform: scale(0); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes recoveryBadgeDrop {
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .recovery-chart__label {
@@ -3657,30 +3739,40 @@ body {
 
 .scratch-card__instruction {
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 14px;
     font-size: 16px;
     font-weight: 600;
     color: rgba(255,255,255,0.9);
     pointer-events: none;
     z-index: 2;
-    animation: scratchPulse 1.5s ease-in-out infinite;
 }
 
 .scratch-card__instruction-icon {
-    width: 36px;
-    height: 36px;
-    opacity: 0.9;
+    width: 52px;
+    height: 52px;
+    animation: scratchPulseFade 1.5s ease-in-out infinite;
 }
 
-@keyframes scratchPulse {
-    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+.scratch-card__instruction-text {
+    display: inline-block;
+    animation: scratchPulseScale 1.5s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes scratchPulseFade {
+    0%, 100% { opacity: 0.45; }
+    50%      { opacity: 1; }
+}
+
+@keyframes scratchPulseScale {
+    0%, 100% { opacity: 0.4; transform: scale(0.9); }
+    50%      { opacity: 1; transform: scale(1.15); }
 }
 
 /* Discount Modal */
@@ -3783,18 +3875,6 @@ body {
 /* ========================================
    NEW: Before/After Comparison (Paywall)
    ======================================== */
-.before-after {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 20px 0;
-    padding: 20px;
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-}
-
-
-
 /* Paywall Personalized Info */
 .paywall__personalized {
     display: flex;
