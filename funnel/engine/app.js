@@ -690,9 +690,16 @@ const Router = {
      * Navigate to a specific screen
      * @param {string} screenId - Target screen ID
      */
+    _pendingNavTimer: null,
     navigate(screenId, opts = {}) {
         log.info(`[Router] Navigating to: ${screenId}`);
+        // Cancel any in-flight delayed navigation to prevent double-renders on rapid clicks
+        if (this._pendingNavTimer) {
+            clearTimeout(this._pendingNavTimer);
+            this._pendingNavTimer = null;
+        }
         const doNav = () => {
+            this._pendingNavTimer = null;
             State.set('currentScreen', screenId);
             App.render();
         };
@@ -701,7 +708,7 @@ const Router = {
         if (opts.instant) {
             doNav();
         } else {
-            setTimeout(doNav, 280);
+            this._pendingNavTimer = setTimeout(doNav, 280);
         }
     },
 
@@ -5483,27 +5490,35 @@ const App = {
             this.initStripe(screenData);
         }
 
-        // Animate dysregulation bar marker from left to target position
-        const marker = document.querySelector('.dysregulation-bar__marker[data-target-left]');
-        if (marker) {
-            requestAnimationFrame(() => {
+        // Post-render animation hooks — gated by screen type to skip unnecessary DOM queries
+        const sType = screenData.screenType || screenData.type;
+
+        // Dysregulation bar marker on profile summary
+        if (sType === 'personalized_results') {
+            const marker = document.querySelector('.dysregulation-bar__marker[data-target-left]');
+            if (marker) {
                 requestAnimationFrame(() => {
-                    marker.style.left = marker.dataset.targetLeft + '%';
+                    requestAnimationFrame(() => {
+                        marker.style.left = marker.dataset.targetLeft + '%';
+                    });
                 });
-            });
+            }
         }
 
-        // Animate goal timeline bars growing from 0 to target height
-        const bars = document.querySelectorAll('.bar-chart__bar[data-target-height]');
-        if (bars.length) {
-            requestAnimationFrame(() => {
+        // Goal timeline bars on timeline_chart screen
+        if (sType === 'timeline_chart' || sType === 'timeline_selection') {
+            const bars = document.querySelectorAll('.bar-chart__bar[data-target-height]');
+            if (bars.length) {
                 requestAnimationFrame(() => {
-                    bars.forEach(b => { b.style.height = b.dataset.targetHeight + '%'; });
+                    requestAnimationFrame(() => {
+                        bars.forEach(b => { b.style.height = b.dataset.targetHeight + '%'; });
+                    });
                 });
-            });
+            }
         }
 
-        // Sync recovery chart line animation with dots based on actual arc length
+        // Recovery chart on plan_ready screen
+        if (sType === 'recovery_curve' || sType === 'value_proposition') {
         const recoveryLine = document.querySelector('.recovery-chart__line');
         if (recoveryLine) {
             const totalLength = recoveryLine.getTotalLength();
@@ -5549,6 +5564,7 @@ const App = {
                     if (arrow) arrow.style.animationDelay = delay + 'ms';
                 }
             });
+        }
         }
 
         log.info(`[App] Rendered screen: ${currentScreenId}`);
