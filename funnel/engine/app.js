@@ -1077,7 +1077,7 @@ const Components = {
         const file = gender === 'male' ? 'bad_mood_man.png' : 'bad_mood_woman.png';
         return `
             <div class="profile-summary__illustration">
-                <img src="../../assets/${file}" alt="Profile illustration" class="profile-summary__illustration-img">
+                <img src="../../assets/${file}?v=2026-05-04-bg-removed" alt="Profile illustration" class="profile-summary__illustration-img">
             </div>
         `;
     },
