@@ -1074,98 +1074,10 @@ const Components = {
      * @returns {string} SVG HTML string
      */
     profileIllustration(gender, level) {
-        const isMale = gender === 'male';
-        const skin = '#F2CEB1';
-        const skinShadow = '#DEBA9C';
-        const hairColor = isMale ? '#4A3728' : '#6B4226';
-        const shirtColor = '#7C5CFC';
-        const bgColors = { Low: '#C8E6C9', Normal: '#DCEDC8', Medium: '#FFE082', High: '#FFAB91' };
-        const bg = bgColors[level] || bgColors.Medium;
-
-        // Eyes: white sclera + iris + pupil + upper lid
-        const makeEye = (cx, cy, irisOff, lidD) => `
-            <ellipse cx="${cx}" cy="${cy}" rx="5" ry="4.5" fill="white"/>
-            <circle cx="${cx + irisOff}" cy="${cy + 0.5}" r="2.8" fill="#5C4033"/>
-            <circle cx="${cx + irisOff}" cy="${cy + 0.5}" r="1.3" fill="#2A1F14"/>
-            <circle cx="${cx + irisOff + 0.8}" cy="${cy - 0.8}" r="0.7" fill="white" opacity="0.8"/>
-            <path d="${lidD}" stroke="${skinShadow}" stroke-width="1.2" fill="none"/>`;
-
-        const expressions = {
-            Low: {
-                browL: 'M69 76 Q74 73 80 76', browR: 'M96 76 Q102 73 107 76',
-                eyeL: makeEye(76, 84, 0, 'M71 81 Q76 79 81 81'),
-                eyeR: makeEye(100, 84, 0, 'M95 81 Q100 79 105 81'),
-                mouth: '<path d="M80 103 Q88 111 96 103" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
-                cheeks: '<circle cx="68" cy="97" r="5" fill="#F0A9A0" opacity="0.25"/><circle cx="108" cy="97" r="5" fill="#F0A9A0" opacity="0.25"/>',
-                extras: ''
-            },
-            Normal: {
-                browL: 'M70 75 Q75 72 80 75', browR: 'M96 75 Q101 72 106 75',
-                eyeL: makeEye(76, 84, 0, 'M71 81 Q76 79.5 81 81'),
-                eyeR: makeEye(100, 84, 0, 'M95 81 Q100 79.5 105 81'),
-                mouth: '<path d="M82 105 Q88 107 94 105" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
-                cheeks: '',
-                extras: ''
-            },
-            Medium: {
-                browL: 'M71 74 Q75 70 80 73', browR: 'M96 73 Q101 70 105 74',
-                eyeL: makeEye(76, 84, 0, 'M71 80.5 Q76 79 81 80.5'),
-                eyeR: makeEye(100, 84, 0, 'M95 80.5 Q100 79 105 80.5'),
-                mouth: '<path d="M82 107 Q88 103 94 107" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
-                cheeks: '',
-                extras: '<line x1="66" y1="89" x2="63" y2="87" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="110" y1="89" x2="113" y2="87" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/>'
-            },
-            High: {
-                browL: 'M72 72 Q75 68 80 72', browR: 'M96 72 Q101 68 104 72',
-                eyeL: makeEye(76, 84, 0, 'M71 80 Q76 78.5 81 80'),
-                eyeR: makeEye(100, 84, 0, 'M95 80 Q100 78.5 105 80'),
-                mouth: '<path d="M81 109 Q88 103 95 109" stroke="#C27C6B" stroke-width="2" fill="none" stroke-linecap="round"/>',
-                cheeks: '',
-                extras: '<circle cx="69" cy="96" r="1.2" fill="#7BBEDF" opacity="0.6"/><circle cx="107" cy="96" r="1.2" fill="#7BBEDF" opacity="0.6"/><line x1="66" y1="89" x2="62" y2="86" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="110" y1="89" x2="114" y2="86" stroke="${skinShadow}" stroke-width="1" stroke-linecap="round" opacity="0.5"/>'
-            }
-        };
-        const expr = expressions[level] || expressions.Medium;
-
-        // Hair — simple smooth shapes, no bangs
-        let hair;
-        if (isMale) {
-            // Short hair: smooth cap on top of head
-            hair = `<path d="M58 80 Q58 52 88 48 Q118 52 118 80" fill="${hairColor}"/>`;
-        } else {
-            // Longer hair: smooth cap + side waves flowing down
-            hair = `<path d="M55 82 Q54 50 88 45 Q122 50 121 82" fill="${hairColor}"/>
-                    <path d="M55 82 Q52 105 56 132" stroke="${hairColor}" stroke-width="14" fill="none" stroke-linecap="round"/>
-                    <path d="M121 82 Q124 105 120 132" stroke="${hairColor}" stroke-width="14" fill="none" stroke-linecap="round"/>`;
-        }
-
-        // Hands near face for Medium/High
-        let hands = '';
-        if (level === 'Medium') {
-            hands = `<ellipse cx="56" cy="92" rx="7" ry="5.5" fill="${skin}" transform="rotate(-10 56 92)"/>
-                     <ellipse cx="120" cy="92" rx="7" ry="5.5" fill="${skin}" transform="rotate(10 120 92)"/>`;
-        } else if (level === 'High') {
-            hands = `<ellipse cx="60" cy="84" rx="8" ry="6" fill="${skin}" transform="rotate(-15 60 84)"/>
-                     <ellipse cx="116" cy="84" rx="8" ry="6" fill="${skin}" transform="rotate(15 116 84)"/>`;
-        }
-
+        const file = gender === 'male' ? 'bad_mood_man.png' : 'bad_mood_woman.png';
         return `
             <div class="profile-summary__illustration">
-                <svg viewBox="0 0 176 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="88" cy="85" r="82" fill="${bg}"/>
-                    <path d="M50 148 Q50 132 70 126 L88 122 L106 126 Q126 132 126 148 L126 180 L50 180 Z" fill="${shirtColor}" opacity="0.85"/>
-                    <rect x="81" y="114" width="14" height="12" rx="5" fill="${skin}"/>
-                    <ellipse cx="88" cy="88" rx="29" ry="33" fill="${skin}"/>
-                    ${hair}
-                    <path d="${expr.browL}" stroke="#4A3728" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <path d="${expr.browR}" stroke="#4A3728" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    ${expr.eyeL}
-                    ${expr.eyeR}
-                    <path d="M86 94 Q88 97 90 94" stroke="${skinShadow}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-                    ${expr.mouth}
-                    ${expr.cheeks}
-                    ${expr.extras}
-                    ${hands}
-                </svg>
+                <img src="../../assets/${file}" alt="Profile illustration" class="profile-summary__illustration-img">
             </div>
         `;
     },
@@ -1181,15 +1093,18 @@ const Components = {
         return `
             <div class="cbt-diagram">
                 <div class="cbt-diagram__wrapper">
-                    <img src="../../assets/cbt_head_brain.png" class="cbt-diagram__image" alt="CBT Model">
+                    <img src="../../assets/cbt_head_brain.png"
+                         class="cbt-diagram__image"
+                         alt="CBT Model"
+                         onload="this.classList.add('cbt-diagram__image--loaded')">
                     <div class="cbt-diagram__orbit">
-                        <div class="cbt-diagram__anchor" style="--angle: 300deg">
+                        <div class="cbt-diagram__anchor cbt-diagram__anchor--enter" style="--angle: 300deg; animation-delay: 0.55s">
                             <span class="cbt-diagram__label">${Security.escapeHtml(elements[0])}</span>
                         </div>
-                        <div class="cbt-diagram__anchor" style="--angle: 60deg">
+                        <div class="cbt-diagram__anchor cbt-diagram__anchor--enter" style="--angle: 60deg; animation-delay: 0.75s">
                             <span class="cbt-diagram__label">${Security.escapeHtml(elements[1])}</span>
                         </div>
-                        <div class="cbt-diagram__anchor" style="--angle: 180deg">
+                        <div class="cbt-diagram__anchor cbt-diagram__anchor--enter" style="--angle: 180deg; animation-delay: 0.95s">
                             <span class="cbt-diagram__label">${Security.escapeHtml(elements[2])}</span>
                         </div>
                     </div>

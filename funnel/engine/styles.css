@@ -1345,10 +1345,21 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     width: 120px;
     height: auto;
     object-fit: contain;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    filter: blur(10px);
+    transition: opacity 0.7s ease-out,
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.6s ease-out;
+}
+
+.cbt-diagram__image--loaded {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    filter: blur(0);
 }
 
 .cbt-diagram__orbit {
@@ -1367,6 +1378,22 @@ body {
 .cbt-diagram__anchor {
     position: absolute;
     transform: rotate(var(--angle)) translateY(-120px) rotate(calc(-1 * var(--angle)));
+}
+
+.cbt-diagram__anchor--enter {
+    opacity: 0;
+    animation: cbtAnchorEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes cbtAnchorEnter {
+    0% {
+        opacity: 0;
+        transform: rotate(var(--angle)) translateY(-90px) rotate(calc(-1 * var(--angle))) scale(0.6);
+    }
+    100% {
+        opacity: 1;
+        transform: rotate(var(--angle)) translateY(-120px) rotate(calc(-1 * var(--angle))) scale(1);
+    }
 }
 
 .cbt-diagram__label {
@@ -3299,7 +3326,8 @@ body {
     max-width: 140px;
 }
 
-.profile-summary__illustration svg {
+.profile-summary__illustration svg,
+.profile-summary__illustration-img {
     width: 100%;
     height: auto;
     display: block;
