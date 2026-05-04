@@ -1351,6 +1351,7 @@ body {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.8);
     filter: blur(10px);
+    will-change: opacity, transform, filter;
     transition: opacity 0.7s ease-out,
                 transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
                 filter 0.6s ease-out;
@@ -1360,6 +1361,7 @@ body {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
     filter: blur(0);
+    will-change: auto; /* release composited layer once animation completes */
 }
 
 .cbt-diagram__orbit {

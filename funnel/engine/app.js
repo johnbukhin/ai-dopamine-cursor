@@ -17,7 +17,10 @@ const CONFIG = {
     webappUrl: 'https://mind-compass-webapp.vercel.app',
     // Stripe publishable key (safe to expose in frontend code).
     // Production key should be set here before going live.
-    stripePk: 'pk_test_51RGn1FE85qJsu4O7B4vPpGAgvzwq63X3C9vk0IN4oLDBaDpccbctO9gy5I3gjVoNr3ENvISwfVjRbuLUu74Fx8HB00C2nolMtd'
+    stripePk: 'pk_test_51RGn1FE85qJsu4O7B4vPpGAgvzwq63X3C9vk0IN4oLDBaDpccbctO9gy5I3gjVoNr3ENvISwfVjRbuLUu74Fx8HB00C2nolMtd',
+    // Cache-busting version for image assets that may have been re-uploaded with the same filename.
+    // Bump when replacing assets that browsers/CDN already aggressively cache (max-age=31536000, immutable).
+    assetVersion: '2026-05-04-resized'
 };
 
 // ========================================
@@ -1077,7 +1080,7 @@ const Components = {
         const file = gender === 'male' ? 'bad_mood_man.png' : 'bad_mood_woman.png';
         return `
             <div class="profile-summary__illustration">
-                <img src="../../assets/${file}?v=2026-05-04-bg-removed" alt="Profile illustration" class="profile-summary__illustration-img">
+                <img src="../../assets/${file}?v=${CONFIG.assetVersion}" alt="Profile illustration" class="profile-summary__illustration-img">
             </div>
         `;
     },
@@ -1095,8 +1098,7 @@ const Components = {
                 <div class="cbt-diagram__wrapper">
                     <img src="../../assets/cbt_head_brain.png"
                          class="cbt-diagram__image"
-                         alt="CBT Model"
-                         onload="this.classList.add('cbt-diagram__image--loaded')">
+                         alt="CBT Model">
                     <div class="cbt-diagram__orbit">
                         <div class="cbt-diagram__anchor cbt-diagram__anchor--enter" style="--angle: 300deg; animation-delay: 0.55s">
                             <span class="cbt-diagram__label">${Security.escapeHtml(elements[0])}</span>
@@ -5418,6 +5420,16 @@ const App = {
                     });
                 });
             }
+        }
+
+        // CBT head image fade-in (any screen that contains the diagram)
+        const cbtImg = document.querySelector('.cbt-diagram__image');
+        if (cbtImg) {
+            const trigger = () => cbtImg.classList.add('cbt-diagram__image--loaded');
+            // Register listener first to avoid race; classList.add is idempotent so
+            // calling trigger() twice (cached + fired) is harmless.
+            cbtImg.addEventListener('load', trigger, { once: true });
+            if (cbtImg.complete && cbtImg.naturalWidth > 0) trigger();
         }
 
         // Goal timeline bars on timeline_chart screen
