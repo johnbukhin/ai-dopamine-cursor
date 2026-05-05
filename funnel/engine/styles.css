@@ -273,7 +273,7 @@ body {
     aspect-ratio: 1;
     object-fit: cover;
     object-position: top;
-    background-color: var(--color-background);
+    background-color: var(--color-surface);
 }
 
 .gender-card__label {

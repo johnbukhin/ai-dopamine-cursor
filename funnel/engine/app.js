@@ -2088,8 +2088,8 @@ const Screens = {
                     <span class="badge">${safeSubheadline}</span>
                     
                     <div class="gender-cards">
-                        ${Components.genderCard('Male', '../../assets/male.png')}
-                        ${Components.genderCard('Female', '../../assets/female.png')}
+                        ${Components.genderCard('Male', `../../assets/good_mood_man.png?v=${CONFIG.assetVersion}`)}
+                        ${Components.genderCard('Female', `../../assets/good_mood_woman.png?v=${CONFIG.assetVersion}`)}
                     </div>
                 </main>
                 
