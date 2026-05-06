@@ -1076,7 +1076,7 @@ const Components = {
      * @param {string} level - 'Low', 'Normal', 'Medium', 'High'
      * @returns {string} SVG HTML string
      */
-    profileIllustration(gender, level) {
+    profileIllustration(gender) {
         const file = gender === 'male' ? 'bad_mood_man.png' : 'bad_mood_woman.png';
         return `
             <div class="profile-summary__illustration">
@@ -2638,7 +2638,7 @@ const Screens = {
         const levelEmoji = levelEmojis[levelIndex];
 
         // Illustration based on gender and level
-        const illustrationHtml = Components.profileIllustration(gender, overallLevel);
+        const illustrationHtml = Components.profileIllustration(gender);
 
         // Generate personalized description
         const levelDesc = Scoring.getDetailedDescription(scores, overallLevel, gender);
