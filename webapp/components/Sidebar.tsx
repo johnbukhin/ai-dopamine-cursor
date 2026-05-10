@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from '../types';
-import { TrendingUp, Map, Brain, ShieldAlert, Leaf, Settings, LogOut, Compass, Menu } from 'lucide-react';
+import { Route, CalendarCheck, Brain, Anchor, Settings, LogOut, Compass } from 'lucide-react';
 
 interface SidebarProps {
   currentView: View;
@@ -51,10 +51,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onL
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
         <div className="mb-6">
           <p className="px-4 text-xs font-medium text-purple-700/50 uppercase tracking-wider mb-2">Core Features</p>
-          <NavItem view={View.PLAN_21} icon={Map} label="28-Day Plan" />
-          <NavItem view={View.DASHBOARD} icon={TrendingUp} label="Progress" />
+          <NavItem view={View.PLAN_21} icon={Route} label="28-Day Plan" />
+          <NavItem view={View.DASHBOARD} icon={CalendarCheck} label="Progress" />
           <NavItem view={View.AI_COACH} icon={Brain} label="AI Coach" />
-          <NavItem view={View.URGE_HELP} icon={ShieldAlert} label="Urge Help" />
+          <NavItem view={View.URGE_HELP} icon={Anchor} label="Urge Help" />
           <NavItem view={View.SETTINGS} icon={Settings} label="Settings" />
         </div>
       </nav>
@@ -78,10 +78,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onL
 
   const MobileBottomNav = () => (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-purple-100 flex justify-around items-center px-1 pb-safe z-40 h-[4.5rem] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-      <MobileNavItem view={View.PLAN_21} icon={Map} label="Plan" />
-      <MobileNavItem view={View.DASHBOARD} icon={TrendingUp} label="Progress" />
+      <MobileNavItem view={View.PLAN_21} icon={Route} label="Plan" />
+      <MobileNavItem view={View.DASHBOARD} icon={CalendarCheck} label="Progress" />
       <MobileNavItem view={View.AI_COACH} icon={Brain} label="Coach" />
-      <MobileNavItem view={View.URGE_HELP} icon={ShieldAlert} label="Help" />
+      <MobileNavItem view={View.URGE_HELP} icon={Anchor} label="Help" />
       <MobileNavItem view={View.SETTINGS} icon={Settings} label="Settings" />
     </div>
   );

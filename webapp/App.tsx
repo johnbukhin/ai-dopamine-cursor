@@ -17,9 +17,15 @@ const WELCOME_MESSAGE: ChatMessage = {
   content: "Hello. I'm your Mind Compass coach.\n\nI'm here to help you reflect, analyze patterns, and maintain control.\n\nWhat's on your mind today?",
 };
 
+// Dev-only: skip the login screen when VITE_DEV_BYPASS_AUTH=true in .env.local.
+// Hard-gated on import.meta.env.DEV so the flag is *physically impossible* to
+// activate in a production build, even if VITE_DEV_BYPASS_AUTH is accidentally
+// set in Vercel env or in a non-local .env file.
+const BYPASS_AUTH = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentView, setCurrentView] = useState<View>(View.LOGIN);
+  const [isAuthenticated, setIsAuthenticated] = useState(BYPASS_AUTH);
+  const [currentView, setCurrentView] = useState<View>(BYPASS_AUTH ? View.PLAN_21 : View.LOGIN);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [checkInPayload, setCheckInPayload] = useState<{ tasksCompleted: boolean } | null>(null);
 
@@ -135,11 +141,19 @@ export default function App() {
   };
 
   useEffect(() => {
-    let currentStreak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    let checkDate = subDays(today, 1);
 
+    // A SLIP today zeros the streak immediately — no need to walk further back.
+    const todayStatus = getAggregatedDayStatus(today, checkIns);
+    if (todayStatus === CheckInStatus.SLIP) {
+      setStreak(0);
+      return;
+    }
+
+    // Walk back from yesterday counting consecutive CLEAN days.
+    let currentStreak = 0;
+    let checkDate = subDays(today, 1);
     while (true) {
       const status = getAggregatedDayStatus(checkDate, checkIns);
       if (status === CheckInStatus.CLEAN) {
@@ -149,6 +163,11 @@ export default function App() {
         break;
       }
     }
+
+    // Today's CLEAN counts toward the streak immediately on success — the user
+    // shouldn't have to wait until tomorrow for today's day to be credited.
+    if (todayStatus === CheckInStatus.CLEAN) currentStreak++;
+
     setStreak(currentStreak);
   }, [checkIns]);
 
@@ -253,6 +272,7 @@ export default function App() {
           <Dashboard
             checkIns={checkIns}
             streak={streak}
+            hasCheckedInToday={hasCheckedInToday}
             onOpenCheckIn={() => handleOpenCheckIn({ tasksCompleted: false })}
             onChangeView={setCurrentView}
           />

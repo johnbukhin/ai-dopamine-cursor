@@ -15,3 +15,56 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Plus-sign decoration on the Check-in card pulses in sync with the rotating
+   CTA phrase (3s cycle). Period matches CTA_CYCLE_MS in Dashboard.tsx. */
+@keyframes pulse-130 {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.3); }
+}
+.animate-pulse-130 {
+  animation: pulse-130 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Celebration: streak number pops 3× during the 5s CLEAN celebration.
+   Pattern: 100% → 150% → 100% → 150% → 100% → 150% → 100% over 5s.
+   transform-origin: bottom keeps the digit anchored to its baseline
+   so "days" beside it doesn't visually drift. */
+@keyframes streak-pop {
+  0%      { transform: scale(1); }
+  16.66%  { transform: scale(1.5); }
+  33.33%  { transform: scale(1); }
+  50%     { transform: scale(1.5); }
+  66.66%  { transform: scale(1); }
+  83.33%  { transform: scale(1.5); }
+  100%    { transform: scale(1); }
+}
+.animate-streak-pop {
+  animation: streak-pop 5s ease-in-out;
+  transform-origin: center bottom;
+}
+
+/* Celebration: CLEAN check-in confetti — pieces fall from the top of the card
+   downward across the full width, rotating with mild horizontal drift. */
+@keyframes confetti-fall {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  8%   { opacity: 1; }
+  100% { transform: translate3d(var(--cx, 0), var(--cy, 200px), 0) rotate(var(--rot, 720deg)); opacity: 0; }
+}
+.animate-confetti-fall {
+  animation: confetti-fall 1.6s cubic-bezier(0.33, 0, 0.67, 1) both;
+}
+
+/* Celebration: SLIP support — translucent pastel bubbles drift upward across
+   the full bottom width. Slower, calmer, lower opacity — supportive tone. */
+@keyframes support-rise {
+  0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+  20%  { opacity: 0.55; }
+  80%  { opacity: 0.45; }
+  100% { transform: translateY(-130px) scale(1); opacity: 0; }
+}
+.animate-support-rise {
+  animation: support-rise 2.8s ease-in-out both;
+}
+

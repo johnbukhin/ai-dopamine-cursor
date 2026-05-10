@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { CheckIn, CheckInStatus } from '../types';
 import { Button } from './Button';
 import { supabase } from '../src/lib/supabase';
-import { 
-  POSITIVE_FEEDBACK, FLOW_A_HELPED_OPTIONS, EMOTIONS_POSITIVE, EMOTIONS_NEGATIVE, 
-  TRIGGERS, TIME_OF_DAY, SLIP_REACTIONS, SLIP_LEARNINGS 
+import {
+  FLOW_A_HELPED_OPTIONS, EMOTIONS_POSITIVE, EMOTIONS_NEGATIVE,
+  TRIGGERS, TIME_OF_DAY, SLIP_REACTIONS, SLIP_LEARNINGS
 } from '../constants';
 import { generateDailyInsight } from '../services/geminiService';
 import { Check, X, CheckCircle, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
@@ -157,8 +157,8 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
             <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
               <CheckCircle size={32} />
             </div>
-            <h3 className="text-xl font-medium">Great. You stayed in control today.</h3>
-            <p className="text-purple-700 italic">"{POSITIVE_FEEDBACK[Math.floor(Math.random() * POSITIVE_FEEDBACK.length)]}"</p>
+            <h3 className="text-xl font-bold leading-snug">Great!<br />You stayed in control today.</h3>
+            <p className="text-purple-700">One more day of clarity.</p>
             <Button onClick={handleNext} fullWidth>Continue</Button>
           </div>
         );
@@ -200,12 +200,12 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
         return (
           <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
             <h3 className="text-xl font-medium text-center">Is there one thing you want to remember from today?</h3>
-            <input 
-              type="text" 
+            <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
-              placeholder="For example: evenings are easier when I stay offline."
-              className="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-200 outline-none"
+              placeholder="Example: evenings are easier when I stay offline."
+              rows={2}
+              className="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-200 outline-none resize-none leading-snug"
             />
             <Button onClick={handleSubmit} fullWidth disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Complete Check-in"}
@@ -222,8 +222,12 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
       case 1: // Neutral Framing (Statement, requires Continue)
         return (
           <div className="space-y-6 text-center animate-in slide-in-from-right-8 duration-300">
-            <p className="text-lg text-purple-800">Thank you for being honest. This is not failure. This is information.</p>
-            <Button onClick={handleNext} fullWidth variant="secondary">Continue</Button>
+            <p className="text-xl font-bold text-gray-900 leading-snug">Thank you for being honest.</p>
+            <div className="space-y-1">
+              <p className="text-purple-700">This is not failure.</p>
+              <p className="text-purple-700">This is information.</p>
+            </div>
+            <Button onClick={handleNext} fullWidth>Continue</Button>
           </div>
         );
       case 2: // Trigger (Single-select: Auto-Advance)
@@ -315,15 +319,15 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
         return (
           <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
             <h3 className="text-xl font-medium text-center">One sentence about what you learned today.</h3>
-            <input 
-              type="text" 
+            <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
-              placeholder="For example: being alone at night is my weak point."
-              className="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-200 outline-none"
+              placeholder="Example: being alone at night is my weak point."
+              rows={2}
+              className="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-200 outline-none resize-none leading-snug"
             />
             <div className="pt-4 text-center">
-                <p className="text-sm text-purple-700 italic mb-4">"This is not a relapse. This is data."</p>
+                <p className="text-sm text-purple-700 mb-4">This is not a relapse. This is data.</p>
                 <Button onClick={handleSubmit} fullWidth disabled={isSubmitting}>
                    {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Complete Check-in"}
                 </Button>

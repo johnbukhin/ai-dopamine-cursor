@@ -1,13 +1,7 @@
-export const POSITIVE_FEEDBACK = [
-  "This is how consistency is built.",
-  "One more day of clarity.",
-  "You reinforced a new pattern today."
-];
-
 export const FLOW_A_HELPED_OPTIONS = [
   "I stayed busy",
   "I avoided triggers",
-  "I used the Urge Button",
+  "I used the Help Button",
   "I exercised / moved my body",
   "I talked to someone",
   "I followed today's protocol",
@@ -40,7 +34,7 @@ export const SLIP_REACTIONS = [
 ];
 
 export const SLIP_LEARNINGS = [
-  "Use Urge Button",
+  "Use Help Button",
   "Leave the room",
   "Physical movement",
   "Cold water / breathing",

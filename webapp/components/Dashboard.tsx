@@ -1,18 +1,173 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CheckIn, CheckInStatus, View } from '../types';
-import { ChevronLeft, ChevronRight, X, Sparkles, Activity, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isFuture } from 'date-fns';
 
 interface DashboardProps {
   checkIns: CheckIn[];
   streak: number;
+  hasCheckedInToday: boolean;
   onOpenCheckIn?: () => void;
   onChangeView: (view: View) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCheckIn, onChangeView }) => {
+// Rotating CTA phrases shown on the Check-in card before the day's first check-in.
+// Sequential: current fades fully to 0, then the next phrase fades in from 0 in the same spot.
+const CTA_PHRASES = ['Track today', 'Mark today', 'Log today', 'Note today'];
+const CTA_FADE_MS = 800;
+const CTA_CYCLE_MS = 3000;
+
+// Celebration overlay shown inside the Streak card after a check-in.
+// CLEAN → 5s confetti rain falling from top across full width (vibrant, celebratory)
+// SLIP  → 5s translucent pastel bubbles rising from bottom (supportive, calmer)
+const CLEAN_CELEBRATION_MS = 5000;
+const SLIP_CELEBRATION_MS = 5000;
+const CONFETTI_COLORS = ['#f472b6', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#fb923c', '#22d3ee'];
+const SUPPORT_COLORS = ['#fda4af', '#fbcfe8', '#fed7aa', '#ddd6fe', '#a5b4fc'];
+
+// Particle generators hoisted to module scope so they can be invoked from
+// Dashboard's useMemo (precomputing particle arrays at mount). Keeps the
+// first celebration trigger cheap — only DOM render remains, no Math.random
+// loops or array allocation at trigger time.
+const generateCleanParticles = () =>
+  Array.from({ length: 400 }, (_, i) => ({
+    id: i,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    startX: Math.random() * 100,                          // % across the top
+    cx: (Math.random() - 0.5) * 80,                       // mild horizontal drift
+    cy: 180 + Math.random() * 80,                         // 180..260px down
+    rot: (Math.random() - 0.5) * 1080 + 540,
+    delay: Math.random() * 3,                             // last starts ~3s, finishes by ~5s
+    duration: 1.4 + Math.random() * 0.6,
+    isCircle: Math.random() < 0.35,
+  }));
+
+const generateSlipParticles = () =>
+  Array.from({ length: 175 }, (_, i) => ({
+    id: i,
+    color: SUPPORT_COLORS[i % SUPPORT_COLORS.length],
+    left: Math.random() * 100,
+    delay: Math.random() * 3.5,
+    duration: 2.4 + Math.random() * 1.0,
+    size: 10 + Math.random() * 8,
+  }));
+
+type CleanParticle = ReturnType<typeof generateCleanParticles>[number];
+type SlipParticle = ReturnType<typeof generateSlipParticles>[number];
+
+const Celebration: React.FC<{
+  type: 'clean' | 'slip';
+  cleanParticles: CleanParticle[];
+  slipParticles: SlipParticle[];
+}> = ({ type, cleanParticles, slipParticles }) => {
+  // Decorative-only — screen readers should ignore the 575 particle spans.
+  return (
+    <div aria-hidden="true" role="presentation" className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+      {type === 'clean'
+        ? cleanParticles.map((p) => (
+            <span
+              key={p.id}
+              className={`absolute top-0 w-3 h-4 animate-confetti-fall ${p.isCircle ? 'rounded-full' : 'rounded-sm'}`}
+              style={{
+                backgroundColor: p.color,
+                boxShadow: `0 0 8px ${p.color}, 0 0 14px ${p.color}66`,
+                left: `${p.startX}%`,
+                // CSS custom properties — React's CSSProperties type doesn't model these natively.
+                ['--cx' as any]: `${p.cx}px`,
+                ['--cy' as any]: `${p.cy}px`,
+                ['--rot' as any]: `${p.rot}deg`,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
+              }}
+            />
+          ))
+        : slipParticles.map((p) => (
+            <span
+              key={p.id}
+              className="absolute bottom-0 rounded-full animate-support-rise"
+              style={{
+                backgroundColor: `${p.color}99`,                              // ~60% alpha — translucent
+                boxShadow: `0 0 8px ${p.color}55, 0 0 14px ${p.color}33`,     // softer, calmer glow
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                left: `${p.left}%`,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
+              }}
+            />
+          ))}
+    </div>
+  );
+};
+
+export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheckedInToday, onOpenCheckIn, onChangeView }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [ctaIndex, setCtaIndex] = useState(0);
+  const [ctaVisible, setCtaVisible] = useState(true);
+  const [celebration, setCelebration] = useState<'clean' | 'slip' | null>(null);
+  const prevStreakRef = useRef(streak);
+  // Tracks check-ins length so we can distinguish a real user-added check-in
+  // (delta = +1) from a bulk load (initial fetch from Supabase, delta = N).
+  // Without this, the async streak rise after login would fire a phantom CLEAN.
+  const prevCheckInsLenRef = useRef(checkIns.length);
+  // Pre-generate particle arrays at mount (i.e. when the user lands on Progress)
+  // so the first celebration trigger doesn't pay the Math.random + allocation cost.
+  const cleanParticles = useMemo(() => generateCleanParticles(), []);
+  const slipParticles = useMemo(() => generateSlipParticles(), []);
+  // Skip the first effect run so loading an existing streak (e.g. 5 days) on mount
+  // doesn't fire a celebration. Real check-in streak changes start triggering after.
+  const streakInitializedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasCheckedInToday) return;
+
+    let swapTimeoutId: number | undefined;
+    const cycle = () => {
+      setCtaVisible(false);                                                    // fade out current
+      swapTimeoutId = window.setTimeout(() => {
+        setCtaIndex((prev) => (prev + 1) % CTA_PHRASES.length);                // swap while invisible
+        setCtaVisible(true);                                                   // fade in next
+      }, CTA_FADE_MS);
+    };
+
+    const intervalId = window.setInterval(cycle, CTA_CYCLE_MS);
+    return () => {
+      window.clearInterval(intervalId);
+      if (swapTimeoutId !== undefined) window.clearTimeout(swapTimeoutId);
+    };
+  }, [hasCheckedInToday]);
+
+  // Trigger celebration on streak transitions — at most once per day, since
+  // streak only changes on the first qualifying check-in of the day:
+  //   streak ↑   → CLEAN (the new day was credited to the streak)
+  //   streak →0  → SLIP  (an existing streak was wiped by today's slip)
+  // Gated on checkIns delta = +1 so the async post-login bulk load (0 → N rows
+  // appearing at once) never fires a phantom celebration.
+  useEffect(() => {
+    const isUserAction = checkIns.length === prevCheckInsLenRef.current + 1;
+    prevCheckInsLenRef.current = checkIns.length;
+
+    if (!streakInitializedRef.current) {
+      streakInitializedRef.current = true;
+      prevStreakRef.current = streak;
+      return;
+    }
+    const prev = prevStreakRef.current;
+    prevStreakRef.current = streak;
+
+    if (!isUserAction) return;                                                 // bulk load — never celebrate
+
+    let type: 'clean' | 'slip' | null = null;
+    if (streak > prev) type = 'clean';
+    else if (streak === 0 && prev > 0) type = 'slip';
+    if (!type) return;
+
+    const duration = type === 'clean' ? CLEAN_CELEBRATION_MS : SLIP_CELEBRATION_MS;
+    setCelebration(type);
+    const id = window.setTimeout(() => setCelebration(null), duration);
+    return () => window.clearTimeout(id);
+  }, [streak, checkIns]);
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
@@ -36,15 +191,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
     
     if (dayCheckIns.length === 0) return 'EMPTY';
     
-    // Rigorous honesty: if any slip happened, the day is marked as a slip.
+    // Rigorous honesty: any slip in the day marks it as SLIP, regardless of
+    // any clean check-ins before or after it.
     const hasSlip = dayCheckIns.some(c => c.status === CheckInStatus.SLIP);
     if (hasSlip) return CheckInStatus.SLIP;
-    
-    // A day is only marked fully 'CLEAN' (green) if there's a clean check-in AND tasks were completed.
-    const hasCompletedCleanCheckIn = dayCheckIns.some(c => c.status === CheckInStatus.CLEAN && c.tasksCompleted);
-    if (hasCompletedCleanCheckIn) return CheckInStatus.CLEAN;
 
-    // If there was a clean check-in but tasks were not completed, or any other case, treat as neutral.
+    // Any clean check-in marks the day as CLEAN — plan-task completion is no
+    // longer a factor (plan is moving to a self-paced unit model).
+    const hasClean = dayCheckIns.some(c => c.status === CheckInStatus.CLEAN);
+    if (hasClean) return CheckInStatus.CLEAN;
+
     return 'EMPTY';
   };
 
@@ -66,68 +222,108 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
         <img src="/illustrations/dashboard.png" alt="Dashboard" className="w-full h-full object-cover scale-[1.4] origin-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
         <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Today</span>
+          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Today</span>
           <h2 className="text-3xl md:text-4xl font-extrabold text-purple-900 mt-1">{greeting}</h2>
         </div>
       </div>
       
-      {/* Top Section: Split into Progress and Check-in Action */}
-      <div className="max-w-4xl mx-auto w-full grid grid-cols-2 gap-4 md:gap-8 px-4 md:px-8 relative z-10 -mt-8 mb-8">
-         {/* Left: Progress */}
-         <div className="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-purple-100 flex flex-col justify-center gap-1">
-             <div className="flex items-center gap-2 text-purple-600 mb-2">
-                <Activity size={16} />
-                <span className="text-xs font-bold uppercase tracking-wider">Your Streak</span>
-             </div>
-             <div className="flex items-baseline gap-1">
-                <span className="text-3xl md:text-4xl font-bold text-purple-900">{streak}</span>
-                <span className="text-sm font-medium text-purple-600">Days</span>
-             </div>
-             <p className="text-xs text-gray-500 mt-1">One day at a time.</p>
-         </div>
-         
-         {/* Right: Add Check-in */}
-         {onOpenCheckIn ? (
-           <div className="flex flex-col gap-3">
-             <button 
-                onClick={onOpenCheckIn}
-                className="flex-1 bg-purple-600 p-5 md:p-8 rounded-2xl shadow-sm border border-purple-700 flex flex-col justify-center items-start text-left gap-1 hover:bg-purple-700 transition-all group relative overflow-hidden"
-             >
-                 <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Plus size={64} className="text-white" />
-                 </div>
-                 
-                 <div className="flex items-center gap-2 text-purple-200 mb-2 z-10">
-                    <div className="bg-purple-500/50 p-1 rounded-md">
-                        <Plus size={14} />
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider">New Entry</span>
-                 </div>
-                 <span className="text-xl md:text-2xl font-bold text-white z-10">Add Check-in</span>
-                 <p className="text-xs text-purple-200/70 mt-1 z-10">Log your status now</p>
-             </button>
-             <button 
-                onClick={() => onChangeView(View.URGE_HELP)}
-                className="bg-rose-50 p-4 rounded-xl border border-rose-100 flex items-center justify-center text-rose-600 hover:bg-rose-100 transition-colors gap-2 font-semibold text-sm shadow-sm"
-             >
-                 <span>⚠️ Urge Help</span>
-             </button>
-           </div>
-         ) : (
-            <div className="bg-gray-50 p-4 rounded-2xl border border-purple-100 flex items-center justify-center text-gray-500">
-                <span className="text-sm">Read Only Mode</span>
+      {/* Top Section: Streak + Check-in (top row), Urge Help (utility row below) */}
+      <div className="max-w-4xl mx-auto w-full px-4 md:px-8 relative z-10 -mt-8 mb-8 flex flex-col gap-3 md:gap-4">
+         <div className="grid grid-cols-2 gap-3 md:gap-4">
+            {/* Streak — light purple sibling of Check-in; same internal structure */}
+            <div className="relative overflow-hidden bg-purple-100 p-5 md:p-6 rounded-2xl border border-purple-200 flex flex-col justify-between min-h-[126px] md:min-h-[144px]">
+                {/* Decorative upward line-chart silhouette (📈), bottom-right, low contrast */}
+                <svg
+                   aria-hidden="true"
+                   viewBox="0 0 60 60"
+                   fill="none"
+                   stroke="currentColor"
+                   strokeWidth="6"
+                   strokeLinecap="round"
+                   strokeLinejoin="round"
+                   className="absolute -bottom-3 -right-3 w-20 h-20 text-purple-600/20 pointer-events-none"
+                >
+                   <polyline points="6,48 20,38 32,42 44,24 54,12" />
+                </svg>
+                {celebration && <Celebration key={celebration} type={celebration} cleanParticles={cleanParticles} slipParticles={slipParticles} />}
+                <div className="flex items-center gap-2 relative h-7">
+                   <div className="bg-purple-300/60 p-1.5 rounded-lg">
+                      <Trophy size={16} className="text-purple-700" />
+                   </div>
+                   <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Your Streak</span>
+                </div>
+                <div className="flex items-baseline gap-1.5 relative">
+                   <span className={`inline-block text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight ${celebration === 'clean' ? 'animate-streak-pop' : ''}`}>{streak}</span>
+                   <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{streak === 1 ? 'day' : 'days'}</span>
+                </div>
             </div>
-         )}
+
+            {/* Check-in — primary CTA; mirrors Streak's structure on a darker purple */}
+            {onOpenCheckIn ? (
+               <button
+                  onClick={onOpenCheckIn}
+                  className="relative overflow-hidden bg-purple-600 hover:bg-purple-700 p-5 md:p-6 rounded-2xl shadow-md flex flex-col justify-between text-left min-h-[126px] md:min-h-[144px] transition-colors"
+               >
+                   {/* Decorative plus silhouette (➕), bottom-right, matches Streak's chart in size/position/stroke.
+                       Pulses in sync with the rotating CTA phrase (3s cycle); static once the day has been checked in. */}
+                   <svg
+                      aria-hidden="true"
+                      viewBox="0 0 60 60"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      className={`absolute -bottom-3 -right-3 w-20 h-20 text-white/20 pointer-events-none ${hasCheckedInToday ? '' : 'animate-pulse-130'}`}
+                   >
+                      <line x1="30" y1="10" x2="30" y2="50" />
+                      <line x1="10" y1="30" x2="50" y2="30" />
+                   </svg>
+                   <div className="flex items-center gap-2 relative h-7">
+                      <div className="bg-white/15 p-1.5 rounded-lg">
+                         <CircleCheck size={16} className="text-white" />
+                      </div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-100"><span className="normal-case">30s</span> Check-in</span>
+                   </div>
+                   {hasCheckedInToday ? (
+                      <p className="text-xl md:text-2xl font-semibold text-white leading-tight relative">Log more</p>
+                   ) : (
+                      <p className={`text-xl md:text-2xl font-semibold text-white leading-tight relative transition-opacity duration-[800ms] ease-in-out ${ctaVisible ? 'opacity-100' : 'opacity-0'}`}>
+                         {CTA_PHRASES[ctaIndex]}
+                      </p>
+                   )}
+               </button>
+            ) : (
+               <div className="bg-gray-50 p-4 rounded-2xl border border-purple-100 flex items-center justify-center text-gray-500">
+                   <span className="text-sm">Read Only Mode</span>
+               </div>
+            )}
+         </div>
+
+         {/* Urge Help — utility row; icon framed to match the cards above */}
+         <button
+            onClick={() => onChangeView(View.URGE_HELP)}
+            className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-purple-800 text-sm font-medium transition-colors"
+         >
+             <div className="bg-purple-200/70 p-1 rounded-md">
+                <Anchor size={14} className="text-purple-700" />
+             </div>
+             <span>I'm having an urge — help me</span>
+         </button>
       </div>
 
       <div className="px-4 md:px-8 mt-4 md:mt-8">
       {/* Calendar */}
-      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-purple-100 max-w-4xl mx-auto">
+      <div className="bg-[#FEFCFF] p-5 md:p-6 rounded-2xl border border-purple-200 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-purple-900">{format(currentMonth, 'MMMM yyyy')}</h3>
+            <div className="flex items-center gap-2">
+               <div className="bg-purple-200/70 p-1.5 rounded-lg">
+                  <CalendarDays size={16} className="text-purple-700" />
+               </div>
+               <h3 className="text-xl md:text-2xl font-semibold text-purple-900 leading-tight">{format(currentMonth, 'MMMM yyyy')}</h3>
+            </div>
             <div className="flex gap-2">
-                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full text-purple-800"><ChevronLeft size={20} /></button>
-                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-gray-100 rounded-full text-purple-800"><ChevronRight size={20} /></button>
+                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-purple-100 rounded-full text-purple-800"><ChevronLeft size={20} /></button>
+                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-purple-100 rounded-full text-purple-800"><ChevronRight size={20} /></button>
             </div>
         </div>
 
@@ -140,9 +336,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
             {emptyDays.map((_, i) => <div key={`empty-${i}`} className="aspect-square" />)}
             {daysInMonth.map(day => {
                 const status = getDayStatus(day);
-                let bgClass = 'bg-gray-50 border-gray-100';
+                let bgClass = 'bg-white border-purple-100';
                 let textClass = 'text-gray-500';
-                
+
                 if (status === CheckInStatus.CLEAN) {
                     bgClass = 'bg-emerald-500 border-emerald-600 shadow-sm';
                     textClass = 'text-white font-bold';
@@ -150,8 +346,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
                     bgClass = 'bg-rose-400 border-rose-500 shadow-sm';
                     textClass = 'text-white font-bold';
                 } else if (status === 'EMPTY') {
-                    bgClass = 'bg-gray-100 border-purple-100 hover:bg-gray-200 cursor-pointer';
-                    textClass = 'text-gray-600';
+                    bgClass = 'bg-slate-100 border-slate-200 hover:bg-slate-200 cursor-pointer';
+                    textClass = 'text-slate-600';
                 }
 
                 return (
@@ -202,7 +398,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, onOpenCh
                                     <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Activity Log ({dayDetails.length})</h4>
                                     
                                     {/* List all Check-ins */}
-                                    {dayDetails.map((detail, index) => {
+                                    {dayDetails.map((detail) => {
                                         const isClean = detail.status === CheckInStatus.CLEAN;
                                         
                                         // Conditional Styling
