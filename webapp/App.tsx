@@ -202,6 +202,18 @@ export default function App() {
     setShowCheckInModal(true);
   };
 
+  // One-shot celebration emit. The signal is cleared shortly after dispatch so
+  // Dashboard remounts (e.g. tab switching) don't replay an already-played
+  // celebration. 100ms is enough for Dashboard's effect to read it on the
+  // current render cycle; far less than any remount the user could perform.
+  const fireCelebration = (type: 'clean' | 'slip') => {
+    const sig = { type, ts: Date.now() };
+    setCelebrationSignal(sig);
+    window.setTimeout(() => {
+      setCelebrationSignal(curr => (curr?.ts === sig.ts ? null : curr));
+    }, 100);
+  };
+
   const handleCheckInComplete = (newCheckIn: CheckIn) => {
     // Update UI immediately — DB write happens inside DailyCheckIn component
     setCheckIns(prev => [...prev, newCheckIn]);
@@ -218,9 +230,9 @@ export default function App() {
     const hadSlipToday = todayBefore.some(c => c.status === CheckInStatus.SLIP);
 
     if (newCheckIn.status === CheckInStatus.CLEAN && !hadCleanToday && !hadSlipToday) {
-      setCelebrationSignal({ type: 'clean', ts: Date.now() });
+      fireCelebration('clean');
     } else if (newCheckIn.status === CheckInStatus.SLIP && !hadSlipToday && streak > 0) {
-      setCelebrationSignal({ type: 'slip', ts: Date.now() });
+      fireCelebration('slip');
     }
   };
 
