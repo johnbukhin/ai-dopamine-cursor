@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Send, User as UserIcon, Loader2 } from 'lucide-react';
-import { getCoachResponse } from '../services/geminiService';
+import { getCoachResponse } from '../services/claudeService';
 import { CheckIn, ChatMessage } from '../types';
 import { supabase } from '../src/lib/supabase';
 
@@ -31,12 +31,20 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsLoading(true);
 
-    // Build context summary from history (last 5 entries)
-    const recentHistory = checkInHistory.slice(-5).map(c => 
+    // Build context summary from check-in history (last 5 entries) — passed as
+    // system-prompt context, separate from chat history.
+    const recentHistory = checkInHistory.slice(-5).map(c =>
         `Date: ${c.date.toDateString()}, Status: ${c.status}, Emotions: ${c.emotions.join(',')}`
     ).join('; ');
 
-    const response = await getCoachResponse(userMsg, recentHistory);
+    // Pass the last 10 chat messages so Claude has multi-turn memory.
+    // Drop index 0 (hardcoded welcome message — never sent to the model).
+    // messagesRef holds state captured at handleSend call time — does NOT
+    // include the new userMsg yet, which is fine: the service appends it
+    // as the final user turn before sending.
+    const chatHistory = messagesRef.current.slice(1).slice(-10);
+
+    const response = await getCoachResponse(userMsg, recentHistory, chatHistory);
 
     const assistantMsg: ChatMessage = { role: 'assistant', content: response };
 
