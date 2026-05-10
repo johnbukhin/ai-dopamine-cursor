@@ -7,6 +7,7 @@ interface DashboardProps {
   checkIns: CheckIn[];
   streak: number;
   hasCheckedInToday: boolean;
+  celebrationSignal: { type: 'clean' | 'slip'; ts: number } | null;
   onOpenCheckIn?: () => void;
   onChangeView: (view: View) => void;
 }
@@ -100,24 +101,19 @@ const Celebration: React.FC<{
   );
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheckedInToday, onOpenCheckIn, onChangeView }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheckedInToday, celebrationSignal, onOpenCheckIn, onChangeView }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [ctaIndex, setCtaIndex] = useState(0);
   const [ctaVisible, setCtaVisible] = useState(true);
   const [celebration, setCelebration] = useState<'clean' | 'slip' | null>(null);
-  const prevStreakRef = useRef(streak);
-  // Tracks check-ins length so we can distinguish a real user-added check-in
-  // (delta = +1) from a bulk load (initial fetch from Supabase, delta = N).
-  // Without this, the async streak rise after login would fire a phantom CLEAN.
-  const prevCheckInsLenRef = useRef(checkIns.length);
   // Pre-generate particle arrays at mount (i.e. when the user lands on Progress)
   // so the first celebration trigger doesn't pay the Math.random + allocation cost.
   const cleanParticles = useMemo(() => generateCleanParticles(), []);
   const slipParticles = useMemo(() => generateSlipParticles(), []);
-  // Skip the first effect run so loading an existing streak (e.g. 5 days) on mount
-  // doesn't fire a celebration. Real check-in streak changes start triggering after.
-  const streakInitializedRef = useRef(false);
+  // Tracks the last celebration signal we acted on. Prevents the same `ts`
+  // from firing twice (e.g. if Dashboard rerenders while signal is still set).
+  const lastSignalTsRef = useRef(0);
 
   useEffect(() => {
     if (hasCheckedInToday) return;
@@ -138,36 +134,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
     };
   }, [hasCheckedInToday]);
 
-  // Trigger celebration on streak transitions — at most once per day, since
-  // streak only changes on the first qualifying check-in of the day:
-  //   streak ↑   → CLEAN (the new day was credited to the streak)
-  //   streak →0  → SLIP  (an existing streak was wiped by today's slip)
-  // Gated on checkIns delta = +1 so the async post-login bulk load (0 → N rows
-  // appearing at once) never fires a phantom celebration.
+  // React to celebration signals fired by App.handleCheckInComplete. App owns
+  // the trigger logic because it sees the authoritative pre-check-in state in
+  // a single closure — no race between setCheckIns/setStreak rerenders.
   useEffect(() => {
-    const isUserAction = checkIns.length === prevCheckInsLenRef.current + 1;
-    prevCheckInsLenRef.current = checkIns.length;
+    if (!celebrationSignal) return;
+    if (celebrationSignal.ts === lastSignalTsRef.current) return;              // already handled this signal
+    lastSignalTsRef.current = celebrationSignal.ts;
 
-    if (!streakInitializedRef.current) {
-      streakInitializedRef.current = true;
-      prevStreakRef.current = streak;
-      return;
-    }
-    const prev = prevStreakRef.current;
-    prevStreakRef.current = streak;
-
-    if (!isUserAction) return;                                                 // bulk load — never celebrate
-
-    let type: 'clean' | 'slip' | null = null;
-    if (streak > prev) type = 'clean';
-    else if (streak === 0 && prev > 0) type = 'slip';
-    if (!type) return;
-
+    const { type } = celebrationSignal;
     const duration = type === 'clean' ? CLEAN_CELEBRATION_MS : SLIP_CELEBRATION_MS;
     setCelebration(type);
     const id = window.setTimeout(() => setCelebration(null), duration);
     return () => window.clearTimeout(id);
-  }, [streak, checkIns]);
+  }, [celebrationSignal]);
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();

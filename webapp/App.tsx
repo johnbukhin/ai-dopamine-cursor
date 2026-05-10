@@ -190,6 +190,12 @@ export default function App() {
     setCurrentView(View.LOGIN);
   };
 
+  // Celebration signal passed to Dashboard. Decided here (not in Dashboard)
+  // so we have the authoritative pre-check-in state without racing the
+  // setCheckIns / setStreak rerenders. `ts` makes each signal unique even if
+  // the same type fires twice in a row, so the effect re-runs.
+  const [celebrationSignal, setCelebrationSignal] = useState<{ type: 'clean' | 'slip'; ts: number } | null>(null);
+
   // ── Check-in handlers ─────────────────────────────────────────────────────
   const handleOpenCheckIn = (payload: { tasksCompleted: boolean }) => {
     setCheckInPayload(payload);
@@ -201,6 +207,21 @@ export default function App() {
     setCheckIns(prev => [...prev, newCheckIn]);
     setShowCheckInModal(false);
     setCheckInPayload(null);
+
+    // Decide if this check-in earns a celebration. Rules (mirroring streak logic):
+    //   CLEAN → fire only if today has no prior CLEAN/SLIP (streak just got credited)
+    //   SLIP  → fire only if today has no prior SLIP AND there was a streak to wipe
+    const today = new Date();
+    if (!isSameDay(new Date(newCheckIn.date), today)) return;
+    const todayBefore = checkIns.filter(c => isSameDay(new Date(c.date), today));
+    const hadCleanToday = todayBefore.some(c => c.status === CheckInStatus.CLEAN);
+    const hadSlipToday = todayBefore.some(c => c.status === CheckInStatus.SLIP);
+
+    if (newCheckIn.status === CheckInStatus.CLEAN && !hadCleanToday && !hadSlipToday) {
+      setCelebrationSignal({ type: 'clean', ts: Date.now() });
+    } else if (newCheckIn.status === CheckInStatus.SLIP && !hadSlipToday && streak > 0) {
+      setCelebrationSignal({ type: 'slip', ts: Date.now() });
+    }
   };
 
   // ── Plan task handlers ────────────────────────────────────────────────────
@@ -273,6 +294,7 @@ export default function App() {
             checkIns={checkIns}
             streak={streak}
             hasCheckedInToday={hasCheckedInToday}
+            celebrationSignal={celebrationSignal}
             onOpenCheckIn={() => handleOpenCheckIn({ tasksCompleted: false })}
             onChangeView={setCurrentView}
           />
