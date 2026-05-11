@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CheckIn, CheckInStatus, View } from '../types';
-import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays, Waves } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isFuture } from 'date-fns';
+import { count as readUrgeCount } from '../src/lib/urgeLog';
 
 interface DashboardProps {
   checkIns: CheckIn[];
@@ -115,6 +116,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
   // from firing twice (e.g. if Dashboard rerenders while signal is still set).
   const lastSignalTsRef = useRef(0);
 
+  // Urges Surfed tile data (Issue #34). Read once on mount — the urge log is
+  // local-only for v1 and only changes inside the Help tab, so by the time
+  // the user is back on the Dashboard the latest count is what we want to
+  // show. No live subscription needed.
+  const urgesSurfed = useMemo(() => readUrgeCount(), []);
+
   useEffect(() => {
     if (hasCheckedInToday) return;
 
@@ -209,7 +216,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
       
       {/* Top Section: Streak + Check-in (top row), Urge Help (utility row below) */}
       <div className="max-w-4xl mx-auto w-full px-4 md:px-8 relative z-10 -mt-8 mb-8 flex flex-col gap-3 md:gap-4">
-         <div className="grid grid-cols-2 gap-3 md:gap-4">
+         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {/* Streak — light purple sibling of Check-in; same internal structure */}
             <div className="relative overflow-hidden bg-purple-100 p-5 md:p-6 rounded-2xl border border-purple-200 flex flex-col justify-between min-h-[126px] md:min-h-[144px]">
                 {/* Decorative upward line-chart silhouette (📈), bottom-right, low contrast */}
@@ -277,15 +284,50 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                    <span className="text-sm">Read Only Mode</span>
                </div>
             )}
+
+            {/* Urges Surfed (Issue #34). Single-row compact layout: icon +
+                label on the left, count + unit on the right. Visually
+                styled as a sibling of the Streak tile (purple palette,
+                same icon-badge tint, same stroke weight) so the row reads
+                as one cohesive trio. */}
+            <div className="col-span-2 md:col-span-1 md:self-center relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3">
+                {/* Decorative wave silhouette — "urges rise and fall like
+                    waves" reframe. Stroke weight matches the Streak chart
+                    and Check-in plus for visual consistency across the row. */}
+                <svg
+                   aria-hidden="true"
+                   viewBox="0 0 60 60"
+                   fill="none"
+                   stroke="currentColor"
+                   strokeWidth="6"
+                   strokeLinecap="round"
+                   strokeLinejoin="round"
+                   className="absolute -bottom-2 -right-3 w-16 h-16 text-purple-600/20 pointer-events-none"
+                >
+                   <path d="M2 36 Q12 22 22 36 T42 36 T62 36" />
+                   <path d="M2 46 Q12 32 22 46 T42 46 T62 46" />
+                </svg>
+                <div className="flex items-center gap-2 relative">
+                   <div className="bg-purple-300/60 p-1.5 rounded-lg">
+                      <Waves size={16} className="text-purple-700" />
+                   </div>
+                   <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Urges Surfed</span>
+                </div>
+                <div className="flex items-baseline gap-1.5 relative">
+                   <span className="text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight">{urgesSurfed}</span>
+                   <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesSurfed === 1 ? 'surf' : 'surfs'}</span>
+                </div>
+            </div>
          </div>
 
-         {/* Urge Help — utility row; icon framed to match the cards above */}
+         {/* Urge Help — utility row; rose accent to telegraph "this is the
+             panic button" without drowning the dashboard's purple palette. */}
          <button
             onClick={() => onChangeView(View.URGE_HELP)}
-            className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-purple-800 text-sm font-medium transition-colors"
+            className="bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
          >
-             <div className="bg-purple-200/70 p-1 rounded-md">
-                <Anchor size={14} className="text-purple-700" />
+             <div className="bg-rose-200/70 p-1 rounded-md">
+                <Anchor size={14} className="text-rose-700" />
              </div>
              <span>I'm having an urge — help me</span>
          </button>
