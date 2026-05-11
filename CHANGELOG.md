@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Added (Issue #31)
+### Added (Issue #34)
+- **Help tab redesigned as 4-stage urge journey** — `Pause → Locate → Act → Reflect` orchestrated by [`webapp/components/UrgeHelp.tsx`](webapp/components/UrgeHelp.tsx); state machine + per-stage components in `webapp/components/urgeHelp/`
+- **Pause stage** — fixed 3-min countdown ring (was 60s), reframe copy "3 minutes is all your brain needs to weaken the urge", skip-ahead button preserved
+- **Locate stage** — feeling picker as bottom sheet; tap a feeling → slide-up sheet with optional 1–10 intensity slider + Continue; sheet height measured live via `ResizeObserver` so grid padding always fits
+- **Act stage** — 10-action grid grouped by 4 categories (Reset / Ground / Protect / Reframe), category-tinted icons, stagger-fade entrance, "Best fit" badge on top 2 actions matched to selected feeling
+- **10 evidence-based action mini-screens** in `webapp/components/urgeActions/` — each has its own `<ActionScreenShell>` (header + interactive area + Done/Back footer): Box Breathing (4-4-4-4 × 5 cycles, animated breathing circle), Cold Water (3-step instructional), Physical Burst (tap-counter to 20 with milestone copy), 5-4-3-2-1 Grounding (tap-anywhere-on-active-card, auto-advance per sense, completion banner with 1.4s auto-route), HALT Check (4 toggles → priority-ordered recommendation), Leave the Room (60s reorient with pulsing dot), Phone Away (15-min soft timer), Urge Journal (3-field form persisted to `mc.urge_journal.v1`), Future-Self Letter (first-time guided write → display + Edit), Play the Tape (5-scene auto-advancing visualization with per-scene pacing 8/8/7/9/6s + tap-to-skip + discoverability hint)
+- **Reflect stage** — three terminal options (passed / still here / talk it through); only `passed` and `escalated` log entries (`still_here` is mid-session feedback, doesn't inflate counter); "passed" → sparkle celebration overlay, +1 to Urges Surfed counter
+- **AI Coach modal** ([`webapp/components/urgeHelp/CoachModal.tsx`](webapp/components/urgeHelp/CoachModal.tsx)) — slide-up sheet over Help, dismissible without losing stage state; reuses the dedicated Coach view's chat history (continuous conversation across surfaces); seeded with `currentUrgeContext: { stage, feeling, intensity, actionAttempted, elapsedSec }` so Claude's first reply is targeted
+- **Urges Surfed Dashboard tile** — third tile sibling of Streak + Check-in (rose-tinted on mobile single-row, full-purple desktop card); decorative wave SVG matches Streak chart stroke weight
+- **localStorage persistence** ([`webapp/src/lib/urgeLog.ts`](webapp/src/lib/urgeLog.ts)) — versioned keys `mc.urge_log.v1` (urge sessions), `mc.urge_journal.v1` (structured trigger/intensity/note), `mc.future_self_letter.v1` (3-field letter); all reads/writes wrapped in `try/catch` with `logger.warn` on failure (Supabase migration deferred to follow-up)
+- **Urge data registry** ([`webapp/data/urgeData.ts`](webapp/data/urgeData.ts)) — pure data module with `FEELINGS` (7 feelings + context lines), `URGE_ACTIONS` (10 actions + `recommendedFor: FeelingId[]` mapping), `URGE_CATEGORY_META` (tints/labels per category)
+- **`UrgeAction`, `UrgeLogEntry`, `UrgeContextSeed`, `Feeling`, `UrgeOutcome`** types added to [`webapp/types.ts`](webapp/types.ts)
+- **Screen-reader stage announcer** — `<StageProgress>` emits `aria-live="polite"` "Stage X of N: name" so SR users get clear orientation
+
+### Changed (Issue #34)
+- **`AICoach` props extended** with optional `currentUrgeContext?: UrgeContextSeed | null` and `compact?: boolean`; when seed present, system context prepends an "ACTIVE URGE SESSION" block so Claude responds with awareness of the live state (`compact` strips the edge-to-edge header for in-modal rendering)
+- **Dashboard `Urge Help` banner** — re-tinted rose (was purple) to telegraph "panic button" without drowning the dashboard's purple palette
+- **`UrgeHelpProps`** — dropped dead `onChangeView` prop; component now receives `chatHistory` + `setChatHistory` + `checkInHistory` from `App.tsx` to pipe Coach state through to the modal
+
+### Fixed (Issue #34)
+- **Stale 60s timer + 4 generic techniques** replaced by evidence-based architecture (per Marlatt's urge surfing model)
+- **Stale closure in Grounding auto-advance** — original prototype read closure-captured `checks` value inside `setTimeout`, blocking next-sense unlock; rewritten to branch on the freshly-computed `next[i]` and call `setActiveIdx(i + 1)` directly
+- **`setState`-inside-`setState` anti-pattern in Box Breathing** — split into two `useEffect`s (one ticks `secondsLeft`, one advances phase/cycle on `secondsLeft === 0`) so React 18 StrictMode no longer double-invokes phase increments
+- **Race condition in Locate sheet** — picking a different feeling during the 240ms close animation no longer clobbers the new selection (exit timer cancelled on fresh pick)
+- **Magic-number padding** in Locate grid — `pb-72` replaced with live `ResizeObserver`-driven measurement so localized copy never clips the last card
+
 - **Anthropic Claude integration** — AI Coach and Daily Insight now use Claude Haiku 4.5 (`claude-haiku-4-5`) via two new Vercel serverless functions: `webapp/api/coach.js` (multi-turn chat) and `webapp/api/daily-insight.js` (single-shot)
 - **Multi-turn coach memory** — Coach now receives the last 10 chat messages as `messages[]`, so responses build on prior turns instead of treating each message as one-shot
 - **Supabase JWT auth on AI endpoints** — both endpoints require `Authorization: Bearer <access_token>`; server verifies via `supabase.auth.getUser(token)` and returns 401 on missing/invalid tokens
