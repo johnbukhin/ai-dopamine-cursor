@@ -321,7 +321,11 @@ export default function App() {
         )}
 
         {currentView === View.URGE_HELP && (
-          <UrgeHelp onChangeView={setCurrentView} />
+          <UrgeHelp
+            checkInHistory={checkIns}
+            chatHistory={chatHistory}
+            setChatHistory={setChatHistory}
+          />
         )}
 
         {currentView === View.PLAN_21 && (

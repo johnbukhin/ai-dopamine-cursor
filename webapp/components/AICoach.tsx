@@ -1,16 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Send, User as UserIcon, Loader2 } from 'lucide-react';
 import { getCoachResponse } from '../services/claudeService';
-import { CheckIn, ChatMessage } from '../types';
+import { CheckIn, ChatMessage, UrgeContextSeed } from '../types';
+import { URGE_ACTION_BY_ID } from '../data/urgeData';
 import { supabase } from '../src/lib/supabase';
 
 interface AICoachProps {
     checkInHistory: CheckIn[];
     messages: ChatMessage[];
     setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+    /** When present, the Coach is being invoked from inside the Help flow.
+     *  We augment the system context with the live urge state so Claude's
+     *  first response is targeted instead of generic. */
+    currentUrgeContext?: UrgeContextSeed | null;
+    /** When true, render in compact "embedded" mode (no edge-to-edge header
+     *  image, less vertical chrome). Used by the Help-tab CoachModal. */
+    compact?: boolean;
 }
 
-export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setMessages }) => {
+/** Format the urge context seed into a compact block the Claude system
+ *  prompt can read. Returns an empty string when there's nothing to add,
+ *  so the existing recentHistory flow is unaffected for non-urge sessions. */
+function formatUrgeContext(seed: UrgeContextSeed | null | undefined): string {
+    if (!seed) return '';
+    const action = seed.actionAttempted ? URGE_ACTION_BY_ID[seed.actionAttempted]?.title : null;
+    const lines = [
+        'ACTIVE URGE SESSION (user opened the Help tab and is currently mid-flow):',
+        `- Stage: ${seed.stage}`,
+        seed.feeling ? `- Named feeling: ${seed.feeling}` : '- Named feeling: (none yet)',
+        seed.intensity != null ? `- Self-reported intensity: ${seed.intensity}/10` : null,
+        action ? `- Most recent action they tried: ${action}` : null,
+        `- Time on Help tab so far: ${seed.elapsedSec}s`,
+        'Respond using the Urge structure from the system prompt. Reference what they\'ve already done — do not suggest the same action again.',
+    ].filter(Boolean);
+    return lines.join('\n');
+}
+
+export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setMessages, currentUrgeContext, compact = false }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -32,10 +58,16 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     setIsLoading(true);
 
     // Build context summary from check-in history (last 5 entries) — passed as
-    // system-prompt context, separate from chat history.
-    const recentHistory = checkInHistory.slice(-5).map(c =>
+    // system-prompt context, separate from chat history. When the Coach is
+    // invoked from a live urge session, prepend the urge seed so Claude's
+    // first reply is grounded in the actual moment.
+    const checkInBlock = checkInHistory.slice(-5).map(c =>
         `Date: ${c.date.toDateString()}, Status: ${c.status}, Emotions: ${c.emotions.join(',')}`
     ).join('; ');
+    const urgeBlock = formatUrgeContext(currentUrgeContext);
+    const recentHistory = urgeBlock
+        ? `${urgeBlock}\n\nRECENT CHECK-INS:\n${checkInBlock}`
+        : checkInBlock;
 
     // Pass the last 10 chat messages so Claude has multi-turn memory.
     // Drop index 0 (hardcoded welcome message — never sent to the model).
@@ -86,17 +118,20 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
 
   return (
     <div className="flex flex-col h-full bg-purple-50">
-      <div className="flex-1 overflow-y-auto pb-28 md:pb-4" ref={scrollRef}>
-        {/* Edge-to-Edge Header Image */}
-        <div className="w-full h-48 md:h-56 relative mb-6 overflow-hidden">
-          <img src="/illustrations/coach.png" alt="AI Coach" className="w-full h-full object-cover scale-[1.4] origin-center" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
-          <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-purple-900 mt-1">Your AI Coach</h2>
+      <div className={`flex-1 overflow-y-auto ${compact ? 'pb-4' : 'pb-28 md:pb-4'}`} ref={scrollRef}>
+        {/* Edge-to-Edge Header Image — hidden in compact (modal) mode where
+            the host already provides its own chrome. */}
+        {!compact && (
+          <div className="w-full h-48 md:h-56 relative mb-6 overflow-hidden">
+            <img src="/illustrations/coach.png" alt="AI Coach" className="w-full h-full object-cover scale-[1.4] origin-center" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
+            <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-purple-900 mt-1">Your AI Coach</h2>
+            </div>
           </div>
-        </div>
-        
-        <div className="px-4 space-y-4 max-w-4xl mx-auto">
+        )}
+
+        <div className={`px-4 space-y-4 max-w-4xl mx-auto ${compact ? 'pt-2' : ''}`}>
           {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
