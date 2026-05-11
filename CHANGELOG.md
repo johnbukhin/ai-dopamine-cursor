@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #31)
+- **Anthropic Claude integration** — AI Coach and Daily Insight now use Claude Haiku 4.5 (`claude-haiku-4-5`) via two new Vercel serverless functions: `webapp/api/coach.js` (multi-turn chat) and `webapp/api/daily-insight.js` (single-shot)
+- **Multi-turn coach memory** — Coach now receives the last 10 chat messages as `messages[]`, so responses build on prior turns instead of treating each message as one-shot
+- **Supabase JWT auth on AI endpoints** — both endpoints require `Authorization: Bearer <access_token>`; server verifies via `supabase.auth.getUser(token)` and returns 401 on missing/invalid tokens
+- **Shared serverless helpers** (`webapp/api/_lib/`) — `cors.js` (regex allowlist for prod + Vercel previews + localhost:3000), `auth.js` (Supabase JWT verifier), `anthropic.js` (Anthropic client + retry helper + text extractor)
+- **Server-side retry** — exponential backoff for 429 / 5xx responses (2 retries with jitter), mirroring previous Gemini retry behavior
+
+### Changed (Issue #31)
+- **`webapp/services/geminiService.ts` → `webapp/services/claudeService.ts`** — rewrites SDK calls as `fetch('/api/coach' | '/api/daily-insight')` wrappers; public signatures unchanged except `getCoachResponse` accepts an optional `history: ChatMessage[]` argument
+- **`webapp/prompts/aiCoach.ts`** — `buildCoachSystemPrompt(context)` now returns just the system instructions (was `buildCoachSystemPrompt(message, context)` with user message inlined); chat history is passed separately
+- **`webapp/prompts/dailyInsight.ts`** — split into `buildDailyInsightSystem()` and `buildDailyInsightUserMessage(checkIn)` to fit Anthropic's `system` + `messages[]` API shape
+- **`webapp/.env.local.example`** — replaces `VITE_GEMINI_API_KEY` block with `ANTHROPIC_API_KEY` block; documents that the key is server-side only (no `VITE_` prefix)
+- **`webapp/package.json`** — `@google/genai` removed, `@anthropic-ai/sdk` added
+
+### Removed (Issue #31)
+- `@google/genai` dependency, `GoogleGenAI` SDK code, `VITE_GEMINI_API_KEY` references
+
 ### Added (Issue #27)
 - **Checkout prefetch** — `prefetchCheckout()` fires `/api/create-checkout` in the background the moment the paywall renders; `stripe.elements({ clientSecret })` pre-initialized as soon as the PI resolves, giving Stripe a head-start loading payment form assets before the user reaches checkout
 - **Tier-change re-prefetch** — clicking a different pricing plan aborts the in-flight prefetch and starts a fresh one immediately via `AbortController`; `initStripe()` awaits the prefetch promise (instant if already resolved) then falls back to a fresh fetch with zero regression risk

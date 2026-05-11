@@ -11,9 +11,20 @@ export interface PlanDay {
 }
 
 export const planData: PlanDay[] = [
-  { 
-    day: 1, 
-    title: 'Clean Slate', 
+  {
+    day: 0,
+    title: 'Introduction',
+    subtitle: 'Welcome to your 28-day journey.',
+    description: 'Take a moment to set your intention for the next 28 days. Read through the next few days to see how the program is structured — each day has a morning practice, a single insight, and an evening practice. There are no tasks today. Just orient yourself, and start Day 1 when you’re ready.',
+    whatToExpectToday: [
+      'Browse the days ahead and notice the rhythm of the plan.',
+      'Set a quiet, honest intention for why you’re doing this.',
+      'No pressure to begin today — Day 1 is your real starting line.',
+    ],
+  },
+  {
+    day: 1,
+    title: 'Clean Slate',
     subtitle: 'Lock down access and commit fully',
     whatToExpectToday: ['You may feel a surge of motivation, but don’t rely on that feeling alone.', 'Later, urges can appear simply because your brain expects the old routine.', 'Mild irritability or restlessness is normal and temporary.'],
     morningProtocol: [

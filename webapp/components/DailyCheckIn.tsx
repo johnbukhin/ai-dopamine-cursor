@@ -6,7 +6,7 @@ import {
   FLOW_A_HELPED_OPTIONS, EMOTIONS_POSITIVE, EMOTIONS_NEGATIVE,
   TRIGGERS, TIME_OF_DAY, SLIP_REACTIONS, SLIP_LEARNINGS
 } from '../constants';
-import { generateDailyInsight } from '../services/geminiService';
+import { generateDailyInsight } from '../services/claudeService';
 import { Check, X, CheckCircle, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
 
 interface DailyCheckInProps {
