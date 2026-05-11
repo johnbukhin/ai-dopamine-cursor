@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover required so env(safe-area-inset-*) returns
+         non-zero values on iOS notch/home-indicator devices (used by
+         LessonBottomSheet's bottom padding). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Mind Compass</title>
 
     <!-- PWA: Web App Manifest -->
