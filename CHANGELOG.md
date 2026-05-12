@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Day 0 welcome session)
+- **Day 0 welcome lesson** — 9-section motivational session (5 min): "You're already different" hook, outcome promise (focus/confidence/sleep/intimacy/time), 3-pillar science explainer (environment design, urge surfing, identity shift), James Clear quote, social proof milestones (Day 7/14/28), pro tip on consistency, 4-option personalisation question, 28-day roadmap summary, completion screen
+- **Auto-open on Day 0** — lesson player opens immediately when user views Day 0; no task list shown (welcome-only layout)
+
 ### Added (Issue #37)
 - **Interactive lesson player** — full-screen overlay (`LessonPlayer.tsx`) replaces the static "Tip of the Day" callout; walks users through all lesson sections step-by-step (7 types: intro, content, question, quote, proTip, summary, complete)
 - **Floating glass CTA** — Continue/Complete button always visible in a frosted footer (`backdrop-blur-2xl`, `backdrop-saturate-150`, 80% white) so content scrolling never hides the next action
