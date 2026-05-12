@@ -33,3 +33,11 @@ Perform comprehensive code review. Be thorough but concise.
 - **HIGH** - Bugs, performance issues, bad UX
 - **MEDIUM** - Code quality, maintainability
 - **LOW** - Style, minor improvements
+
+## After Review
+
+Once the summary is posted, ask:
+
+> "Would you like to create a PR for these changes?"
+
+If yes, run `/create-pr`.

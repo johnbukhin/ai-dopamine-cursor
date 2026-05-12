@@ -50,4 +50,29 @@ curl -s -X POST "https://api.github.com/repos/$REPO/pulls" \
   -d '{"title":"feat: <issue title> (#N)","body":"<body>","head":"<branch>","base":"main"}'
 ```
 
-Return the PR URL. Remind: "After it's merged, run `/document` to update the CHANGELOG."
+Capture the PR number from the response (`number` field) and return the PR URL.
+
+## Step 6 — Offer to merge
+
+Ask: "PR is live at <url>. Merge it now?"
+
+If yes:
+
+```bash
+curl -s -X PUT "https://api.github.com/repos/$REPO/pulls/<PR_NUMBER>/merge" \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  -d '{"merge_method":"squash"}'
+```
+
+Check the response `merged` field is `true`. If merge fails (conflicts or checks), report the error and stop — do not proceed.
+
+If merged successfully:
+
+```bash
+git checkout main && git pull origin main
+```
+
+Confirm: "Merged and pulled to local main. Run `/document` to update the CHANGELOG and close issue #N."
+
+If user says no to merging, just say: "Ready when you are — run `/document` after you merge."

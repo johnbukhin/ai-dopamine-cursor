@@ -107,5 +107,5 @@ If any critical check fails, diagnose and fix before involving the user.
 1. `/create-issue` — capture issue in GitHub (if it doesn't exist yet)
 2. `/explore <issue-number>` — syncs remote, shows what other devs shipped, creates branch, maps codebase
 3. `/create-plan` → `/execute` → `/review`
-4. `/create-pr` — push branch, open PR, link issue
-5. `/document` — CHANGELOG update + close issue (after PR merges)
+4. `/create-pr` — push branch, open PR, offer to merge + pull main
+5. `/document` — CHANGELOG update + close issue (run after main is updated)

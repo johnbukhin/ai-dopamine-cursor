@@ -45,14 +45,9 @@ export interface PlanLessonContentProps {
 }
 
 /**
- * Renders the full content of a single lesson day: header, Morning Protocol,
- * Tip of the Day, Evening Protocol, Daily Check-In trigger. Falls back to a
- * description/task layout for unstructured days.
- *
- * Extracted verbatim from the legacy Plan28 `DayDetails` inner component so the
- * new LessonBottomSheet can render the same UI without depending on the old
- * carousel file. Behavior is unchanged — accordions, task toggles, tip-read
- * state, and check-in trigger all match the previous implementation.
+ * Renders the full content of a single lesson day: lesson card (opens LessonPlayer
+ * overlay), Morning Protocol accordion, Evening Protocol accordion, Daily Check-In
+ * trigger. Falls back to a description/task layout for unstructured days.
  */
 export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   day,
@@ -65,15 +60,16 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  // Lesson for this day — looked up once by day number.
-  const lesson = lessonsData.find(l => l.day === day.day) ?? null;
+  // Lesson for this day — day 1-28 use the `day` field; day 0 (welcome) uses
+  // lessonNumber because Lesson 0 has no `day` field in lessonsData.
+  const lesson = lessonsData.find(l => (l.day ?? l.lessonNumber) === day.day) ?? null;
   const isLessonCompleted = (completedTasks[day.day] ?? new Set()).has('lesson');
 
   // Reset accordion + player state when the sheet opens on a different day.
   useEffect(() => {
     setOpenAccordion(null);
     setIsPlayerOpen(false);
-  }, [day]);
+  }, [day.day]);
 
   const checkedTasks: Set<string> = completedTasks[day.day] ?? new Set<string>();
 
@@ -210,24 +206,6 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
           {day.subtitle && <p className="text-gray-500 mt-2">{day.subtitle}</p>}
         </header>
 
-        {day.morningProtocol && (
-          <AccordionCard
-            title="Morning Protocol"
-            subtitle="Start strong. Set the tone."
-            checkmarkColor={morningCompletionColors.color}
-            checkmarkFill={morningCompletionColors.fill}
-            isOpen={openAccordion === 'morning'}
-            onToggle={() => handleAccordionToggle('morning')}
-            iconIndex={1}
-          >
-            <div className="space-y-1 border-t border-stone-100 pt-4 mt-2">
-              {day.morningProtocol.map((item, index) => (
-                <ChecklistItem key={`m-${index}`} item={item} prefix={`m-${index}`} />
-              ))}
-            </div>
-          </AccordionCard>
-        )}
-
         {/* Lesson card — replaces the static Tip of the Day callout.
             Tapping "Start Lesson" opens the full-screen LessonPlayer overlay.
             Once completed, shows a "Review Lesson" state instead. */}
@@ -288,6 +266,24 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
             onComplete={() => onTaskToggle(day.day, 'lesson')}
             onClose={() => setIsPlayerOpen(false)}
           />
+        )}
+
+        {day.morningProtocol && (
+          <AccordionCard
+            title="Morning Protocol"
+            subtitle="Start strong. Set the tone."
+            checkmarkColor={morningCompletionColors.color}
+            checkmarkFill={morningCompletionColors.fill}
+            isOpen={openAccordion === 'morning'}
+            onToggle={() => handleAccordionToggle('morning')}
+            iconIndex={1}
+          >
+            <div className="space-y-1 border-t border-stone-100 pt-4 mt-2">
+              {day.morningProtocol.map((item, index) => (
+                <ChecklistItem key={`m-${index}`} item={item} prefix={`m-${index}`} />
+              ))}
+            </div>
+          </AccordionCard>
         )}
 
         {day.eveningProtocol && (
