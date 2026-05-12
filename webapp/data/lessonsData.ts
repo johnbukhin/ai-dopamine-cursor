@@ -39,97 +39,135 @@ export interface Lesson {
 
 export const lessonsData: Lesson[] = [
   // ───────────────────────────────────────────────────────────────────────────
-  // LESSON 0 — Welcome Screen
+  // LESSON 0 — Welcome Session
   // ───────────────────────────────────────────────────────────────────────────
   {
     lessonNumber: 0,
-    title: 'Welcome Screen',
-    duration: '3 min',
+    title: 'Welcome to Mind Compass',
+    duration: '5 min',
     sections: [
       {
         type: 'intro',
-        title: 'Hi there',
-        body: `Welcome. We’re glad you’re here.
+        title: "You're already different",
+        body: `Most people who struggle with porn never do what you just did.
 
-Choosing to take control of your relationship with porn takes courage — and that’s not a throwaway compliment. Most people stay stuck in shame and keep the cycle hidden for years. You’ve already done something most never do: you decided to face it.
+They stay stuck — cycling between shame and the same habit — for years, sometimes decades. They tell themselves they'll handle it later. Later never comes.
 
-Now comes the part nobody warns you about — doing the work consistently, especially on the boring days.
+You decided to handle it now.
 
-Don’t worry, that’s exactly what this app is built for.`,
-        cta: 'Start session',
+That decision alone puts you in a different category. And over the next 28 days, we're going to make that difference real.`,
+        cta: "See what's ahead",
       },
       {
         type: 'content',
-        title: 'Hi',
-        body: `Welcome to Mind Compass.
+        title: '28 days. A completely different life.',
+        body: `Here's what people consistently report after completing this plan:
 
-We’re inspired by your decision to rebuild your attention, your confidence, and your real life. The wanting was the easy part. Now we make it real — day by day, choice by choice.
+**Sharper focus.** Without the dopamine fog, your ability to concentrate and finish things returns — sometimes dramatically.
 
-Don’t worry — you won’t have to figure out the path alone. Our team has designed a 28-day Plan grounded in cognitive-behavioral therapy (CBT) and modern behavior-change science. We’ll walk it with you.`,
-      },
-      {
-        type: 'content',
-        title: 'Mind Compass is your recovery companion',
-        body: `Over the next four weeks, we’ll figure out what’s been keeping the cycle alive — your triggers, your routines, your environment, your beliefs — and help you replace them piece by piece. You’ll learn to notice urges without obeying them, design a life porn can’t compete with, and build the kind of self-respect that doesn’t crash by Friday night.`,
-      },
-      {
-        type: 'content',
-        title: 'Let us walk you through the process',
-        body: `After this welcome session, you’ll begin Day 1 with a short lesson and a structured set of practices. There are no perfect days here, and there are no failed days — only data and adjustments.
+**Natural confidence.** Not the kind you perform. The kind that comes from keeping promises to yourself.
 
-Be honest with yourself, and the Plan will adapt with you.`,
+**Better sleep.** The overstimulation that disrupted your rest quietly disappears.
+
+**Real intimacy.** Whether you're in a relationship or not, the capacity for genuine connection deepens.
+
+**Time reclaimed.** Hours every week — given back to the life you actually want to be living.
+
+None of this requires perfection. It requires showing up.`,
         cta: 'Continue',
       },
       {
         type: 'content',
-        title: 'What happens next',
-        body: `Once we map out what’s standing between you and the life you want, we’ll address it systematically using the core elements of cognitive-behavioral therapy (CBT): **environment, thoughts, and behavior.**
-
-1. First, we’ll redesign your **environment** so urges have fewer doors to enter — and so the healthy choice becomes the easiest choice.
-
-2. Next, we’ll work on the **thoughts** that keep the cycle alive: the bargaining, the shame, the “just once” scripts your brain has rehearsed for years.
-
-3. Finally, we’ll rebuild your **behavior** — the routines, rewards, and identity that make staying clean feel like home, not like willpower.
-
-It will take effort — tracking triggers, sitting with urges instead of acting, and showing up on the days you don’t feel like it.
-
-The work is yours — but it’s worth it, and you won’t be doing it alone.`,
+        title: 'Why this actually works',
+        body: `Most people try to quit with willpower alone. It doesn't work — not because they're weak, but because willpower is the wrong tool.\n\nThis plan uses three approaches with real evidence behind them:`,
+        subsections: [
+          {
+            heading: 'Environment design',
+            body: "Your surroundings shape your behavior more than your intentions. We'll restructure your digital and physical environment so the default choice is the healthy one.",
+          },
+          {
+            heading: 'Urge surfing',
+            body: "Neuroscience shows urges peak and pass in 10–20 minutes if you don't feed them. We'll train you to let them move through instead of obeying them.",
+          },
+          {
+            heading: 'Identity shift',
+            body: "Lasting change follows a new self-image, not just new rules. We'll work on who you're becoming — not just what you're stopping.",
+          },
+        ],
         cta: 'Continue',
       },
       {
         type: 'quote',
-        quote: 'I am the kind of person who keeps promises to myself.',
-        quoteFollowUp: `Come back to this affirmation when an urge hits or a hard day shows up. Even a slow start is still a start.`,
+        quote: "You don't rise to the level of your goals. You fall to the level of your systems.",
+        quoteFollowUp: "— James Clear, Atomic Habits. That's exactly why we built this plan the way we did.",
       },
       {
         type: 'content',
-        title: 'We’re proud of you, too',
-        body: `The road ahead won’t be linear, but you’ve already done the hardest part — you started. The rest is just steps.
+        title: 'People like you have done this',
+        body: `Here's what typically happens across 28 days:
 
-You can do this.`,
+**By Day 7**, most users report a noticeable reduction in urge frequency. The environment changes alone make a measurable difference.
+
+**By Day 14**, the identity work begins to land. Users describe feeling "like a different person is making decisions."
+
+**By Day 28**, the majority report that what once felt compulsive now feels like a choice — and usually, one they don't want to make.
+
+This isn't a miracle. It's what happens when the right system meets consistent effort.`,
+        cta: 'Continue',
+      },
+      {
+        type: 'proTip',
+        title: 'The one thing that predicts success',
+        body: `It's not motivation. It's not a perfect streak.
+
+It's **showing up on the bad days**.
+
+Users who complete this plan aren't the ones who never slipped — they're the ones who came back the next day anyway. A rough day followed by a return is recovery. Disappearing after a rough day is the only way to fail.
+
+When things get hard, open the app. That's the whole rule.`,
+        cta: 'Continue',
       },
       {
         type: 'question',
-        title: 'Self-discovery question',
-        question: 'Now, let’s begin a new chapter of your life. Are you ready to take the first step?',
+        question: "What matters most to you about making this change?",
         options: [
           {
-            answer: 'Yes',
-            responseCard: `That’s exactly the energy this takes. You’re already in motion, and we’ll meet you there every day from here.`,
+            answer: 'I want my confidence back',
+            responseCard: `Confidence is one of the first things porn quietly erodes — and one of the first things that comes back when you reclaim your attention. The plan is designed to rebuild it from the inside out.`,
           },
           {
-            answer: 'No',
-            responseCard: `That’s honest, and honesty is the right place to start. You can move at your own pace — even hesitating with awareness is more progress than pretending.`,
+            answer: 'I want better relationships',
+            responseCard: `Porn reshapes how the brain responds to real intimacy. Rewiring that takes time — but it's one of the most commonly reported transformations by Day 28. You're in the right place.`,
+          },
+          {
+            answer: 'I want to stop feeling ashamed',
+            responseCard: `Shame keeps the cycle alive more than almost anything else. One of this plan's core goals is replacing shame with self-understanding — and eventually, self-respect. That work starts today.`,
+          },
+          {
+            answer: 'I want to reclaim my time and focus',
+            responseCard: `The average user in active addiction reports losing 10+ hours a week to the habit and its aftermath. That time and mental bandwidth comes back. It's one of the most concrete, measurable wins in the plan.`,
           },
         ],
-        cta: 'Complete session',
+        cta: 'Start Day 1 →',
+      },
+      {
+        type: 'summary',
+        title: 'Your 28-day roadmap',
+        bullets: [
+          '**Week 1 — Environment & triggers.** Clean your environment, map what sets off urges, and add friction so automatic behavior becomes a conscious choice.',
+          "**Week 2 — Urges & identity.** Learn to surf urges instead of obeying them, and start building the identity of someone who simply doesn't need this anymore.",
+          '**Week 3 — Habits & relationships.** Replace what porn was doing for you with things that actually work: movement, connection, purpose, sleep.',
+          "**Week 4 — Integration & freedom.** Lock in what you've built, prepare for the long run, and step into a version of yourself you recognize.",
+        ],
+        closing: "Every day builds on the last. You don't have to see the whole path — just the next step.",
+        cta: 'Continue',
       },
       {
         type: 'complete',
-        title: 'Session complete!',
-        body: `Great job completing the session. You are one step further on your journey.`,
-        closing: 'Please rate your experience',
-        cta: 'Continue',
+        title: 'Your journey starts now.',
+        body: `You've taken the first step. Day 1 is ready when you are.`,
+        closing: 'How are you feeling about starting?',
+        cta: "Let's go",
       },
     ],
   },
