@@ -1,5 +1,7 @@
 # Update Documentation Task
 
+> Run this **after the PR is merged** to main. If the PR is still open, finish that first.
+
 You are updating documentation after code changes.
 
 ## 1. Identify Changes

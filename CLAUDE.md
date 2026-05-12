@@ -95,3 +95,17 @@ If any critical check fails, diagnose and fix before involving the user.
 - Token stored in `~/.bashrc` as `GITHUB_TOKEN`
 - Get repo info: `git remote -v`
 - Create issues via: `curl -X POST https://api.github.com/repos/{owner}/{repo}/issues`
+
+### Branching Convention
+
+- **Never commit to `main` directly** — always use `feat/issue-{N}-{slug}` branches (e.g. `feat/issue-35-payment-retry`)
+- `/explore <issue-number>` handles syncing origin and creating the branch automatically
+- One branch per issue; delete after PR merges
+
+### Full Dev Workflow (multi-developer)
+
+1. `/create-issue` — capture issue in GitHub (if it doesn't exist yet)
+2. `/explore <issue-number>` — syncs remote, shows what other devs shipped, creates branch, maps codebase
+3. `/create-plan` → `/execute` → `/review`
+4. `/create-pr` — push branch, open PR, link issue
+5. `/document` — CHANGELOG update + close issue (after PR merges)
