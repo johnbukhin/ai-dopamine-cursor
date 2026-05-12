@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PlanDay } from '../data/planData';
-import { Check, Award, CheckCircle, Info } from 'lucide-react';
+import { Check, Award, CheckCircle, Info, BookOpen, CheckCircle2 } from 'lucide-react';
+import { lessonsData } from '../data/lessonsData';
+import { LessonPlayer } from './LessonPlayer';
 
 /**
  * Interpolates the AccordionCard's checkmark color from stone-300 (incomplete)
@@ -61,18 +63,21 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   onOpenCheckIn,
 }) => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
-  const [isTipRead, setIsTipRead] = useState(false);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  // Reset accordion + tip-read state if the user opens the sheet on a different day.
+  // Lesson for this day — looked up once by day number.
+  const lesson = lessonsData.find(l => l.day === day.day) ?? null;
+  const isLessonCompleted = (completedTasks[day.day] ?? new Set()).has('lesson');
+
+  // Reset accordion + player state when the sheet opens on a different day.
   useEffect(() => {
     setOpenAccordion(null);
-    setIsTipRead(false);
+    setIsPlayerOpen(false);
   }, [day]);
 
   const checkedTasks: Set<string> = completedTasks[day.day] ?? new Set<string>();
 
   const handleAccordionToggle = (accordionId: string) => {
-    if (accordionId === 'tip') setIsTipRead(true);
     setOpenAccordion(prev => (prev === accordionId ? null : accordionId));
   };
 
@@ -97,7 +102,7 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   const handleOpenCheckIn = () => {
     const isForCurrentPlanDay = day.day === currentPlanDay;
     onOpenCheckIn({
-      tasksCompleted: isMorningComplete && isEveningComplete && isForCurrentPlanDay,
+      tasksCompleted: isMorningComplete && isEveningComplete && isLessonCompleted && isForCurrentPlanDay,
     });
   };
 
@@ -223,24 +228,66 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
           </AccordionCard>
         )}
 
-        {day.tipOfTheDay && (
-          <AccordionCard
-            title="Tip of the Day"
-            subtitle="One idea. One shift."
-            isComplete={isTipRead}
-            isOpen={openAccordion === 'tip'}
-            onToggle={() => handleAccordionToggle('tip')}
-            iconIndex={2}
-          >
-            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-sm text-yellow-800 mt-2">
-              {typeof day.tipOfTheDay === 'string' ? day.tipOfTheDay : (
-                <div className="space-y-2">
-                  <p><span className="font-bold text-yellow-900">Typical Mistake:</span> {day.tipOfTheDay.mistake}</p>
-                  <p><span className="font-bold text-yellow-900">Best Practice:</span> {day.tipOfTheDay.practice}</p>
-                </div>
-              )}
+        {/* Lesson card — replaces the static Tip of the Day callout.
+            Tapping "Start Lesson" opens the full-screen LessonPlayer overlay.
+            Once completed, shows a "Review Lesson" state instead. */}
+        {lesson && (
+          <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden relative">
+            <div className="absolute right-0 top-0 w-32 h-32 opacity-10 pointer-events-none translate-x-8 -translate-y-8">
+              <img
+                src="/illustrations/day-bg-2.png"
+                alt=""
+                className="w-full h-full object-cover rounded-full mix-blend-multiply"
+              />
             </div>
-          </AccordionCard>
+            <div className="p-5 relative z-10">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <BookOpen size={15} className="text-purple-500 flex-shrink-0" />
+                    <span className="text-xs font-bold text-purple-500 uppercase tracking-wider">
+                      Daily Lesson
+                    </span>
+                    {isLessonCompleted && (
+                      <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
+                        · Completed
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-purple-900 truncate">{lesson.title}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">{lesson.duration} read</p>
+                </div>
+                <CheckCircle2
+                  size={28}
+                  className={`flex-shrink-0 mt-0.5 transition-colors ${
+                    isLessonCompleted ? 'text-emerald-500' : 'text-gray-200'
+                  }`}
+                  style={{ fill: isLessonCompleted ? 'rgb(240, 253, 244)' : 'white' }}
+                />
+              </div>
+              <button
+                onClick={() => setIsPlayerOpen(true)}
+                className={`mt-4 w-full py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                  isLessonCompleted
+                    ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                {isLessonCompleted ? 'Review Lesson' : 'Start Lesson'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Full-screen lesson player — rendered inside the sheet's stacking context
+            so it covers the entire screen above the sheet (z-[60]). */}
+        {isPlayerOpen && lesson && (
+          <LessonPlayer
+            lesson={lesson}
+            isCompleted={isLessonCompleted}
+            onComplete={() => onTaskToggle(day.day, 'lesson')}
+            onClose={() => setIsPlayerOpen(false)}
+          />
         )}
 
         {day.eveningProtocol && (

@@ -1,5 +1,38 @@
 # Initial Exploration Stage
 
+## Session Start
+
+Before exploring, sync with remote and confirm you're on a feature branch.
+
+### Sync
+```bash
+git fetch origin
+git log main..origin/main --oneline --no-merges
+```
+If origin/main is ahead of local main, summarize what other developers shipped — group by area (webapp/, funnel/, scripts/) using commit messages and file paths. Then pull:
+```bash
+git checkout main && git pull origin main
+```
+If already up to date, say so and continue.
+
+### Branch setup
+```bash
+git branch --show-current
+```
+- If already on a `feat/issue-*` branch: confirm and proceed to exploration below.
+- If on `main`: look for an issue number in `$ARGUMENTS` or ask "What issue are you working on?" Then fetch the issue title from GitHub, create the branch, and check it out:
+```bash
+source ~/.bashrc
+REPO=$(git remote get-url origin | sed 's/.*github.com\///;s/\.git//')
+TITLE=$(curl -s "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER" \
+  -H "Authorization: Bearer $GITHUB_TOKEN" | python3 -c "import sys,json; print(json.load(sys.stdin)['title'])")
+# Convert title to slug: lowercase, spaces→hyphens, first 4 words only
+git checkout -b feat/issue-$ISSUE_NUMBER-<slug>
+```
+Confirm: "On `feat/issue-N-slug`. main is synced. Proceeding with exploration..."
+
+---
+
 Your task is NOT to implement this yet, but to fully understand and prepare.
 
 Your responsibilities:
