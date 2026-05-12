@@ -65,10 +65,10 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   const lesson = lessonsData.find(l => (l.day ?? l.lessonNumber) === day.day) ?? null;
   const isLessonCompleted = (completedTasks[day.day] ?? new Set()).has('lesson');
 
-  // Reset accordion + player state when the sheet opens on a different day.
+  // Reset state on day change; auto-open player for Day 0 (welcome session, no task list).
   useEffect(() => {
     setOpenAccordion(null);
-    setIsPlayerOpen(false);
+    setIsPlayerOpen(day.day === 0);
   }, [day.day]);
 
   const checkedTasks: Set<string> = completedTasks[day.day] ?? new Set<string>();
@@ -181,6 +181,64 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
       </div>
     );
   };
+
+  // Day 0 — welcome session only; player auto-opens via useEffect, no task list.
+  if (day.day === 0) {
+    return (
+      <div className="space-y-4 animate-in fade-in duration-300">
+        <header className="mb-6">
+          <span className="text-sm font-bold text-purple-500 uppercase tracking-wider">Welcome</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-purple-900 mt-1">{day.title}</h2>
+          {day.subtitle && <p className="text-gray-500 mt-2">{day.subtitle}</p>}
+        </header>
+
+        {lesson && (
+          <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden relative">
+            <div className="absolute right-0 top-0 w-32 h-32 opacity-10 pointer-events-none translate-x-8 -translate-y-8">
+              <img src="/illustrations/day-bg-2.png" alt="" className="w-full h-full object-cover rounded-full mix-blend-multiply" />
+            </div>
+            <div className="p-5 relative z-10">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <BookOpen size={15} className="text-purple-500 flex-shrink-0" />
+                    <span className="text-xs font-bold text-purple-500 uppercase tracking-wider">Welcome Session</span>
+                    {isLessonCompleted && (
+                      <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">· Completed</span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-purple-900 truncate">{lesson.title}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">{lesson.duration} read</p>
+                </div>
+                <CheckCircle2
+                  size={28}
+                  className={`flex-shrink-0 mt-0.5 transition-colors ${isLessonCompleted ? 'text-emerald-500' : 'text-gray-200'}`}
+                  style={{ fill: isLessonCompleted ? 'rgb(240, 253, 244)' : 'white' }}
+                />
+              </div>
+              <button
+                onClick={() => setIsPlayerOpen(true)}
+                className={`mt-4 w-full py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                  isLessonCompleted ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                {isLessonCompleted ? 'Replay Session' : 'Start Session'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isPlayerOpen && lesson && (
+          <LessonPlayer
+            lesson={lesson}
+            isCompleted={isLessonCompleted}
+            onComplete={() => onTaskToggle(day.day, 'lesson')}
+            onClose={() => setIsPlayerOpen(false)}
+          />
+        )}
+      </div>
+    );
+  }
 
   // Structured day (has morning + evening protocol).
   if (day.morningProtocol && day.eveningProtocol) {
