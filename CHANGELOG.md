@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #37)
+- **Interactive lesson player** — full-screen overlay (`LessonPlayer.tsx`) replaces the static "Tip of the Day" callout; walks users through all lesson sections step-by-step (7 types: intro, content, question, quote, proTip, summary, complete)
+- **Floating glass CTA** — Continue/Complete button always visible in a frosted footer (`backdrop-blur-2xl`, `backdrop-saturate-150`, 80% white) so content scrolling never hides the next action
+- **Question gate** — Continue button disabled until an answer is selected; re-enables on tap; state resets cleanly between question sections via `key={sectionIndex}` remount
+- **Lesson completion persisted** — completion writes task key `'lesson'` to `plan_progress` via existing `onTaskToggle`; zero schema changes; survives page reload and re-login
+- **Completed state + replay** — if lesson already done, player opens to a completion screen with "Replay lesson" option; progress bar shows 100%
+- **Lesson card in day sheet** — shows title, duration, Start/Review button; completed checkmark via `CheckCircle2`; lesson always rendered first in the day sheet (above Morning Protocol)
+- **Day 0 welcome lesson** — lookup handles `lessonNumber: 0` (no `day` field) via `(l.day ?? l.lessonNumber) === day.day`
+
+### Changed (Issue #37)
+- **Day sheet order** — lesson card now first, followed by Morning Protocol, Evening Protocol, Daily Check-In
+- **Check-in completion signal** — `tasksCompleted` now requires `isLessonCompleted && isMorningComplete && isEveningComplete` for the current day
+- **Tip of the Day removed** — `tipOfTheDay` amber callout and `isTipRead` state replaced by the lesson card
+
 ### Added (Issue #34)
 - **Help tab redesigned as 4-stage urge journey** — `Pause → Locate → Act → Reflect` orchestrated by [`webapp/components/UrgeHelp.tsx`](webapp/components/UrgeHelp.tsx); state machine + per-stage components in `webapp/components/urgeHelp/`
 - **Pause stage** — fixed 3-min countdown ring (was 60s), reframe copy "3 minutes is all your brain needs to weaken the urge", skip-ahead button preserved
