@@ -1634,18 +1634,19 @@ const Components = {
 
     /**
      * Render pricing tiers container (paywall).
-     * Overrides the hardcoded EUR prices from screens.json with the user's
-     * detected currency values from Currency.PRICES before rendering each card.
+     * For non-EUR locales, overrides the hardcoded EUR prices from screens.json
+     * with the user's detected currency values. For EUR, passes tier data through
+     * unchanged so the original screens.json prices are displayed as designed.
      * @param {Array<Object>} tiers - Array of pricing tier objects
      * @param {string} selectedTierId - Currently selected tier ID
      * @returns {string} HTML string
      */
     pricingTiers(tiers, selectedTierId) {
-        const currencyCode  = Currency.detect();
-        const currencyPrices = Currency.PRICES[currencyCode] || Currency.PRICES.eur;
+        const currencyCode   = Currency.detect();
+        const currencyPrices = currencyCode !== 'eur' ? (Currency.PRICES[currencyCode] || null) : null;
 
         const cardsHtml = tiers.map(tier => {
-            const cp = currencyPrices[tier.id];
+            const cp = currencyPrices?.[tier.id];
             const enrichedTier = cp ? {
                 ...tier,
                 originalPrice:   cp.original,
@@ -3398,16 +3399,17 @@ const Screens = {
         const safeId = Security.escapeHtml(screenData.id);
 
         // Resolve selected tier to display the order summary
-        const tierId         = State.data.selectedTier || '1_month';
-        const paywall        = Router.getScreen('paywall');
-        const tier           = paywall?.pricingTiers?.find(t => t.id === tierId);
-        const currencyCode   = Currency.detect();
-        const currencyPrices = Currency.PRICES[currencyCode]?.[tierId] || null;
+        const tierId       = State.data.selectedTier || '1_month';
+        const paywall      = Router.getScreen('paywall');
+        const tier         = paywall?.pricingTiers?.find(t => t.id === tierId);
+        const currencyCode = Currency.detect();
+        // Only override prices for non-EUR locales; EUR falls back to screens.json values
+        const cp           = currencyCode !== 'eur' ? (Currency.PRICES[currencyCode]?.[tierId] || null) : null;
 
         // Display labels — prefer currency-detected prices over hardcoded JSON values
         const tierName    = Security.escapeHtml(tier?.name || 'Personalized Plan');
-        const origPrice   = Security.escapeHtml(currencyPrices?.original || tier?.originalPrice || tier?.price || '');
-        const introPrice  = Security.escapeHtml(currencyPrices?.discounted || tier?.discountedPrice || tier?.price || '');
+        const origPrice   = Security.escapeHtml(cp?.original || tier?.originalPrice || tier?.price || '');
+        const introPrice  = Security.escapeHtml(cp?.discounted || tier?.discountedPrice || tier?.price || '');
         const savingsText = Security.escapeHtml(tier?.savings || '');
 
         // Promo code (cosmetic display only — discount is applied server-side)
