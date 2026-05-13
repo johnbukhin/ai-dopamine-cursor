@@ -3674,7 +3674,7 @@ const Screens = {
         const introPrice   = Security.escapeHtml(up.intro);
         const regularPrice = Security.escapeHtml(up.regular);
 
-        const assetBase = '../assets/upsell';
+        const assetBase = 'assets/upsell';
 
         return `
             <div class="screen upsell-screen" data-screen="${safeId}">
@@ -3829,7 +3829,6 @@ const Screens = {
                     <button id="upsell-upgrade-btn" class="cta-button upsell__upgrade-btn" data-screen="${safeId}">
                         Confirm Payment
                     </button>
-                    <p class="upsell__sticky-sub">First month ${introPrice} · then ${regularPrice}</p>
                     <button id="upsell-skip-btn" class="upsell__skip-btn">
                         No thanks, continue without AI features
                     </button>
