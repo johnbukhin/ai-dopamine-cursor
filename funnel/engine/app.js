@@ -77,29 +77,29 @@ const Currency = {
     // Amounts match the Stripe price currency_options set in create-checkout.js.
     PRICES: {
         usd: {
-            '7_day':   { original: '$20/wk',  discounted: '$5',  perDay: '$0.71/day', regularAfter: '$20/wk after first week' },
-            '1_month': { original: '$35/mo',  discounted: '$10', perDay: '$0.33/day', regularAfter: '$35/mo after first month' },
-            '3_month': { original: '$60/3mo', discounted: '$20', perDay: '$0.22/day', regularAfter: '$60/3 mo after first 3 months' },
+            '7_day':   { original: '$20',   discounted: '$5',    perDay: '$0.71/day', regularAfter: '$20/wk after first week' },
+            '1_month': { original: '$35',   discounted: '$10',   perDay: '$0.33/day', regularAfter: '$35/mo after first month' },
+            '3_month': { original: '$60',   discounted: '$20',   perDay: '$0.22/day', regularAfter: '$60/3 mo after first 3 months' },
         },
         eur: {
-            '7_day':   { original: '€19/wk',  discounted: '€5',  perDay: '€0.71/day', regularAfter: '€19/wk after first week' },
-            '1_month': { original: '€33/mo',  discounted: '€10', perDay: '€0.33/day', regularAfter: '€33/mo after first month' },
-            '3_month': { original: '€57/3mo', discounted: '€19', perDay: '€0.21/day', regularAfter: '€57/3 mo after first 3 months' },
+            '7_day':   { original: '€19',   discounted: '€5',    perDay: '€0.71/day', regularAfter: '€19/wk after first week' },
+            '1_month': { original: '€33',   discounted: '€10',   perDay: '€0.33/day', regularAfter: '€33/mo after first month' },
+            '3_month': { original: '€57',   discounted: '€19',   perDay: '€0.21/day', regularAfter: '€57/3 mo after first 3 months' },
         },
         gbp: {
-            '7_day':   { original: '£16/wk',  discounted: '£4',  perDay: '£0.57/day', regularAfter: '£16/wk after first week' },
-            '1_month': { original: '£28/mo',  discounted: '£8',  perDay: '£0.27/day', regularAfter: '£28/mo after first month' },
-            '3_month': { original: '£48/3mo', discounted: '£16', perDay: '£0.18/day', regularAfter: '£48/3 mo after first 3 months' },
+            '7_day':   { original: '£16',   discounted: '£4',    perDay: '£0.57/day', regularAfter: '£16/wk after first week' },
+            '1_month': { original: '£28',   discounted: '£8',    perDay: '£0.27/day', regularAfter: '£28/mo after first month' },
+            '3_month': { original: '£48',   discounted: '£16',   perDay: '£0.18/day', regularAfter: '£48/3 mo after first 3 months' },
         },
         cad: {
-            '7_day':   { original: 'CA$27/wk',  discounted: 'CA$7',  perDay: 'CA$1.00/day', regularAfter: 'CA$27/wk after first week' },
-            '1_month': { original: 'CA$48/mo',  discounted: 'CA$14', perDay: 'CA$0.47/day', regularAfter: 'CA$48/mo after first month' },
-            '3_month': { original: 'CA$82/3mo', discounted: 'CA$27', perDay: 'CA$0.30/day', regularAfter: 'CA$82/3 mo after first 3 months' },
+            '7_day':   { original: 'CA$27', discounted: 'CA$7',  perDay: 'CA$1.00/day', regularAfter: 'CA$27/wk after first week' },
+            '1_month': { original: 'CA$48', discounted: 'CA$14', perDay: 'CA$0.47/day', regularAfter: 'CA$48/mo after first month' },
+            '3_month': { original: 'CA$82', discounted: 'CA$27', perDay: 'CA$0.30/day', regularAfter: 'CA$82/3 mo after first 3 months' },
         },
         aud: {
-            '7_day':   { original: 'A$31/wk',  discounted: 'A$8',  perDay: 'A$1.14/day', regularAfter: 'A$31/wk after first week' },
-            '1_month': { original: 'A$55/mo',  discounted: 'A$16', perDay: 'A$0.53/day', regularAfter: 'A$55/mo after first month' },
-            '3_month': { original: 'A$94/3mo', discounted: 'A$31', perDay: 'A$0.34/day', regularAfter: 'A$94/3 mo after first 3 months' },
+            '7_day':   { original: 'A$31',  discounted: 'A$8',   perDay: 'A$1.14/day', regularAfter: 'A$31/wk after first week' },
+            '1_month': { original: 'A$55',  discounted: 'A$16',  perDay: 'A$0.53/day', regularAfter: 'A$55/mo after first month' },
+            '3_month': { original: 'A$94',  discounted: 'A$31',  perDay: 'A$0.34/day', regularAfter: 'A$94/3 mo after first 3 months' },
         },
     },
 
@@ -114,12 +114,39 @@ const Currency = {
         aud: { '1_month': { display: 'A$14',  tier: '1_month' }, '3_month': { display: 'A$30',  tier: '3_month' } },
     },
 
-    // Detect currency from browser locale. Cached after first call.
+    // Detect currency from browser signals. Cached after first call.
+    // Timezone is the primary signal — far more reliable than navigator.language
+    // because many European users have their browser set to en-US locale while
+    // physically located in Europe.
     _detected: null,
     detect() {
         if (this._detected) return this._detected;
+
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (tz) {
+                if (/^Europe\//.test(tz)) {
+                    // Europe/London → GBP; all other European zones → EUR
+                    this._detected = tz === 'Europe/London' ? 'gbp' : 'eur';
+                    return this._detected;
+                }
+                if (/^Australia\//.test(tz) || tz === 'Pacific/Auckland') {
+                    this._detected = 'aud';
+                    return this._detected;
+                }
+                // Canadian timezones inside America/
+                if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Regina|Halifax|St_Johns|Moncton|Whitehorse|Yellowknife|Dawson)/.test(tz)) {
+                    this._detected = 'cad';
+                    return this._detected;
+                }
+                // All other timezones (America/*, Asia/*, Africa/*, etc.) → USD
+                this._detected = 'usd';
+                return this._detected;
+            }
+        } catch (e) { /* Intl not supported — fall through to locale */ }
+
+        // Locale-based fallback for environments where Intl.DateTimeFormat is unavailable
         const locale = navigator.language || 'en-US';
-        // Try exact match first (e.g. 'en-US'), then language-only fallback (e.g. 'de' → EUR)
         const code = this._LOCALE_MAP[locale]
             || this._LOCALE_MAP[locale.toLowerCase()]
             || (['en'].includes(locale.split('-')[0]) ? 'usd' : 'eur');
@@ -1592,10 +1619,11 @@ const Components = {
         const safeId              = Security.escapeHtml(tier.id);
         const selectedClass       = isSelected ? 'pricing-card--selected' : '';
 
-        // Per-day price badge: parse "$5.71/day" → currency symbol + integer + decimal
-        const currencyMatch = (tier.pricePerDay || '').match(/[€$£¥]/);
-        const currency = currencyMatch ? currencyMatch[0] : '$';
-        const perDayRaw = (tier.pricePerDay || '').replace(/[€$£¥]/g, '').replace('/day', '').trim();
+        // Per-day price badge: parse "CA$1.00/day" → prefix ("CA$") + integer + decimal
+        const perDayStr = tier.pricePerDay || '';
+        const prefixMatch = perDayStr.match(/^(CA\$|A\$|[€$£¥])/);
+        const currency = prefixMatch ? prefixMatch[1] : '$';
+        const perDayRaw = perDayStr.slice(currency.length).replace('/day', '').trim();
         const [perDayInt, perDayDec] = perDayRaw.split('.');
 
         return `
