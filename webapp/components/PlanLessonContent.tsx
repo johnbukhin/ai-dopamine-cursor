@@ -1,35 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PlanDay } from '../data/planData';
-import { Check, Award, CheckCircle, Info, BookOpen, CheckCircle2 } from 'lucide-react';
+import { Check, Award, CheckCircle, Info, BookOpen, CheckCircle2, Sun } from 'lucide-react';
 import { lessonsData } from '../data/lessonsData';
 import { LessonPlayer } from './LessonPlayer';
 
-/**
- * Interpolates the AccordionCard's checkmark color from stone-300 (incomplete)
- * toward emerald-500 (complete) as the user ticks off tasks. Identical to the
- * function previously inlined at the top of Plan28.tsx — kept here so the new
- * sheet does not need to depend on the legacy carousel file.
- */
-const calculateCheckmarkColor = (completed: number, total: number) => {
-  if (total === 0 || completed === 0) {
-    return { color: 'rgb(214, 211, 209)', fill: 'rgb(255, 255, 255)' }; // stone-300, white
-  }
-
-  const progress = completed / total;
-  const grayColor = [214, 211, 209];
-  const greenColor = [16, 185, 129];
-  const grayFill = [255, 255, 255];
-  const greenFill = [240, 253, 244];
-
-  const r = Math.round(grayColor[0] + (greenColor[0] - grayColor[0]) * progress);
-  const g = Math.round(grayColor[1] + (greenColor[1] - grayColor[1]) * progress);
-  const b = Math.round(grayColor[2] + (greenColor[2] - grayColor[2]) * progress);
-  const fillR = Math.round(grayFill[0] + (greenFill[0] - grayFill[0]) * progress);
-  const fillG = Math.round(grayFill[1] + (greenFill[1] - grayFill[1]) * progress);
-  const fillB = Math.round(grayFill[2] + (greenFill[2] - grayFill[2]) * progress);
-
-  return { color: `rgb(${r}, ${g}, ${b})`, fill: `rgb(${fillR}, ${fillG}, ${fillB})` };
-};
 
 const FormattedContent = ({ text }: { text: string }) => (
   <p className="leading-relaxed mb-4">{text}</p>
@@ -37,11 +11,13 @@ const FormattedContent = ({ text }: { text: string }) => (
 
 export interface PlanLessonContentProps {
   day: PlanDay;
-  currentPlanDay: number;
+  activePlanDay: number;
   hasCheckedInToday: boolean;
   completedTasks: Record<number, Set<string>>;
   onTaskToggle: (dayNumber: number, taskKey: string) => void;
   onOpenCheckIn: (payload: { tasksCompleted: boolean }) => void;
+  /** When true, shows an informational banner nudging the user to return tomorrow. */
+  showComeTomorrow?: boolean;
 }
 
 /**
@@ -51,11 +27,12 @@ export interface PlanLessonContentProps {
  */
 export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   day,
-  currentPlanDay,
+  activePlanDay,
   hasCheckedInToday,
   completedTasks,
   onTaskToggle,
   onOpenCheckIn,
+  showComeTomorrow,
 }) => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
@@ -79,26 +56,20 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
 
   const handleCheck = (task: string) => onTaskToggle(day.day, task);
 
-  const morningTasksCompleted = day.morningProtocol?.reduce(
-    (acc, _item, index) => (checkedTasks.has(`m-${index}`) ? acc + 1 : acc),
-    0,
-  ) ?? 0;
   const totalMorningTasks = day.morningProtocol?.length ?? 0;
-  const morningCompletionColors = calculateCheckmarkColor(morningTasksCompleted, totalMorningTasks);
-  const isMorningComplete = totalMorningTasks > 0 && morningTasksCompleted === totalMorningTasks;
+  const isMorningComplete =
+    totalMorningTasks > 0 &&
+    day.morningProtocol!.every((_, i) => checkedTasks.has(`m-${i}`));
 
-  const eveningTasksCompleted = day.eveningProtocol?.reduce(
-    (acc, _item, index) => (checkedTasks.has(`e-${index}`) ? acc + 1 : acc),
-    0,
-  ) ?? 0;
   const totalEveningTasks = day.eveningProtocol?.length ?? 0;
-  const eveningCompletionColors = calculateCheckmarkColor(eveningTasksCompleted, totalEveningTasks);
-  const isEveningComplete = totalEveningTasks > 0 && eveningTasksCompleted === totalEveningTasks;
+  const isEveningComplete =
+    totalEveningTasks > 0 &&
+    day.eveningProtocol!.every((_, i) => checkedTasks.has(`e-${i}`));
 
   const handleOpenCheckIn = () => {
-    const isForCurrentPlanDay = day.day === currentPlanDay;
     onOpenCheckIn({
-      tasksCompleted: isMorningComplete && isEveningComplete && isLessonCompleted && isForCurrentPlanDay,
+      tasksCompleted:
+        isMorningComplete && isEveningComplete && isLessonCompleted && day.day === activePlanDay,
     });
   };
 
@@ -130,8 +101,6 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
     title,
     subtitle,
     isComplete,
-    checkmarkColor,
-    checkmarkFill,
     isOpen,
     onToggle,
     children,
@@ -140,15 +109,13 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
     title: string;
     subtitle: string;
     isComplete?: boolean;
-    checkmarkColor?: string;
-    checkmarkFill?: string;
     isOpen: boolean;
     onToggle: () => void;
     children: React.ReactNode;
     iconIndex?: number;
   }) => {
-    const color = checkmarkColor || (isComplete ? 'rgb(16, 185, 129)' : 'rgb(214, 211, 209)');
-    const fill = checkmarkFill || (isComplete ? 'rgb(240, 253, 244)' : 'rgb(255, 255, 255)');
+    const color = isComplete ? 'rgb(16, 185, 129)' : 'rgb(214, 211, 209)';
+    const fill = isComplete ? 'rgb(240, 253, 244)' : 'rgb(255, 255, 255)';
 
     return (
       <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden transition-all relative">
@@ -244,6 +211,19 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
   if (day.morningProtocol && day.eveningProtocol) {
     return (
       <div className="space-y-4 animate-in fade-in duration-300">
+        {/* Informational banner: user already completed today's activities and is
+            peeking at the next day's content. Not blocking — just a nudge. */}
+        {showComeTomorrow && day.day === activePlanDay && (
+          <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+            <Sun size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">You're ahead!</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                You've completed today's activities. Come back tomorrow for Day {activePlanDay + 1}.
+              </p>
+            </div>
+          </div>
+        )}
         <header className="mb-6">
           <span className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Day {day.day}</span>
           <div className="flex items-center gap-2 mt-1">
@@ -330,8 +310,7 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
           <AccordionCard
             title="Morning Protocol"
             subtitle="Start strong. Set the tone."
-            checkmarkColor={morningCompletionColors.color}
-            checkmarkFill={morningCompletionColors.fill}
+            isComplete={isMorningComplete}
             isOpen={openAccordion === 'morning'}
             onToggle={() => handleAccordionToggle('morning')}
             iconIndex={1}
@@ -348,8 +327,7 @@ export const PlanLessonContent: React.FC<PlanLessonContentProps> = ({
           <AccordionCard
             title="Evening Protocol"
             subtitle="Slow down. Lock it in."
-            checkmarkColor={eveningCompletionColors.color}
-            checkmarkFill={eveningCompletionColors.fill}
+            isComplete={isEveningComplete}
             isOpen={openAccordion === 'evening'}
             onToggle={() => handleAccordionToggle('evening')}
             iconIndex={3}

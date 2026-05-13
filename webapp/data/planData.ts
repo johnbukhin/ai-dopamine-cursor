@@ -1,3 +1,9 @@
+/** One row from the `day_completions` table, keyed by day number. */
+export type DayCompletion = {
+  lesson_completed_at: string;
+  all_tasks_completed_at: string | null;
+};
+
 export interface PlanDay {
   day: number;
   title: string;
@@ -8,6 +14,23 @@ export interface PlanDay {
   tipOfTheDay?: string | { mistake: string; practice: string; };
   eveningProtocol?: { main: string; details: string }[];
   whatToExpectToday?: string[];
+}
+
+/**
+ * Returns the full set of task keys required to mark a day as fully complete.
+ * Keys match the format used in plan_progress (and completedPlanTasks state):
+ *   morning items → 'm-0', 'm-1', ...
+ *   evening items → 'e-0', 'e-1', ...
+ *   lesson        → 'lesson' (only when the day has a lesson in lessonsData)
+ *
+ * Day 0 has no morning/evening protocol so only 'lesson' is required (if present).
+ */
+export function getRequiredTaskKeys(day: PlanDay, hasLesson: boolean): string[] {
+  const keys: string[] = [];
+  day.morningProtocol?.forEach((_, i) => keys.push(`m-${i}`));
+  day.eveningProtocol?.forEach((_, i) => keys.push(`e-${i}`));
+  if (hasLesson) keys.push('lesson');
+  return keys;
 }
 
 export const planData: PlanDay[] = [
