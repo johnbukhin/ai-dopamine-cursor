@@ -50,6 +50,90 @@ const Security = {
 };
 
 // ========================================
+// Currency Detection
+// ========================================
+const Currency = {
+    // Maps navigator.language locale prefixes → ISO 4217 currency code.
+    // EUR is the fallback for all unrecognised locales.
+    _LOCALE_MAP: {
+        'en-US': 'usd', 'en-us': 'usd',
+        'en-CA': 'cad', 'en-ca': 'cad',
+        'en-AU': 'aud', 'en-au': 'aud',
+        'en-NZ': 'aud', 'en-nz': 'aud', // NZ uses AUD as closest match
+        'en-GB': 'gbp', 'en-gb': 'gbp',
+        'en-IE': 'eur', 'en-ie': 'eur',
+    },
+
+    // Canonical display info for each supported currency code.
+    _META: {
+        usd: { symbol: '$',    name: 'USD' },
+        eur: { symbol: '€',    name: 'EUR' },
+        gbp: { symbol: '£',    name: 'GBP' },
+        cad: { symbol: 'CA$',  name: 'CAD' },
+        aud: { symbol: 'A$',   name: 'AUD' },
+    },
+
+    // Per-currency pricing for each plan tier on the paywall.
+    // Amounts match the Stripe price currency_options set in create-checkout.js.
+    PRICES: {
+        usd: {
+            '7_day':   { original: '$20/wk',  discounted: '$5',  perDay: '$0.71/day', regularAfter: '$20/wk after first week' },
+            '1_month': { original: '$35/mo',  discounted: '$10', perDay: '$0.33/day', regularAfter: '$35/mo after first month' },
+            '3_month': { original: '$60/3mo', discounted: '$20', perDay: '$0.22/day', regularAfter: '$60/3 mo after first 3 months' },
+        },
+        eur: {
+            '7_day':   { original: '€19/wk',  discounted: '€5',  perDay: '€0.71/day', regularAfter: '€19/wk after first week' },
+            '1_month': { original: '€33/mo',  discounted: '€10', perDay: '€0.33/day', regularAfter: '€33/mo after first month' },
+            '3_month': { original: '€57/3mo', discounted: '€19', perDay: '€0.21/day', regularAfter: '€57/3 mo after first 3 months' },
+        },
+        gbp: {
+            '7_day':   { original: '£16/wk',  discounted: '£4',  perDay: '£0.57/day', regularAfter: '£16/wk after first week' },
+            '1_month': { original: '£28/mo',  discounted: '£8',  perDay: '£0.27/day', regularAfter: '£28/mo after first month' },
+            '3_month': { original: '£48/3mo', discounted: '£16', perDay: '£0.18/day', regularAfter: '£48/3 mo after first 3 months' },
+        },
+        cad: {
+            '7_day':   { original: 'CA$27/wk',  discounted: 'CA$7',  perDay: 'CA$1.00/day', regularAfter: 'CA$27/wk after first week' },
+            '1_month': { original: 'CA$48/mo',  discounted: 'CA$14', perDay: 'CA$0.47/day', regularAfter: 'CA$48/mo after first month' },
+            '3_month': { original: 'CA$82/3mo', discounted: 'CA$27', perDay: 'CA$0.30/day', regularAfter: 'CA$82/3 mo after first 3 months' },
+        },
+        aud: {
+            '7_day':   { original: 'A$31/wk',  discounted: 'A$8',  perDay: 'A$1.14/day', regularAfter: 'A$31/wk after first week' },
+            '1_month': { original: 'A$55/mo',  discounted: 'A$16', perDay: 'A$0.53/day', regularAfter: 'A$55/mo after first month' },
+            '3_month': { original: 'A$94/3mo', discounted: 'A$31', perDay: 'A$0.34/day', regularAfter: 'A$94/3 mo after first 3 months' },
+        },
+    },
+
+    // Upsell bundle pricing per currency.
+    // priceId values are the actual Stripe test price IDs — safe to expose in
+    // frontend code since they are not secret (like the publishable key).
+    UPSELL_PRICES: {
+        usd: { '1_month': { display: '$9',    tier: '1_month' }, '3_month': { display: '$19',   tier: '3_month' } },
+        eur: { '1_month': { display: '€9',    tier: '1_month' }, '3_month': { display: '€18',   tier: '3_month' } },
+        gbp: { '1_month': { display: '£8',    tier: '1_month' }, '3_month': { display: '£16',   tier: '3_month' } },
+        cad: { '1_month': { display: 'CA$12', tier: '1_month' }, '3_month': { display: 'CA$26', tier: '3_month' } },
+        aud: { '1_month': { display: 'A$14',  tier: '1_month' }, '3_month': { display: 'A$30',  tier: '3_month' } },
+    },
+
+    // Detect currency from browser locale. Cached after first call.
+    _detected: null,
+    detect() {
+        if (this._detected) return this._detected;
+        const locale = navigator.language || 'en-US';
+        // Try exact match first (e.g. 'en-US'), then language-only fallback (e.g. 'de' → EUR)
+        const code = this._LOCALE_MAP[locale]
+            || this._LOCALE_MAP[locale.toLowerCase()]
+            || (['en'].includes(locale.split('-')[0]) ? 'usd' : 'eur');
+        this._detected = code;
+        return code;
+    },
+
+    // Return the symbol for the detected (or given) currency.
+    symbol(code) {
+        return this._META[code || this.detect()]?.symbol || '€';
+    },
+};
+
+// ========================================
 // Scoring Engine — real scoring from likert answers
 // ========================================
 const Scoring = {
@@ -519,9 +603,12 @@ const State = {
         answers: {},
         history: [],      // Navigation history for back button
         startedAt: null,
-        selectedTier: '1_month',  // Phase 3c: Default pricing tier
-        openFaqIndex: null,       // Phase 3c: Currently open FAQ (null = all closed)
-        accountCreated: false     // Whether user account has been created
+        selectedTier: '1_month',    // Default subscription pricing tier
+        openFaqIndex: null,         // Currently open FAQ item (null = all closed)
+        accountCreated: false,      // Whether user account has been created
+        upsellTier: '1_month',      // Selected upsell bundle duration
+        checkoutCurrency: null,     // Currency used at checkout (set after payment succeeds)
+        hasUpsell: false            // Whether user purchased the upsell bundle
     },
 
     /**
@@ -1546,15 +1633,27 @@ const Components = {
     },
 
     /**
-     * Render pricing tiers container (paywall)
+     * Render pricing tiers container (paywall).
+     * Overrides the hardcoded EUR prices from screens.json with the user's
+     * detected currency values from Currency.PRICES before rendering each card.
      * @param {Array<Object>} tiers - Array of pricing tier objects
      * @param {string} selectedTierId - Currently selected tier ID
      * @returns {string} HTML string
      */
     pricingTiers(tiers, selectedTierId) {
-        const cardsHtml = tiers.map(tier => 
-            this.pricingCard(tier, tier.id === selectedTierId)
-        ).join('');
+        const currencyCode  = Currency.detect();
+        const currencyPrices = Currency.PRICES[currencyCode] || Currency.PRICES.eur;
+
+        const cardsHtml = tiers.map(tier => {
+            const cp = currencyPrices[tier.id];
+            const enrichedTier = cp ? {
+                ...tier,
+                originalPrice:   cp.original,
+                discountedPrice: cp.discounted,
+                pricePerDay:     cp.perDay,
+            } : tier;
+            return this.pricingCard(enrichedTier, enrichedTier.id === selectedTierId);
+        }).join('');
 
         return `
             <div class="pricing-tiers">
@@ -3299,14 +3398,16 @@ const Screens = {
         const safeId = Security.escapeHtml(screenData.id);
 
         // Resolve selected tier to display the order summary
-        const tierId = State.data.selectedTier || '1_month';
-        const paywall = Router.getScreen('paywall');
-        const tier = paywall?.pricingTiers?.find(t => t.id === tierId);
+        const tierId         = State.data.selectedTier || '1_month';
+        const paywall        = Router.getScreen('paywall');
+        const tier           = paywall?.pricingTiers?.find(t => t.id === tierId);
+        const currencyCode   = Currency.detect();
+        const currencyPrices = Currency.PRICES[currencyCode]?.[tierId] || null;
 
-        // Display labels — fall back to generic strings if paywall data missing
+        // Display labels — prefer currency-detected prices over hardcoded JSON values
         const tierName    = Security.escapeHtml(tier?.name || 'Personalized Plan');
-        const origPrice   = Security.escapeHtml(tier?.originalPrice || tier?.price || '');
-        const introPrice  = Security.escapeHtml(tier?.discountedPrice || tier?.price || '');
+        const origPrice   = Security.escapeHtml(currencyPrices?.original || tier?.originalPrice || tier?.price || '');
+        const introPrice  = Security.escapeHtml(currencyPrices?.discounted || tier?.discountedPrice || tier?.price || '');
         const savingsText = Security.escapeHtml(tier?.savings || '');
 
         // Promo code (cosmetic display only — discount is applied server-side)
@@ -3496,6 +3597,104 @@ const Screens = {
                     ${screenData.companyInfo ? Components.companyFooter(screenData.companyInfo) : ''}
 
                 </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render post-checkout upsell screen — AI Companion bundle offer.
+     *
+     * Long-scroll layout with sticky bottom CTA. No Payment Element is shown;
+     * the CTA triggers a server-side off-session charge via /api/create-upsell.
+     * If no saved PM exists, or charge fails, the user is silently forwarded to
+     * thank_you (never blocked). A 1-month / 3-month toggle updates the price.
+     *
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    upsell(screenData) {
+        const safeId       = Security.escapeHtml(screenData.id);
+        const currencyCode = Currency.detect();
+        const up           = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
+        const price1m      = up['1_month'].display;
+        const price3m      = up['3_month'].display;
+
+        // Asset paths relative to the screen URL
+        const assetBase = '../assets/upsell';
+
+        return `
+            <div class="screen upsell-screen" data-screen="${safeId}">
+                ${Components.header()}
+
+                <main class="content upsell">
+
+                    <!-- ── Hero ── -->
+                    <div class="upsell__hero">
+                        <img class="upsell__hero-img" src="${assetBase}/hero.png" alt="" loading="lazy">
+                        <div class="upsell__hero-overlay">
+                            <p class="upsell__eyebrow">Special one-time offer</p>
+                            <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
+                            <p class="upsell__subline">Add your personal AI Companion — available only right now, at this price.</p>
+                        </div>
+                    </div>
+
+                    <!-- ── What's included ── -->
+                    <div class="upsell__section">
+                        <h2 class="upsell__section-title">What you get</h2>
+                        <div class="upsell__feature-card">
+                            <img class="upsell__feature-img" src="${assetBase}/coach.png" alt="AI Coach" loading="lazy">
+                            <div class="upsell__feature-body">
+                                <h3 class="upsell__feature-title">🤖 AI Coach</h3>
+                                <p class="upsell__feature-desc">A 24/7 companion that understands your progress, answers your questions, and keeps you accountable on hard days.</p>
+                            </div>
+                        </div>
+                        <div class="upsell__feature-card">
+                            <img class="upsell__feature-img" src="${assetBase}/progress.png" alt="AI Help" loading="lazy">
+                            <div class="upsell__feature-body">
+                                <h3 class="upsell__feature-title">💡 AI Help</h3>
+                                <p class="upsell__feature-desc">Instant personalised guidance at every step of your plan — no waiting, no guessing.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Social proof ── -->
+                    <div class="upsell__section upsell__proof">
+                        <img class="upsell__proof-img" src="${assetBase}/community.png" alt="Community" loading="lazy">
+                        <blockquote class="upsell__quote">
+                            "Having the AI coach available on the tough days made all the difference. I stopped relying on willpower alone."
+                            <cite>— Alex M., completed Day 28</cite>
+                        </blockquote>
+                    </div>
+
+                    <!-- ── Pricing toggle ── -->
+                    <div class="upsell__pricing" id="upsell-pricing">
+                        <h2 class="upsell__section-title">Choose your bundle</h2>
+                        <div class="upsell__toggle-group">
+                            <button class="upsell__toggle upsell__toggle--active" data-upsell-tier="1_month">
+                                <span class="upsell__toggle-label">1 Month</span>
+                                <span class="upsell__toggle-price" id="upsell-price-1m">${Security.escapeHtml(price1m)}</span>
+                            </button>
+                            <button class="upsell__toggle" data-upsell-tier="3_month">
+                                <span class="upsell__toggle-label">3 Months</span>
+                                <span class="upsell__toggle-price" id="upsell-price-3m">${Security.escapeHtml(price3m)}</span>
+                                <span class="upsell__toggle-badge">Best value</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bottom padding so content clears the sticky CTA -->
+                    <div style="height: 110px;"></div>
+                </main>
+
+                <!-- ── Sticky bottom CTA ── -->
+                <div class="upsell__sticky-cta">
+                    <button id="upsell-upgrade-btn" class="cta-button upsell__upgrade-btn" data-screen="${safeId}">
+                        Add AI Companion — <span id="upsell-cta-price">${Security.escapeHtml(price1m)}</span>
+                    </button>
+                    <button id="upsell-skip-btn" class="upsell__skip-btn">
+                        No thanks, continue without AI features
+                    </button>
+                </div>
             </div>
         `;
     },
@@ -4065,6 +4264,20 @@ const Events = {
             return;
         }
 
+        // Upsell toggle (1-month / 3-month)
+        const upsellToggle = e.target.closest('.upsell__toggle');
+        if (upsellToggle) {
+            this.handleUpsellToggle(upsellToggle);
+            return;
+        }
+
+        // Upsell skip button
+        const upsellSkip = e.target.closest('#upsell-skip-btn');
+        if (upsellSkip) {
+            this.handleUpsellSkip();
+            return;
+        }
+
         // FAQ question click (Phase 3c)
         const faqQuestion = e.target.closest('.faq-question');
         if (faqQuestion) {
@@ -4435,6 +4648,12 @@ const Events = {
     handleCtaClick(button) {
         const screenId = button.dataset.screen;
         log.info(`[User Action] CTA clicked on ${screenId}`);
+
+        // Upsell upgrade button — trigger off-session charge then proceed
+        if (button.id === 'upsell-upgrade-btn') {
+            this.handleUpsellUpgrade(button);
+            return;
+        }
 
         // Generic CTA: navigate to next screen for known screen types
         const screenData = Router.getScreen(screenId);
@@ -4816,9 +5035,80 @@ const App = {
      *
      * Called from App.render() on paywall render, and on every tier change.
      */
+
+    // ── Upsell handlers ──────────────────────────────────────────────────────
+
+    handleUpsellToggle(toggleBtn) {
+        const tier = toggleBtn.dataset.upsellTier;
+        if (!tier) return;
+
+        // Update active class on toggle buttons
+        document.querySelectorAll('.upsell__toggle').forEach(btn => {
+            btn.classList.toggle('upsell__toggle--active', btn.dataset.upsellTier === tier);
+        });
+
+        // Update selected tier in state (no full re-render needed)
+        State.set('upsellTier', tier);
+
+        // Update CTA price label
+        const currencyCode   = Currency.detect();
+        const up             = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
+        const priceDisplay   = up[tier]?.display || '';
+        const ctaPriceEl     = document.getElementById('upsell-cta-price');
+        if (ctaPriceEl) ctaPriceEl.textContent = priceDisplay;
+    },
+
+    handleUpsellSkip() {
+        const screen = Router.getScreen(State.data.currentScreen);
+        State.pushHistory(screen?.id || 'upsell');
+        const nextScreen = Router.getNextScreen(screen?.id || 'upsell');
+        if (nextScreen) Router.navigate(nextScreen);
+    },
+
+    async handleUpsellUpgrade(button) {
+        if (button.disabled) return;
+        button.disabled = true;
+        button.classList.add('cta-button--disabled');
+        button.textContent = 'Processing…';
+
+        const email       = State.getAnswer('email_capture') || '';
+        const upsellTier  = State.data.upsellTier || '1_month';
+        const currency    = State.data.checkoutCurrency || Currency.detect();
+
+        if (!email || isDev()) {
+            // Dev mock or missing email — skip straight through
+            log.info('[Upsell] Dev mock or no email — skipping upsell charge');
+            State.set('hasUpsell', true);
+            this.handleUpsellSkip();
+            return;
+        }
+
+        try {
+            const resp = await fetch('../api/create-upsell', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ email, upsellTier, currency }),
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                State.set('hasUpsell', true);
+                log.info('[Upsell] Charge succeeded');
+            } else {
+                log.warn('[Upsell] Charge skipped:', data.reason);
+            }
+        } catch (err) {
+            log.error('[Upsell] Network error:', err.message);
+            // Silently skip — never block the user
+        }
+
+        this.handleUpsellSkip();
+    },
+
     prefetchCheckout() {
-        const tierId = State.data.selectedTier || '1_month';
-        const email  = State.getAnswer('email_capture') || '';
+        const tierId   = State.data.selectedTier || '1_month';
+        const email    = State.getAnswer('email_capture') || '';
+        const currency = Currency.detect();
         if (!email || isDev()) return;
 
         // Cancel any in-flight prefetch for a stale tier
@@ -4831,7 +5121,7 @@ const App = {
             promise: fetch('../api/create-checkout', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ tierId, email }),
+                body:    JSON.stringify({ tierId, email, currency }),
                 signal:  this._prefetchAbort.signal,
             })
             .then(r => r.json())
@@ -4872,8 +5162,9 @@ const App = {
     async initStripe(screenData) {
         if (this._stripeInitializing) return;
         this._stripeInitializing = true;
-        const tierId = State.data.selectedTier || '1_month';
-        const email  = State.getAnswer('email_capture') || '';
+        const tierId   = State.data.selectedTier || '1_month';
+        const email    = State.getAnswer('email_capture') || '';
+        const currency = Currency.detect();
 
         const payBtn  = document.getElementById('checkout-pay-btn');
         const errorEl = document.getElementById('checkout-error');
@@ -4933,7 +5224,7 @@ const App = {
                 const response = await fetch('../api/create-checkout', {
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ tierId, email }),
+                    body:    JSON.stringify({ tierId, email, currency }),
                 });
                 const raw = await response.text();
                 try {
@@ -5014,8 +5305,10 @@ const App = {
                         return;
                     }
 
-                    // Payment succeeded — proceed to thank_you
-                    log.info('[Checkout] Payment confirmed, navigating to thank_you');
+                    // Payment succeeded — store currency so the upsell screen can charge
+                    // in the same currency without re-detecting.
+                    State.set('checkoutCurrency', currency);
+                    log.info('[Checkout] Payment confirmed, navigating to upsell/thank_you');
                     State.pushHistory(screenData.id);
                     const nextScreen = Router.getNextScreen(screenData.id);
                     if (nextScreen) {
@@ -5344,6 +5637,9 @@ const App = {
                 break;
             case 'checkout':
                 html = Screens.checkout(screenData);
+                break;
+            case 'upsell':
+                html = Screens.upsell(screenData);
                 break;
             case 'payment':
                 html = Screens.paywall(screenData);

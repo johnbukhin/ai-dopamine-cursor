@@ -29,6 +29,8 @@ const PRICE_LABEL_MAP = {
     [process.env.STRIPE_PRICE_INTRO_3MONTH]:      '3-Month Plan',
     [process.env.STRIPE_PRICE_REGULAR_MONTHLY]:   'Monthly Plan',
     [process.env.STRIPE_PRICE_REGULAR_QUARTERLY]: 'Quarterly Plan',
+    [process.env.STRIPE_PRICE_UPSELL_1MONTH]:     'AI Companion (1-Month)',
+    [process.env.STRIPE_PRICE_UPSELL_3MONTH]:     'AI Companion (3-Month)',
 };
 
 // Read the raw request body as a Buffer from the Node.js stream.

@@ -5,28 +5,55 @@ import Stripe from 'stripe';
 // Each of the three plans is a 2-phase Subscription Schedule:
 //   Phase 1 — introductory price for exactly 1 billing period
 //   Phase 2 — full recurring price, ongoing
+//
+// All prices have multi-currency support via Stripe currency_options.
+// Display strings are resolved dynamically from CURRENCY_DISPLAY below.
 // ---------------------------------------------------------------------------
 const PLAN_MAP = {
     '7_day': {
-        introPrice:     process.env.STRIPE_PRICE_INTRO_7DAY,
-        regularPrice:   process.env.STRIPE_PRICE_REGULAR_MONTHLY,
-        label:          '7-Day Plan',
-        introDisplay:   '€10.50',
-        regularDisplay: '€49.99/mo after first week',
+        introPrice:   process.env.STRIPE_PRICE_INTRO_7DAY,
+        regularPrice: process.env.STRIPE_PRICE_REGULAR_MONTHLY,
+        label:        '7-Day Plan',
     },
     '1_month': {
-        introPrice:     process.env.STRIPE_PRICE_INTRO_1MONTH,
-        regularPrice:   process.env.STRIPE_PRICE_REGULAR_MONTHLY,
-        label:          '1-Month Plan',
-        introDisplay:   '€19.99',
-        regularDisplay: '€49.99/mo after first month',
+        introPrice:   process.env.STRIPE_PRICE_INTRO_1MONTH,
+        regularPrice: process.env.STRIPE_PRICE_REGULAR_MONTHLY,
+        label:        '1-Month Plan',
     },
     '3_month': {
-        introPrice:     process.env.STRIPE_PRICE_INTRO_3MONTH,
-        regularPrice:   process.env.STRIPE_PRICE_REGULAR_QUARTERLY,
-        label:          '3-Month Plan',
-        introDisplay:   '€34.99',
-        regularDisplay: '€99.99/3 mo after first 3 months',
+        introPrice:   process.env.STRIPE_PRICE_INTRO_3MONTH,
+        regularPrice: process.env.STRIPE_PRICE_REGULAR_QUARTERLY,
+        label:        '3-Month Plan',
+    },
+};
+
+// Per-currency display strings for each plan tier.
+// Keys mirror the currency codes passed by the frontend detectCurrency() helper.
+const CURRENCY_DISPLAY = {
+    usd: {
+        '7_day':   { intro: '$5',  regular: '$20/wk after first week' },
+        '1_month': { intro: '$10', regular: '$35/mo after first month' },
+        '3_month': { intro: '$20', regular: '$60/3 mo after first 3 months' },
+    },
+    eur: {
+        '7_day':   { intro: '€5',  regular: '€19/wk after first week' },
+        '1_month': { intro: '€10', regular: '€33/mo after first month' },
+        '3_month': { intro: '€19', regular: '€57/3 mo after first 3 months' },
+    },
+    gbp: {
+        '7_day':   { intro: '£4',  regular: '£16/wk after first week' },
+        '1_month': { intro: '£8',  regular: '£28/mo after first month' },
+        '3_month': { intro: '£16', regular: '£48/3 mo after first 3 months' },
+    },
+    cad: {
+        '7_day':   { intro: 'CA$7',  regular: 'CA$27/wk after first week' },
+        '1_month': { intro: 'CA$14', regular: 'CA$48/mo after first month' },
+        '3_month': { intro: 'CA$27', regular: 'CA$82/3 mo after first 3 months' },
+    },
+    aud: {
+        '7_day':   { intro: 'A$8',  regular: 'A$31/wk after first week' },
+        '1_month': { intro: 'A$16', regular: 'A$55/mo after first month' },
+        '3_month': { intro: 'A$31', regular: 'A$94/3 mo after first 3 months' },
     },
 };
 
@@ -38,7 +65,7 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { tierId, email } = req.body;
+    const { tierId, email, currency: rawCurrency } = req.body;
     if (!tierId || !email) {
         return res.status(400).json({ error: 'tierId and email are required' });
     }
@@ -51,16 +78,27 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Stripe price IDs not configured' });
     }
 
+    // Normalise currency — fallback to EUR if not in our supported set
+    const SUPPORTED_CURRENCIES = ['usd', 'eur', 'gbp', 'cad', 'aud'];
+    const currency = SUPPORTED_CURRENCIES.includes(rawCurrency?.toLowerCase())
+        ? rawCurrency.toLowerCase()
+        : 'eur';
+
+    // Resolve human-readable display strings for the detected currency
+    const display = CURRENCY_DISPLAY[currency]?.[tierId] || CURRENCY_DISPLAY.eur[tierId];
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
     try {
         // 1. Look up an existing Stripe Customer by email to avoid duplicates;
         //    create a new one only if none exists. This prevents orphaned
         //    customers + invoices when the user navigates back and re-submits.
+        //    Set currency on new customers so all their invoices use the right
+        //    currency_option from the multi-currency price.
         const existing = await stripe.customers.list({ email, limit: 1 });
         const customer = existing.data.length > 0
             ? existing.data[0]
-            : await stripe.customers.create({ email });
+            : await stripe.customers.create({ email, currency });
 
         // 1b. Cancel any open subscription schedules for this customer so that
         //     prefetch calls (which fire on paywall load and on tier change) do not
@@ -142,8 +180,9 @@ export default async function handler(req, res) {
             subscriptionId: subId,
             scheduleId:     schedule.id,
             planLabel:      plan.label,
-            introDisplay:   plan.introDisplay,
-            regularDisplay: plan.regularDisplay,
+            currency,
+            introDisplay:   display.intro,
+            regularDisplay: display.regular,
         });
 
     } catch (error) {

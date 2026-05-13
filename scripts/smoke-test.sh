@@ -77,9 +77,12 @@ echo ""
 echo "── 2. API Endpoints ────────────────────────"
 
 # 2a. create-checkout returns clientSecret for valid input
+# Use a per-run email so accumulated Stripe credits on repeat customers don't
+# zero out the invoice (which results in no PaymentIntent and no clientSecret).
+CHECKOUT_EMAIL="smoke_co_$(date +%s)@smoke-test.com"
 CHECKOUT_RESP=$(curl -s -X POST "$FUNNEL_URL/api/create-checkout" \
   -H "Content-Type: application/json" \
-  -d '{"tierId":"1_month","email":"smoketest@test.com"}')
+  -d "{\"tierId\":\"1_month\",\"email\":\"$CHECKOUT_EMAIL\"}")
 if echo "$CHECKOUT_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'clientSecret' in d" 2>/dev/null; then
   pass "create-checkout returns clientSecret"
 else

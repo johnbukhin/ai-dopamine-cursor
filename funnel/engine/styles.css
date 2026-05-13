@@ -5348,3 +5348,223 @@ body {
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-lg);
 }
+
+/* ========================================
+   Upsell Screen
+   ======================================== */
+.upsell-screen .content.upsell {
+    padding: 0 0 0 0;
+    max-width: 100%;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Hero */
+.upsell__hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 12;
+    overflow: hidden;
+}
+.upsell__hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.upsell__hero-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 32px 24px 28px;
+    background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 70%, transparent 100%);
+    color: #fff;
+}
+.upsell__eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #F97316;
+    margin: 0 0 8px;
+}
+.upsell__headline {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 10px;
+    color: #fff;
+}
+.upsell__subline {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+    color: rgba(255,255,255,0.85);
+}
+
+/* Sections */
+.upsell__section {
+    padding: 28px 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+.upsell__section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 16px;
+}
+
+/* Feature cards */
+.upsell__feature-card {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+.upsell__feature-card:last-child {
+    margin-bottom: 0;
+}
+.upsell__feature-img {
+    width: 88px;
+    height: 88px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.upsell__feature-body {
+    flex: 1;
+    min-width: 0;
+}
+.upsell__feature-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 6px;
+}
+.upsell__feature-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+/* Social proof */
+.upsell__proof {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+}
+.upsell__proof-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.upsell__quote {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+.upsell__quote cite {
+    display: block;
+    margin-top: 10px;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+/* Pricing toggle */
+.upsell__pricing {
+    padding: 28px 20px;
+}
+.upsell__toggle-group {
+    display: flex;
+    gap: 12px;
+}
+.upsell__toggle {
+    flex: 1;
+    border: 2px solid var(--color-border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    background: var(--color-surface);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+.upsell__toggle--active {
+    border-color: #F97316;
+    background: #fff7f0;
+}
+.upsell__toggle-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+.upsell__toggle-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+}
+.upsell__toggle--active .upsell__toggle-price {
+    color: #F97316;
+}
+.upsell__toggle-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #F97316;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* Sticky CTA */
+.upsell__sticky-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 12px 20px max(16px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+}
+.upsell__upgrade-btn {
+    width: 100%;
+    font-size: 16px;
+    font-weight: 700;
+}
+.upsell__skip-btn {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    text-align: center;
+    text-decoration: underline;
+    -webkit-tap-highlight-color: transparent;
+}
