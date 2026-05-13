@@ -5500,8 +5500,9 @@ body {
 .upsell__feature-reveal { margin-top: 32px; }
 .upsell__feature-full-img {
     width: 100%;
-    max-height: 260px;
+    height: 200px;
     object-fit: cover;
+    object-position: center 30%;
     display: block;
 }
 .upsell__feature-content { padding: 20px 20px 0; }
