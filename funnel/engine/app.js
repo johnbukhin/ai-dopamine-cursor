@@ -74,33 +74,51 @@ const Currency = {
     },
 
     // Per-currency pricing for each plan tier on the paywall.
-    // Amounts match the Stripe price currency_options set in create-checkout.js.
+    // All currencies use X.99 psychological pricing at EUR-equivalent scale.
+    // original  = full regular price (struck through)
+    // discounted = intro/promotional price actually charged
+    // perDay    = discounted ÷ plan days
     PRICES: {
         usd: {
-            '7_day':   { original: '$20',   discounted: '$5',    perDay: '$0.71/day', regularAfter: '$20/wk after first week' },
-            '1_month': { original: '$35',   discounted: '$10',   perDay: '$0.33/day', regularAfter: '$35/mo after first month' },
-            '3_month': { original: '$60',   discounted: '$20',   perDay: '$0.22/day', regularAfter: '$60/3 mo after first 3 months' },
+            '7_day':   { original: '$49.99',   discounted: '$9.99',   perDay: '$1.42/day', regularAfter: '$49.99/mo after first week' },
+            '1_month': { original: '$49.99',   discounted: '$19.99',  perDay: '$0.66/day', regularAfter: '$49.99/mo after first month' },
+            '3_month': { original: '$99.99',   discounted: '$34.99',  perDay: '$0.38/day', regularAfter: '$49.99/mo after first 3 months' },
         },
         eur: {
-            '7_day':   { original: '€19',   discounted: '€5',    perDay: '€0.71/day', regularAfter: '€19/wk after first week' },
-            '1_month': { original: '€33',   discounted: '€10',   perDay: '€0.33/day', regularAfter: '€33/mo after first month' },
-            '3_month': { original: '€57',   discounted: '€19',   perDay: '€0.21/day', regularAfter: '€57/3 mo after first 3 months' },
+            '7_day':   { original: '€49.99',   discounted: '€9.99',   perDay: '€1.42/day', regularAfter: '€49.99/mo after first week' },
+            '1_month': { original: '€49.99',   discounted: '€19.99',  perDay: '€0.66/day', regularAfter: '€49.99/mo after first month' },
+            '3_month': { original: '€99.99',   discounted: '€34.99',  perDay: '€0.38/day', regularAfter: '€49.99/mo after first 3 months' },
         },
         gbp: {
-            '7_day':   { original: '£16',   discounted: '£4',    perDay: '£0.57/day', regularAfter: '£16/wk after first week' },
-            '1_month': { original: '£28',   discounted: '£8',    perDay: '£0.27/day', regularAfter: '£28/mo after first month' },
-            '3_month': { original: '£48',   discounted: '£16',   perDay: '£0.18/day', regularAfter: '£48/3 mo after first 3 months' },
+            '7_day':   { original: '£41.99',   discounted: '£8.99',   perDay: '£1.28/day', regularAfter: '£41.99/mo after first week' },
+            '1_month': { original: '£41.99',   discounted: '£16.99',  perDay: '£0.56/day', regularAfter: '£41.99/mo after first month' },
+            '3_month': { original: '£84.99',   discounted: '£29.99',  perDay: '£0.33/day', regularAfter: '£41.99/mo after first 3 months' },
         },
         cad: {
-            '7_day':   { original: 'CA$27', discounted: 'CA$7',  perDay: 'CA$1.00/day', regularAfter: 'CA$27/wk after first week' },
-            '1_month': { original: 'CA$48', discounted: 'CA$14', perDay: 'CA$0.47/day', regularAfter: 'CA$48/mo after first month' },
-            '3_month': { original: 'CA$82', discounted: 'CA$27', perDay: 'CA$0.30/day', regularAfter: 'CA$82/3 mo after first 3 months' },
+            '7_day':   { original: 'CA$67.99', discounted: 'CA$13.99', perDay: 'CA$1.99/day', regularAfter: 'CA$67.99/mo after first week' },
+            '1_month': { original: 'CA$67.99', discounted: 'CA$26.99', perDay: 'CA$0.89/day', regularAfter: 'CA$67.99/mo after first month' },
+            '3_month': { original: 'CA$135.99',discounted: 'CA$46.99', perDay: 'CA$0.52/day', regularAfter: 'CA$67.99/mo after first 3 months' },
         },
         aud: {
-            '7_day':   { original: 'A$31',  discounted: 'A$8',   perDay: 'A$1.14/day', regularAfter: 'A$31/wk after first week' },
-            '1_month': { original: 'A$55',  discounted: 'A$16',  perDay: 'A$0.53/day', regularAfter: 'A$55/mo after first month' },
-            '3_month': { original: 'A$94',  discounted: 'A$31',  perDay: 'A$0.34/day', regularAfter: 'A$94/3 mo after first 3 months' },
+            '7_day':   { original: 'A$76.99',  discounted: 'A$15.99',  perDay: 'A$2.28/day', regularAfter: 'A$76.99/mo after first week' },
+            '1_month': { original: 'A$76.99',  discounted: 'A$30.99',  perDay: 'A$1.03/day', regularAfter: 'A$76.99/mo after first month' },
+            '3_month': { original: 'A$153.99', discounted: 'A$52.99',  perDay: 'A$0.58/day', regularAfter: 'A$76.99/mo after first 3 months' },
         },
+    },
+
+    // Per-currency legal disclaimer shown at the bottom of the paywall.
+    // References the 1-month plan prices (discounted intro + regular monthly).
+    DISCLAIMERS: {
+        usd: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is $19.99, then $49.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        eur: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is €19.99, then €49.99/month (prices incl. VAT). Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        gbp: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is £16.99, then £41.99/month (prices incl. VAT). Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        cad: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is CA$26.99, then CA$67.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        aud: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is A$30.99, then A$76.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+    },
+
+    // Return the disclaimer text for the detected (or given) currency.
+    disclaimer(code) {
+        return this.DISCLAIMERS[code || this.detect()] || this.DISCLAIMERS.eur;
     },
 
     // Upsell bundle pricing per currency.
@@ -121,6 +139,13 @@ const Currency = {
     _detected: null,
     detect() {
         if (this._detected) return this._detected;
+
+        // Dev/QA override: ?currency=eur in the URL forces a specific currency
+        const urlOverride = new URLSearchParams(window.location.search).get('currency');
+        if (urlOverride && this._META[urlOverride.toLowerCase()]) {
+            this._detected = urlOverride.toLowerCase();
+            return this._detected;
+        }
 
         try {
             const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1671,7 +1696,7 @@ const Components = {
      */
     pricingTiers(tiers, selectedTierId) {
         const currencyCode   = Currency.detect();
-        const currencyPrices = currencyCode !== 'eur' ? (Currency.PRICES[currencyCode] || null) : null;
+        const currencyPrices = Currency.PRICES[currencyCode] || null;
 
         const cardsHtml = tiers.map(tier => {
             const cp = currencyPrices?.[tier.id];
@@ -3431,8 +3456,7 @@ const Screens = {
         const paywall      = Router.getScreen('paywall');
         const tier         = paywall?.pricingTiers?.find(t => t.id === tierId);
         const currencyCode = Currency.detect();
-        // Only override prices for non-EUR locales; EUR falls back to screens.json values
-        const cp           = currencyCode !== 'eur' ? (Currency.PRICES[currencyCode]?.[tierId] || null) : null;
+        const cp           = Currency.PRICES[currencyCode]?.[tierId] || null;
 
         // Display labels — prefer currency-detected prices over hardcoded JSON values
         const tierName    = Security.escapeHtml(tier?.name || 'Personalized Plan');
@@ -3562,8 +3586,8 @@ const Screens = {
                         ${Components.ctaButton(ctaText, safeId)}
                     </div>
 
-                    <!-- 8. Legal disclaimer -->
-                    ${screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : ''}
+                    <!-- 8. Legal disclaimer — currency-aware, falls back to screens.json value -->
+                    ${Components.legalDisclaimer(Currency.disclaimer() || screenData.legalDisclaimer || '')}
 
                     <!-- 9. Payment security + icons -->
                     ${screenData.trustElements?.paymentSecurity ?
@@ -3611,7 +3635,7 @@ const Screens = {
                             Components.personalizedHeadline(screenData.headline),
                             Components.promoTicket(promoCode, initialMins),
                             Components.contextTags(mainChallenge, goal),
-                            screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : '',
+                            Components.legalDisclaimer(Currency.disclaimer() || screenData.legalDisclaimer || ''),
                             screenData.trustElements?.paymentSecurity ?
                                 Components.paymentIcons(
                                     screenData.trustElements.paymentSecurity.headline,
