@@ -10,6 +10,8 @@ import { isSameDay, subDays } from 'date-fns';
 import { Plan28 } from './components/Plan28';
 import { Settings } from './components/Settings';
 import { supabase } from './src/lib/supabase';
+import { planData, getRequiredTaskKeys, DayCompletion } from './data/planData';
+import { lessonsData } from './data/lessonsData';
 
 // Hardcoded welcome message — never stored in DB, always prepended at load time.
 const WELCOME_MESSAGE: ChatMessage = {
@@ -36,6 +38,11 @@ export default function App() {
   // Active plan cycle start — used to scope plan_progress queries/writes.
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+
+  // Day-level completion timestamps — loaded from day_completions table.
+  // lesson_completed_at : when the lesson was finished (drives next-day green stone).
+  // all_tasks_completed_at : when lesson + all tasks were done (drives same-day green).
+  const [dayCompletions, setDayCompletions] = useState<Record<number, DayCompletion>>({});
 
   // ── Load all persisted data after authentication ──────────────────────────
   useEffect(() => {
@@ -105,12 +112,19 @@ export default function App() {
 
       setPlanStartedAt(activePlanStartedAt);
 
-      // Fetch plan_progress rows for the active cycle
-      const { data: progressRows } = await supabase!
-        .from('plan_progress')
-        .select('day_number, task_key')
-        .eq('user_id', user.id)
-        .eq('plan_started_at', activePlanStartedAt);
+      // Fetch plan_progress and day_completions in parallel — both depend only on activePlanStartedAt
+      const [{ data: progressRows }, { data: dayCompletionRows }] = await Promise.all([
+        supabase!
+          .from('plan_progress')
+          .select('day_number, task_key')
+          .eq('user_id', user.id)
+          .eq('plan_started_at', activePlanStartedAt),
+        supabase!
+          .from('day_completions')
+          .select('day_number, lesson_completed_at, all_tasks_completed_at')
+          .eq('user_id', user.id)
+          .eq('plan_started_at', activePlanStartedAt),
+      ]);
 
       if (progressRows) {
         const rebuilt: Record<number, Set<string>> = {};
@@ -119,6 +133,17 @@ export default function App() {
           rebuilt[row.day_number].add(row.task_key);
         }
         setCompletedPlanTasks(rebuilt);
+      }
+
+      if (dayCompletionRows) {
+        const rebuilt: Record<number, DayCompletion> = {};
+        for (const row of dayCompletionRows) {
+          rebuilt[row.day_number] = {
+            lesson_completed_at: row.lesson_completed_at,
+            all_tasks_completed_at: row.all_tasks_completed_at ?? null,
+          };
+        }
+        setDayCompletions(rebuilt);
       }
 
       // ── Coach messages ─────────────────────────────────────────────────────
@@ -184,6 +209,7 @@ export default function App() {
     // Reset all in-memory state on logout
     setCheckIns([]);
     setCompletedPlanTasks({});
+    setDayCompletions({});
     setPlanStartedAt(null);
     setChatHistory([WELCOME_MESSAGE]);
     setIsAuthenticated(false);
@@ -242,16 +268,19 @@ export default function App() {
 
     const isCurrentlyChecked = completedPlanTasks[dayNumber]?.has(taskKey) ?? false;
 
+    // Compute the new set of completed tasks for this day BEFORE the state
+    // update so we can use it synchronously in the day_completions logic below.
+    const newDaySet = new Set(completedPlanTasks[dayNumber] ?? []);
+    if (isCurrentlyChecked) {
+      newDaySet.delete(taskKey);
+    } else {
+      newDaySet.add(taskKey);
+    }
+
     // Optimistic UI update first
     setCompletedPlanTasks(prev => {
       const updated = { ...prev };
-      const daySet = new Set(updated[dayNumber] ?? []);
-      if (isCurrentlyChecked) {
-        daySet.delete(taskKey);
-      } else {
-        daySet.add(taskKey);
-      }
-      updated[dayNumber] = daySet;
+      updated[dayNumber] = new Set(newDaySet);
       return updated;
     });
 
@@ -260,7 +289,6 @@ export default function App() {
     if (!user) return;
 
     if (isCurrentlyChecked) {
-      // Remove completion
       await supabase
         .from('plan_progress')
         .delete()
@@ -269,7 +297,7 @@ export default function App() {
         .eq('day_number', dayNumber)
         .eq('task_key', taskKey);
     } else {
-      // Record completion — UNIQUE constraint prevents duplicates
+      // UNIQUE constraint prevents duplicates
       await supabase
         .from('plan_progress')
         .upsert({
@@ -278,6 +306,73 @@ export default function App() {
           day_number: dayNumber,
           task_key: taskKey,
         });
+    }
+
+    // ── day_completions sync ───────────────────────────────────────────────
+    // Determine whether the day is now fully complete (all required tasks done).
+    const dayEntry = planData.find(d => d.day === dayNumber);
+    if (!dayEntry) return;
+
+    const hasLesson = lessonsData.some(l => (l.day ?? l.lessonNumber) === dayNumber);
+    const requiredKeys = getRequiredTaskKeys(dayEntry, hasLesson);
+    const allDone = requiredKeys.length > 0 && requiredKeys.every(k => newDaySet.has(k));
+    const now = new Date().toISOString();
+
+    if (taskKey === 'lesson') {
+      if (!isCurrentlyChecked) {
+        // Optimistic update before DB write so the stone turns green immediately
+        // even if the table doesn't exist yet or the write is slow.
+        setDayCompletions(prev => ({
+          ...prev,
+          [dayNumber]: {
+            lesson_completed_at: now,
+            all_tasks_completed_at: allDone ? now : null,
+          },
+        }));
+        await supabase.from('day_completions').upsert({
+          user_id: user.id,
+          plan_started_at: planStartedAt,
+          day_number: dayNumber,
+          lesson_completed_at: now,
+          all_tasks_completed_at: allDone ? now : null,
+        });
+      } else {
+        // Lesson unchecked — remove optimistically, then delete from DB.
+        setDayCompletions(prev => {
+          const updated = { ...prev };
+          delete updated[dayNumber];
+          return updated;
+        });
+        await supabase
+          .from('day_completions')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('plan_started_at', planStartedAt)
+          .eq('day_number', dayNumber);
+      }
+    } else {
+      // Non-lesson task toggled. Update all_tasks_completed_at only when a
+      // lesson row already exists for this day (lesson is required).
+      const existing = dayCompletions[dayNumber];
+      if (existing) {
+        // Preserve the original timestamp if the day was already fully done;
+        // don't overwrite an earlier completion time.
+        const newAllDoneAt = allDone ? (existing.all_tasks_completed_at ?? now) : null;
+
+        if (newAllDoneAt !== existing.all_tasks_completed_at) {
+          // Optimistic update first, then persist.
+          setDayCompletions(prev => ({
+            ...prev,
+            [dayNumber]: { ...existing, all_tasks_completed_at: newAllDoneAt },
+          }));
+          await supabase
+            .from('day_completions')
+            .update({ all_tasks_completed_at: newAllDoneAt })
+            .eq('user_id', user.id)
+            .eq('plan_started_at', planStartedAt)
+            .eq('day_number', dayNumber);
+        }
+      }
     }
   };
 
@@ -330,11 +425,11 @@ export default function App() {
 
         {currentView === View.PLAN_21 && (
           <Plan28
-            streak={streak}
             onOpenCheckIn={handleOpenCheckIn}
             hasCheckedInToday={hasCheckedInToday}
             completedTasks={completedPlanTasks}
             onTaskToggle={handlePlanTaskToggle}
+            dayCompletions={dayCompletions}
           />
         )}
 

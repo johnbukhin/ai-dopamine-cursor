@@ -39,7 +39,10 @@ type Stone =
 
 interface JourneyPathProps {
   planData: PlanDay[];
-  currentPlanDay: number;
+  /** First day number whose stone should be yellow (active). */
+  activePlanDay: number;
+  /** Set of day numbers whose stone should be green (completed). */
+  completedDays: Set<number>;
   onSelectLesson: (day: PlanDay) => void;
 }
 
@@ -58,7 +61,8 @@ interface JourneyPathProps {
  */
 export const JourneyPath: React.FC<JourneyPathProps> = ({
   planData,
-  currentPlanDay,
+  activePlanDay,
+  completedDays,
   onSelectLesson,
 }) => {
   // Path column width — fixed at mount. Phone rotation is rare; mid-session
@@ -72,6 +76,12 @@ export const JourneyPath: React.FC<JourneyPathProps> = ({
    *  the upper-left, so it reads as a separate "start here" marker rather
    *  than just another step on the path. */
   const { introStone, stones, totalHeight } = useMemo(() => {
+    // Stone state helper — task-based, not date/streak-based.
+    const stoneState = (dayNum: number): LessonState => {
+      if (completedDays.has(dayNum)) return 'completed';
+      if (dayNum === activePlanDay) return 'current';
+      return 'future';
+    };
     const out: Stone[] = [];
     const centerX = containerWidth / 2;
     const amplitude = containerWidth * ZIGZAG_AMPLITUDE_RATIO;
@@ -114,8 +124,7 @@ export const JourneyPath: React.FC<JourneyPathProps> = ({
       y += STEP + LESSON_EXTRA_STEP;
 
       const day = sequencedDays[lessonIdx];
-      const state: LessonState =
-        day.day < currentPlanDay ? 'completed' : day.day === currentPlanDay ? 'current' : 'future';
+      const state: LessonState = stoneState(day.day);
       // Label on the OPPOSITE side of the column from the stone, so it stays
       // inside the column and never crosses the centerline.
       const labelSide: LabelSide = xOffset >= 0 ? 'left' : 'right';
@@ -140,12 +149,7 @@ export const JourneyPath: React.FC<JourneyPathProps> = ({
     // intro stone is well to its left, no visual collision.
     let intro: Stone | null = null;
     if (introDay) {
-      const introState: LessonState =
-        introDay.day < currentPlanDay
-          ? 'completed'
-          : introDay.day === currentPlanDay
-          ? 'current'
-          : 'future';
+      const introState: LessonState = stoneState(introDay.day);
       intro = {
         kind: 'lesson',
         index: -1,
@@ -159,16 +163,17 @@ export const JourneyPath: React.FC<JourneyPathProps> = ({
     }
 
     return { introStone: intro, stones: out, totalHeight: y + 80 };
-  }, [planData, currentPlanDay, containerWidth]);
+  }, [planData, activePlanDay, completedDays, containerWidth]);
 
   /** Ref on the current-day lesson stone — used to scroll into view on mount. */
   const currentStoneRef = useRef<HTMLButtonElement>(null);
 
+  // Re-scroll whenever the active stone changes (covers both initial mount and
+  // the moment a day is completed so the new yellow stone centres on screen).
+  // Plan28 remounts on every tab-open so this also fires on tab re-entry.
   useEffect(() => {
-    // 'auto' (instant) — smooth scroll on mount feels janky and competes with
-    // any concurrent enter animation if the user came from another tab.
     currentStoneRef.current?.scrollIntoView({ behavior: 'auto', block: 'center' });
-  }, []);
+  }, [activePlanDay]);
 
   return (
     <div className="relative bg-purple-100 min-h-full">

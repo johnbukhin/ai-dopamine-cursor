@@ -6,11 +6,13 @@ interface LessonBottomSheetProps {
   day: PlanDay | null;
   isOpen: boolean;
   onClose: () => void;
-  currentPlanDay: number;
+  activePlanDay: number;
   hasCheckedInToday: boolean;
   completedTasks: Record<number, Set<string>>;
   onTaskToggle: (dayNumber: number, taskKey: string) => void;
   onOpenCheckIn: (payload: { tasksCompleted: boolean }) => void;
+  /** When true, PlanLessonContent shows an informational "come back tomorrow" banner. */
+  showComeTomorrow: boolean;
 }
 
 /** Exit animation duration — must match `.animate-sheet-down` in index.css. */
@@ -40,11 +42,12 @@ export const LessonBottomSheet: React.FC<LessonBottomSheetProps> = ({
   day,
   isOpen,
   onClose,
-  currentPlanDay,
+  activePlanDay,
   hasCheckedInToday,
   completedTasks,
   onTaskToggle,
   onOpenCheckIn,
+  showComeTomorrow,
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const [dragY, setDragY] = useState(0);
@@ -163,11 +166,12 @@ export const LessonBottomSheet: React.FC<LessonBottomSheetProps> = ({
         >
           <PlanLessonContent
             day={day}
-            currentPlanDay={currentPlanDay}
+            activePlanDay={activePlanDay}
             hasCheckedInToday={hasCheckedInToday}
             completedTasks={completedTasks}
             onTaskToggle={onTaskToggle}
             onOpenCheckIn={onOpenCheckIn}
+            showComeTomorrow={showComeTomorrow}
           />
         </div>
       </div>
