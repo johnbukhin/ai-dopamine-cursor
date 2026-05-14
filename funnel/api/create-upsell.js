@@ -112,6 +112,12 @@ export default async function handler(req, res) {
             return res.status(200).json({ success: true, alreadyExists: true });
         }
 
+        // Use the currency from the customer's existing subscription to avoid
+        // "cannot combine currencies on a single customer" — Stripe rejects
+        // mixing currencies. The frontend-detected currency may differ from
+        // the price currency used at checkout.
+        const effectiveCurrency = activeSubs.data.find(s => s.currency)?.currency || currency;
+
         // 2. Retrieve the most recently attached payment method.
         const pms = await stripe.paymentMethods.list({
             customer: customer.id,
@@ -146,13 +152,13 @@ export default async function handler(req, res) {
             phases: [
                 {
                     items: [{ price: introPriceId, quantity: 1 }],
-                    currency,
+                    currency: effectiveCurrency,
                     iterations: 1,
                     default_payment_method: pm.id,
                 },
                 {
                     items: [{ price: regularPriceId, quantity: 1 }],
-                    currency,
+                    currency: effectiveCurrency,
                 },
             ],
             expand: ['subscription.latest_invoice.payment_intent'],
@@ -191,7 +197,7 @@ export default async function handler(req, res) {
                         status:                 'active',
                         paid_at:                new Date().toISOString(),
                         amount_paid:            introPrice.unit_amount,
-                        currency:               currency,
+                        currency:               effectiveCurrency,
                         current_period_end:     new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
                         plan_label:             'AI Companion (Intro Month)',
                         cancel_at_period_end:   false,
