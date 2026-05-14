@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #41)
+- **Post-checkout upsell screen** — shown between checkout and account creation; hero image, AI Coach + AI Help feature cards, social proof, 1-month/3-month price toggle, sticky upgrade CTA
+- **One-click upsell charge** (`funnel/api/create-upsell.js`) — server-side Stripe subscription schedule (intro price × 1 month → regular recurring) off existing payment method; logs to `upsell_errors` table on failure; writes subscription row to Supabase immediately (no webhook wait)
+- **Multi-currency pricing** — `Currency.detect()` reads `navigator.language` to pick USD/EUR/GBP/CAD/AUD; EUR users keep original `screens.json` prices unchanged; non-EUR users get dynamically injected prices on paywall and checkout
+- **`funnel/api/provision-account.js`** — new endpoint called right after `stripe.confirmPayment()` succeeds; creates the Supabase auth user + profile row immediately so the DB record exists before the user reaches account creation; returns a live session (`access_token` + `refresh_token`); idempotent (handles already-existing users)
+- **Progress stepper on account creation** — 3-step visual (Choose Plan → Activate → Create Account) replaces the old icon+headline block; step 3 highlighted as current
+- **Auto-open Welcome lesson for new users** — on first ever login (no `user_app_state` row), Plan28 automatically opens the Day 0 Welcome lesson so new users land straight in the core experience
+
+### Changed (Issue #41)
+- **`create-user.js` made idempotent** — common path is now "user already exists" (provisioned after checkout); finds user by email, calls `admin.updateUserById({ password })`, upserts profile, signs in; falls back to full create if provision-account was skipped
+- **Account creation replaces thank_you screen** — `thank_you` removed from funnel sequence; flow is now `checkout → upsell → create_account → app_dashboard`; email field is editable; screen shows progress stepper at step 3
+- **`upsell_errors` table** — new Supabase table tracking no-PM and charge-failure events per email/customer/currency
+- **Localhost funnel URL standardised** — `funnel/funnel-v2` symlink added (`→ funnels/v2`); dev server now started from `funnel/` dir; localhost URL `http://localhost:8080/funnel-v2/` now matches production `https://ai-dopamine-addict.vercel.app/funnel-v2/`
+- **Upsell access cached in localStorage** (`mc_has_upsell`) — initial state seeded from cache so Pro badges on Coach/Help tabs render correctly on reload without a flash
+
+### Fixed (Issue #41)
+- **Upsell CTA button unresponsive on iOS** — `position: fixed` elements don't bubble touch events to delegated ancestor; fixed with direct `{once: true}` listeners via `initUpsell()`
+- **Checkout payment method not saved to Stripe customer** — missing `setup_future_usage: 'off_session'` on PaymentIntent meant `create-upsell` found zero saved cards (`no_pm`); now set on PI after invoice finalization
+- **Upsell currency mismatch** — `Currency.detect()` could return a different currency than the one used for the core subscription; `create-upsell` now reads currency from the customer's active subscriptions to avoid Stripe's "cannot combine currencies" error
+- **Settings showing only one subscription** — query used `.limit(1).single()`; changed to full array + `SubscriptionCard` per row so both core and upsell subscriptions display
+- **Upsell features locked after purchase** — webhook fires 2–10s after client redirect; fixed with Supabase direct write in `create-upsell.js` + 8s retry query in webapp
+- **Screen transitions not scrolling to top** — `appEl.scrollTop = 0; window.scrollTo(0, 0)` added to `App.render()` so upsell/account creation stepper is visible on landing
+- **API paths broken on `/funnels/v2/` direct URL** — relative paths like `api/create-checkout` resolved incorrectly; changed to root-relative `/api/create-checkout`
+- **Invalid `currency` param on `stripe.customers.create`** — Stripe Customer object has no currency field; removed
+
+### Added (Issue #36)
+- **`day_completions` Supabase table** — stores `lesson_completed_at` and `all_tasks_completed_at` per (user, plan cycle, day); migration in `supabase/migrations/20260513_day_completions.sql`
+- **Two-tier stone completion logic** — stone turns green immediately when all tasks (lesson + morning + evening) are done same-session; turns green next calendar day if only the lesson was finished
+- **`getRequiredTaskKeys` helper** (`planData.ts`) — returns the full set of required task keys for a day, used to determine full-day completion
+- **"Come back tomorrow" banner** — informational amber banner inside the lesson sheet when the user opens the active day after fully completing the previous day in the same session
+
+### Changed (Issue #36)
+- **Journey stone progression** — `activePlanDay` now derived from `day_completions` (first day without `lesson_completed_at`), replacing streak/check-in-based `currentPlanDay`
+- **Accordion task states** — simplified to binary emerald (complete) / stone-300 (incomplete); removed the gradient `calculateCheckmarkColor` function
+- **Auto-scroll** — journey path re-scrolls to the active stone on every tab open (effect dependency changed from `[]` to `[activePlanDay]`); Plan28 remounts on tab switch so this also fires on re-entry
+- **`loadUserData` parallelized** — `plan_progress` and `day_completions` fetches now run in a single `Promise.all`
+- **`DayCompletion` type** — extracted to `planData.ts` as the single source of truth; removed duplicate inline definitions from `App.tsx` and `Plan28.tsx`
+
 ### Added (Day 0 welcome session)
 - **Day 0 welcome lesson** — 9-section motivational session (5 min): "You're already different" hook, outcome promise (focus/confidence/sleep/intimacy/time), 3-pillar science explainer (environment design, urge surfing, identity shift), James Clear quote, social proof milestones (Day 7/14/28), pro tip on consistency, 4-option personalisation question, 28-day roadmap summary, completion screen
 - **Auto-open on Day 0** — lesson player opens immediately when user views Day 0; no task list shown (welcome-only layout)
