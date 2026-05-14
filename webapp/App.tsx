@@ -39,7 +39,18 @@ export default function App() {
   // Active plan cycle start — used to scope plan_progress queries/writes.
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
-  const [hasUpsellAccess, setHasUpsellAccess] = useState(false);
+  // Optimistic upsell grant: set true immediately if funnel passed ?upsell=1,
+  // then clean the param from the URL so it doesn't persist across refreshes.
+  const [hasUpsellAccess, setHasUpsellAccess] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upsell') === '1') {
+      // Remove the param without triggering a navigation
+      const clean = window.location.href.replace(/[?&]upsell=1/, '').replace(/\?$/, '');
+      window.history.replaceState(null, '', clean);
+      return true;
+    }
+    return false;
+  });
   const [userEmail, setUserEmail] = useState('');
 
   // Day-level completion timestamps — loaded from day_completions table.
@@ -168,15 +179,34 @@ export default function App() {
       // If no stored messages, chatHistory stays as [WELCOME_MESSAGE] (default)
 
       // ── Upsell access ──────────────────────────────────────────────────────
-      if (subsResult.data) {
+      const checkUpsellAccess = (rows: SubRow[]): boolean => {
         const upsellLabels = ['AI Companion (Intro Month)', 'AI Companion (Monthly)'];
         const now = new Date();
-        const active = (subsResult.data as SubRow[]).some(
+        return rows.some(
           s =>
             upsellLabels.includes(s.plan_label) &&
             (!s.current_period_end || new Date(s.current_period_end) > now)
         );
-        setHasUpsellAccess(active);
+      };
+
+      if (subsResult.data) {
+        const active = checkUpsellAccess(subsResult.data as SubRow[]);
+        if (active) setHasUpsellAccess(true);
+        // Webhook may not have written the upsell row yet (fires 2–10s after
+        // payment). Retry once after 8s — only if still locked to avoid
+        // overwriting an optimistic true granted via ?upsell=1.
+        else {
+          setTimeout(async () => {
+            const { data: retryRows } = await supabase!
+              .from('subscriptions')
+              .select('plan_label, current_period_end')
+              .eq('user_email', user.email ?? '')
+              .order('paid_at', { ascending: false });
+            if (retryRows && checkUpsellAccess(retryRows as SubRow[])) {
+              setHasUpsellAccess(true);
+            }
+          }, 8000);
+        }
       }
     };
 

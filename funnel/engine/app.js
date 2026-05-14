@@ -3694,7 +3694,7 @@ const Screens = {
      */
     upsell(screenData) {
         const safeId        = Security.escapeHtml(screenData.id);
-        const currencyCode  = Currency.detect();
+        const currencyCode  = State.data.checkoutCurrency || Currency.detect();
         const up            = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
         const introPrice    = Security.escapeHtml(up.intro);
         const regularPrice  = Security.escapeHtml(up.regular);
@@ -5022,11 +5022,12 @@ const Events = {
                     // Supabase session cross-origin (localStorage is scoped per origin and
                     // cannot be read by a different domain).
                     // The webapp reads, consumes, and strips the hash on mount.
+                    const upsellParam = State.data.hasUpsell ? '?upsell=1' : '';
                     const hash = result.access_token && result.refresh_token
                         ? '#access_token=' + encodeURIComponent(result.access_token) +
                           '&refresh_token=' + encodeURIComponent(result.refresh_token)
                         : '';
-                    window.location.href = CONFIG.webappUrl + hash;
+                    window.location.href = CONFIG.webappUrl + upsellParam + hash;
                     return;
                 }
                 // Local dev: CONFIG.webappUrl is empty — navigate to the next funnel screen.

@@ -146,69 +146,48 @@ const ProfileSettings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Access tab
+// Single subscription card (used by AccessSettings for each row)
 // ---------------------------------------------------------------------------
-const AccessSettings: React.FC = () => {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState('');
+interface SubscriptionCardProps {
+  sub: Subscription;
+  userEmail: string;
+  onCancelled: (id: string, periodEnd: string | null) => void;
+  onRenewed: (id: string) => void;
+}
+
+const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ sub, userEmail, onCancelled, onRenewed }) => {
   const [showCancelFlow, setShowCancelFlow] = useState(false);
-  const [cancelledUntil, setCancelledUntil] = useState<string | null>(null);
+  const [cancelledUntil, setCancelledUntil] = useState<string | null>(
+    sub.cancel_at_period_end ? sub.current_period_end : null
+  );
+  const [isCancelledState, setIsCancelledState] = useState(sub.cancel_at_period_end);
   const [renewing, setRenewing] = useState(false);
   const [renewError, setRenewError] = useState('');
 
-  useEffect(() => {
-    const load = async () => {
-      if (!supabase) { setLoading(false); return; }
-
-      // Get current user's email to query their subscription row
-      const { data: userData } = await supabase.auth.getUser();
-      const email = userData?.user?.email;
-      if (!email) { setLoading(false); return; }
-
-      setUserEmail(email);
-
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('stripe_subscription_id, plan_label, amount_paid, currency, paid_at, current_period_end, cancel_at_period_end')
-        .eq('user_email', email)
-        .order('paid_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (!error && data) {
-        setSubscription(data as Subscription);
-        // If already scheduled for cancellation, pre-populate the cancelled state
-        if (data.cancel_at_period_end) {
-          setCancelledUntil(data.current_period_end);
-        }
-      }
-      setLoading(false);
-    };
-    load();
-  }, []);
+  const isCancelled = isCancelledState || !!cancelledUntil;
 
   const handleCancelConfirmed = (periodEnd: string | null) => {
-    setCancelledUntil(periodEnd || subscription?.current_period_end || null);
-    setSubscription(prev => prev ? { ...prev, cancel_at_period_end: true } : prev);
+    setCancelledUntil(periodEnd || sub.current_period_end);
+    setIsCancelledState(true);
+    onCancelled(sub.stripe_subscription_id, periodEnd);
   };
 
   const handleRenew = async () => {
-    if (!subscription) return;
     setRenewing(true);
     setRenewError('');
     try {
       const response = await fetch('/api/renew-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stripe_subscription_id: subscription.stripe_subscription_id, userEmail }),
+        body: JSON.stringify({ stripe_subscription_id: sub.stripe_subscription_id, userEmail }),
       });
       const data = await response.json();
       if (!response.ok) {
-        setRenewError(data.error || 'Failed to renew subscription. Please try again.');
+        setRenewError(data.error || 'Failed to renew. Please try again.');
       } else {
         setCancelledUntil(null);
-        setSubscription(prev => prev ? { ...prev, cancel_at_period_end: false } : prev);
+        setIsCancelledState(false);
+        onRenewed(sub.stripe_subscription_id);
       }
     } catch {
       setRenewError('Network error. Please try again.');
@@ -216,104 +195,140 @@ const AccessSettings: React.FC = () => {
     setRenewing(false);
   };
 
-  if (loading) {
-    return (
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
-        <p className="text-sm text-gray-500">Loading subscription…</p>
-      </div>
-    );
-  }
-
-  if (!subscription) {
-    return (
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
-        <div className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6">
-          <p className="text-sm text-gray-500">No active subscription found.</p>
-          <p className="text-xs text-gray-400 mt-1">
-            If you recently purchased, it may take a moment to appear.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const isCancelled = subscription.cancel_at_period_end || !!cancelledUntil;
-
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
-      <div className="bg-white shadow sm:rounded-lg mb-6">
-        <div className="px-4 py-5 sm:p-6">
-          <div className="flex justify-between items-start">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Current membership</h3>
-            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-              isCancelled ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
-            }`}>
-              {isCancelled ? 'Cancels at period end' : 'Active'}
-            </span>
-          </div>
+    <div className="bg-white shadow sm:rounded-lg mb-4">
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex justify-between items-start">
+          <h3 className="text-base leading-6 font-semibold text-gray-900">
+            {sub.plan_label || 'Subscription'}
+          </h3>
+          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+            isCancelled ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
+          }`}>
+            {isCancelled ? 'Cancels at period end' : 'Active'}
+          </span>
+        </div>
 
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-500">
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-gray-500">
+          <div>
+            <p className="font-medium text-gray-700">Begin date</p>
+            <p>{formatDate(sub.paid_at)}</p>
+          </div>
+          <div>
+            <p className="font-medium text-gray-700">Amount paid</p>
+            <p>{formatAmount(sub.amount_paid, sub.currency)}</p>
+          </div>
+          <div>
+            <p className="font-medium text-gray-700">
+              {isCancelled ? 'Access until' : 'Renews on'}
+            </p>
+            <p>{formatDate(cancelledUntil || sub.current_period_end)}</p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          {isCancelled ? (
             <div>
-              <p className="font-medium text-gray-700">Membership type</p>
-              <p>{subscription.plan_label || '—'}</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-700">Begin date</p>
-              <p>{formatDate(subscription.paid_at)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-700">Amount paid</p>
-              <p>{formatAmount(subscription.amount_paid, subscription.currency)}</p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-700">
-                {isCancelled ? 'Access until' : 'Renews on'}
+              <p className="text-sm text-amber-700 mb-3">
+                Cancelled — access until <strong>{formatDate(cancelledUntil || sub.current_period_end)}</strong>.
               </p>
-              <p>{formatDate(cancelledUntil || subscription.current_period_end)}</p>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            {isCancelled ? (
-              <div>
-                <p className="text-sm text-amber-700 mb-4">
-                  Your subscription has been cancelled. You have access until{' '}
-                  <strong>{formatDate(cancelledUntil || subscription.current_period_end)}</strong>.
-                </p>
-                {renewError && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-3">{renewError}</p>
-                )}
-                <button
-                  onClick={handleRenew}
-                  disabled={renewing}
-                  style={{ backgroundColor: '#065f46', color: '#ffffff', padding: '10px 20px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: renewing ? 'not-allowed' : 'pointer', opacity: renewing ? 0.5 : 1, display: 'inline-block' }}
-                >
-                  {renewing ? 'Renewing…' : 'Renew Subscription'}
-                </button>
-              </div>
-            ) : (
+              {renewError && (
+                <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2 mb-2">{renewError}</p>
+              )}
               <button
-                onClick={() => setShowCancelFlow(true)}
-                className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-red-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                onClick={handleRenew}
+                disabled={renewing}
+                style={{ backgroundColor: '#065f46', color: '#fff', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '13px', border: 'none', cursor: renewing ? 'not-allowed' : 'pointer', opacity: renewing ? 0.5 : 1 }}
               >
-                Cancel Membership
+                {renewing ? 'Renewing…' : 'Renew'}
               </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCancelFlow(true)}
+              className="px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-red-700 bg-white hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </div>
 
       {showCancelFlow && (
         <CancelFlow
-          stripeSubscriptionId={subscription.stripe_subscription_id}
+          stripeSubscriptionId={sub.stripe_subscription_id}
           userEmail={userEmail}
           onClose={() => setShowCancelFlow(false)}
           onConfirmCancel={handleCancelConfirmed}
         />
       )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Access tab
+// ---------------------------------------------------------------------------
+const AccessSettings: React.FC = () => {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      if (!supabase) { setLoading(false); return; }
+
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData?.user?.email;
+      if (!email) { setLoading(false); return; }
+
+      setUserEmail(email);
+
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('stripe_subscription_id, plan_label, amount_paid, currency, paid_at, current_period_end, cancel_at_period_end')
+        .eq('user_email', email)
+        .order('paid_at', { ascending: false });
+
+      if (data) setSubscriptions(data as Subscription[]);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
+        <p className="text-sm text-gray-500">Loading subscriptions…</p>
+      </div>
+    );
+  }
+
+  if (subscriptions.length === 0) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
+        <div className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6">
+          <p className="text-sm text-gray-500">No active subscription found.</p>
+          <p className="text-xs text-gray-400 mt-1">If you recently purchased, it may take a moment to appear.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Access</h2>
+      {subscriptions.map(sub => (
+        <SubscriptionCard
+          key={sub.stripe_subscription_id}
+          sub={sub}
+          userEmail={userEmail}
+          onCancelled={() => {}}
+          onRenewed={() => {}}
+        />
+      ))}
     </div>
   );
 };
