@@ -5363,7 +5363,7 @@ body {
     overflow-x: hidden;
 }
 
-/* ── Topbar: stepper + skip ── */
+/* ── Topbar: brand/skip row + stepper row ── */
 .upsell__topbar {
     position: sticky;
     top: 0;
@@ -5371,34 +5371,91 @@ body {
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    gap: 12px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 16px 12px;
     width: 100%;
     box-sizing: border-box;
 }
+.upsell__topbar-brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.upsell__brand-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.02em;
+}
+
+/* Step indicator */
 .upsell__stepper {
     display: flex;
     align-items: center;
-    gap: 4px;
     flex: 1;
     min-width: 0;
 }
-.upsell__step {
+.upsell__step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+.upsell__step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+.upsell__step-circle--done {
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 13px;
+}
+.upsell__step-circle--current {
+    background: var(--color-primary);
+    color: #fff;
+}
+.upsell__step-circle--future {
+    background: transparent;
+    border: 2px solid #D0D0E0;
+    color: #C0C0D0;
+}
+.upsell__step-label {
+    font-size: 9px;
     font-weight: 600;
     color: var(--color-text-muted);
     white-space: nowrap;
+    text-align: center;
+    letter-spacing: 0.01em;
 }
-.upsell__step--done    { color: var(--color-primary); }
-.upsell__step--current { color: var(--color-text-primary); font-weight: 700; }
-.upsell__step-arrow    { font-size: 12px; color: var(--color-text-muted); flex-shrink: 0; }
+.upsell__step-label--done    { color: var(--color-primary); }
+.upsell__step-label--current { color: var(--color-text-primary); }
+
+/* Connecting line between steps */
+.upsell__step-line {
+    flex: 1;
+    height: 2px;
+    background: #E0E0EE;
+    margin-bottom: 14px; /* vertically aligns with circle centres, not labels */
+    min-width: 12px;
+}
+.upsell__step-line--done {
+    background: var(--color-primary);
+}
+
 .upsell__skip-link {
     background: none;
     border: none;
-    padding: 4px 0 4px 8px;
-    font-size: 12px;
+    padding: 2px 0;
+    font-size: 11px;
     font-weight: 600;
     color: var(--color-text-muted);
     cursor: pointer;
@@ -5407,25 +5464,12 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Hero ── */
-.upsell__hero {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 9 / 11;
-    overflow: hidden;
-}
-.upsell__hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-.upsell__hero-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    padding: 32px 24px 28px;
-    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
-    color: #fff;
+/* ── Intro block ── */
+.upsell__intro {
+    background: var(--color-surface);
+    padding: 28px 20px 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
 }
 .upsell__eyebrow {
     font-size: 11px;
@@ -5433,95 +5477,47 @@ body {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #F97316;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
 }
 .upsell__headline {
     font-size: 26px;
     font-weight: 800;
     line-height: 1.2;
-    margin: 0 0 14px;
-    color: #fff;
-}
-.upsell__hero-price-row {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.upsell__hero-orig {
-    font-size: 16px;
-    color: rgba(255,255,255,0.55);
-    text-decoration: line-through;
-}
-.upsell__hero-new {
-    font-size: 30px;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1;
-}
-.upsell__hero-period {
-    font-size: 13px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.75);
-}
-
-/* ── Product showcase ── */
-.upsell__showcase {
-    background: var(--color-surface);
-    padding-bottom: 24px;
-}
-.upsell__showcase-images {
-    display: flex;
-    height: 200px;
-    overflow: hidden;
-}
-.upsell__showcase-img {
-    width: 50%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-.upsell__showcase-img--coach { object-position: center 20%; }
-.upsell__showcase-text {
-    padding: 20px 20px 0;
-    text-align: center;
-}
-.upsell__showcase-headline {
-    font-size: 20px;
-    font-weight: 700;
     color: var(--color-text-primary);
-    margin: 0 0 8px;
-    line-height: 1.3;
+    margin: 0 0 12px;
 }
-.upsell__showcase-sub {
+.upsell__intro-subtitle {
     font-size: 14px;
     color: var(--color-text-secondary);
-    margin: 0;
+    line-height: 1.6;
+    margin: 0 0 22px;
 }
-
-/* ── Inline CTA ── */
-.upsell__inline-cta {
-    background: var(--color-background);
-    padding: 24px 20px;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    text-align: center;
-}
-.upsell__legal-pre {
-    font-size: 11px;
+.upsell__intro-strike {
+    text-decoration: line-through;
     color: var(--color-text-muted);
-    line-height: 1.5;
-    margin: 0 0 14px;
+    font-style: normal;
 }
-.upsell__confirm-btn {
-    width: 100%;
-    font-size: 16px;
+.upsell__intro-highlight {
+    color: var(--color-primary);
     font-weight: 700;
-    margin-bottom: 10px;
 }
-.upsell__legal-post {
+.upsell__intro-card {
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+.upsell__intro-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+}
+.upsell__intro-legal {
     font-size: 11px;
     color: var(--color-text-muted);
+    line-height: 1.55;
+    text-align: left;
     margin: 0;
 }
 

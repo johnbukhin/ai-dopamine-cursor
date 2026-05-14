@@ -3692,52 +3692,41 @@ const Screens = {
         return `
             <div class="screen upsell-screen" data-screen="${safeId}">
 
-                <!-- ── Topbar: progress stepper + skip ── -->
+                <!-- ── Topbar: brand/skip row + progress stepper row ── -->
                 <div class="upsell__topbar">
-                    <div class="upsell__stepper">
-                        <span class="upsell__step upsell__step--done">Payment ✓</span>
-                        <span class="upsell__step-arrow">›</span>
-                        <span class="upsell__step upsell__step--current">Bonus</span>
-                        <span class="upsell__step-arrow">›</span>
-                        <span class="upsell__step">Access Plan</span>
+                    <div class="upsell__topbar-brand-row">
+                        <span class="upsell__brand-name">Mind Compass</span>
+                        <button id="upsell-skip-btn" class="upsell__skip-link">SKIP →</button>
                     </div>
-                    <button id="upsell-skip-btn" class="upsell__skip-link">SKIP →</button>
+                    <div class="upsell__stepper">
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--done">✓</div>
+                            <span class="upsell__step-label upsell__step-label--done">Payment</span>
+                        </div>
+                        <div class="upsell__step-line upsell__step-line--done"></div>
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--current">2</div>
+                            <span class="upsell__step-label upsell__step-label--current">Bonus</span>
+                        </div>
+                        <div class="upsell__step-line"></div>
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--future">3</div>
+                            <span class="upsell__step-label">Access Plan</span>
+                        </div>
+                    </div>
                 </div>
 
                 <main class="content upsell">
 
-                    <!-- ── Block 1: Hero ── -->
-                    <div class="upsell__hero">
-                        <img class="upsell__hero-img" src="${assetBase}/hero.png" alt="" loading="lazy">
-                        <div class="upsell__hero-overlay">
-                            <p class="upsell__eyebrow">Special one-time offer</p>
-                            <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
-                            <div class="upsell__hero-price-row">
-                                <span class="upsell__hero-orig">${regularPrice}</span>
-                                <span class="upsell__hero-new">${introPrice} <span class="upsell__hero-period">first month</span></span>
-                            </div>
+                    <!-- ── Block 1: Intro — title, subtitle+pricing, image, legal ── -->
+                    <div class="upsell__intro">
+                        <p class="upsell__eyebrow">Special one-time offer</p>
+                        <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
+                        <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. Only now just at <s class="upsell__intro-strike">${regularPrice}</s> <strong class="upsell__intro-highlight">${introPrice}</strong> a month.</p>
+                        <div class="upsell__intro-card">
+                            <img src="${assetBase}/hero.png" alt="" loading="lazy">
                         </div>
-                    </div>
-
-                    <!-- ── Block 2: Product showcase ── -->
-                    <div class="upsell__showcase">
-                        <div class="upsell__showcase-images">
-                            <img class="upsell__showcase-img upsell__showcase-img--app" src="${assetBase}/showcase_app.png" alt="AI Companion app" loading="lazy">
-                            <img class="upsell__showcase-img upsell__showcase-img--coach" src="${assetBase}/coach.png" alt="Recovery coaching" loading="lazy">
-                        </div>
-                        <div class="upsell__showcase-text">
-                            <h2 class="upsell__showcase-headline">Your personal AI Recovery Companion</h2>
-                            <p class="upsell__showcase-sub">Always available. Always on your side.</p>
-                        </div>
-                    </div>
-
-                    <!-- ── Block 3: Early inline CTA ── -->
-                    <div class="upsell__inline-cta">
-                        <p class="upsell__legal-pre">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel.</p>
-                        <button class="cta-button upsell__confirm-btn" data-screen="${safeId}" data-upsell-confirm="true">
-                            CONFIRM PAYMENT
-                        </button>
-                        <p class="upsell__legal-post">Then ${regularPrice} · Cancel anytime</p>
+                        <p class="upsell__intro-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel.</p>
                     </div>
 
                     <!-- ── Block 4: Feature — AI Coach (dark) ── -->
