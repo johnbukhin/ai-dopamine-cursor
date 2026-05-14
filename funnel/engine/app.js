@@ -3659,180 +3659,184 @@ const Screens = {
     /**
      * Render post-checkout upsell screen — AI Companion bundle offer.
      *
-     * Long-scroll layout with sticky bottom CTA. No Payment Element is shown;
-     * the CTA triggers a server-side off-session charge via /api/create-upsell.
-     * If no saved PM exists, or charge fails, the user is silently forwarded to
-     * thank_you (never blocked). A 1-month / 3-month toggle updates the price.
+     * Long-scroll 10-block layout. No Payment Element is shown; the CTA triggers
+     * a server-side off-session charge via /api/create-upsell. If no saved PM
+     * exists, or charge fails, the user is silently forwarded to thank_you.
+     *
+     * Layout:
+     *   Topbar  — progress stepper (Payment ✓ → Bonus → Access Plan) + SKIP link
+     *   Block 1 — hero image with headline and price overlay
+     *   Block 2 — product showcase (two split images + tagline)
+     *   Block 3 — early inline CTA with legal
+     *   Block 4 — Feature: AI Coach (dark bg)
+     *   Block 5 — Feature: AI Help (light bg)
+     *   Block 6 — Feature: Daily Progress (dark bg)
+     *   Block 7 — World map social proof
+     *   Block 8 — Testimonial horizontal carousel
+     *   Block 9 — Final showcase image + full legal disclaimer
+     *   Float   — fixed "CONFIRM PAYMENT" button (no container)
      *
      * @param {Object} screenData - Screen data from JSON
      * @returns {string} HTML string
      */
     upsell(screenData) {
-        const safeId       = Security.escapeHtml(screenData.id);
-        const currencyCode = Currency.detect();
-        const up           = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
-        const introPrice   = Security.escapeHtml(up.intro);
-        const regularPrice = Security.escapeHtml(up.regular);
+        const safeId        = Security.escapeHtml(screenData.id);
+        const currencyCode  = Currency.detect();
+        const up            = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
+        const introPrice    = Security.escapeHtml(up.intro);
+        const regularPrice  = Security.escapeHtml(up.regular);
+        const regularAmount = Security.escapeHtml(up.regular.replace('/mo', ''));
 
         const assetBase = 'assets/upsell';
 
         return `
             <div class="screen upsell-screen" data-screen="${safeId}">
-                ${Components.header()}
+
+                <!-- ── Topbar: progress stepper + skip ── -->
+                <div class="upsell__topbar">
+                    <div class="upsell__stepper">
+                        <span class="upsell__step upsell__step--done">Payment ✓</span>
+                        <span class="upsell__step-arrow">›</span>
+                        <span class="upsell__step upsell__step--current">Bonus</span>
+                        <span class="upsell__step-arrow">›</span>
+                        <span class="upsell__step">Access Plan</span>
+                    </div>
+                    <button id="upsell-skip-btn" class="upsell__skip-link">SKIP →</button>
+                </div>
 
                 <main class="content upsell">
 
-                    <!-- ── Hero ── -->
+                    <!-- ── Block 1: Hero ── -->
                     <div class="upsell__hero">
                         <img class="upsell__hero-img" src="${assetBase}/hero.png" alt="" loading="lazy">
                         <div class="upsell__hero-overlay">
                             <p class="upsell__eyebrow">Special one-time offer</p>
                             <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
-                            <p class="upsell__subline">Add your personal AI Companion — available only right now, at this price.</p>
+                            <div class="upsell__hero-price-row">
+                                <span class="upsell__hero-orig">${regularPrice}</span>
+                                <span class="upsell__hero-new">${introPrice} <span class="upsell__hero-period">first month</span></span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ── Tension block ── -->
-                    <div class="upsell__section upsell__tension">
-                        <h2 class="upsell__section-title">Here's what most people don't realise</h2>
-                        <p class="upsell__tension-copy">Having a plan is only half the battle. The real difference between people who succeed and those who struggle is having support <em>exactly when it gets hard</em> — not just when it's easy.</p>
-                        <p class="upsell__tension-copy">Your plan is ready. But will you have someone in your corner when day 7 hits?</p>
-                    </div>
-
-                    <!-- ── Feature 1: AI Coach ── -->
-                    <div class="upsell__feature-reveal">
-                        <img class="upsell__feature-full-img" src="${assetBase}/coach.png" alt="AI Coach" loading="lazy">
-                        <div class="upsell__feature-content">
-                            <p class="upsell__feature-eyebrow">Feature 1</p>
-                            <h2 class="upsell__feature-headline">🤖 AI Coach</h2>
-                            <p class="upsell__feature-intro">Your 24/7 accountability partner — always available, always on your side.</p>
-                            <ul class="upsell__feature-bullets">
-                                <li>Understands exactly where you are in your journey</li>
-                                <li>Answers your questions about urges and relapses honestly</li>
-                                <li>Checks in on hard days so you don't feel alone</li>
-                                <li>Keeps you on track without relying on willpower</li>
-                            </ul>
+                    <!-- ── Block 2: Product showcase ── -->
+                    <div class="upsell__showcase">
+                        <div class="upsell__showcase-images">
+                            <img class="upsell__showcase-img upsell__showcase-img--app" src="${assetBase}/showcase_app.png" alt="AI Companion app" loading="lazy">
+                            <img class="upsell__showcase-img upsell__showcase-img--coach" src="${assetBase}/coach.png" alt="Recovery coaching" loading="lazy">
+                        </div>
+                        <div class="upsell__showcase-text">
+                            <h2 class="upsell__showcase-headline">Your personal AI Recovery Companion</h2>
+                            <p class="upsell__showcase-sub">Always available. Always on your side.</p>
                         </div>
                     </div>
 
-                    <!-- ── Testimonial 1 ── -->
-                    <div class="upsell__testimonial">
-                        <div class="upsell__stars">★★★★★</div>
-                        <blockquote class="upsell__quote">"Day 12 hit like a wall. I almost gave up. The AI Coach helped me understand what was happening in my brain and what to do. I finished the whole 28-day plan."</blockquote>
-                        <cite class="upsell__cite">— Marcus D., completed Day 28</cite>
+                    <!-- ── Block 3: Early inline CTA ── -->
+                    <div class="upsell__inline-cta">
+                        <p class="upsell__legal-pre">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel.</p>
+                        <button class="cta-button upsell__confirm-btn" data-screen="${safeId}" data-upsell-confirm="true">
+                            CONFIRM PAYMENT
+                        </button>
+                        <p class="upsell__legal-post">Then ${regularPrice} · Cancel anytime</p>
                     </div>
 
-                    <!-- ── Feature 2: AI Help ── -->
-                    <div class="upsell__feature-reveal">
-                        <img class="upsell__feature-full-img" src="${assetBase}/progress.png" alt="AI Help" loading="lazy">
-                        <div class="upsell__feature-content">
-                            <p class="upsell__feature-eyebrow">Feature 2</p>
-                            <h2 class="upsell__feature-headline">💡 AI Help</h2>
-                            <p class="upsell__feature-intro">Instant, personalised guidance — always specific to your plan and your triggers.</p>
-                            <ul class="upsell__feature-bullets">
-                                <li>Explains <em>why</em> you feel what you feel, in plain language</li>
-                                <li>Gives you actionable steps mid-craving, not generic advice</li>
-                                <li>Adapts as your journey progresses and patterns shift</li>
-                                <li>Available inside the app the moment you need it</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- ── Testimonial 2 ── -->
-                    <div class="upsell__testimonial">
-                        <div class="upsell__stars">★★★★★</div>
-                        <blockquote class="upsell__quote">"I used to spiral when I slipped — guilt, shame, the whole cycle. AI Help showed me exactly what to do instead of giving up. Total game changer."</blockquote>
-                        <cite class="upsell__cite">— Sophie K., Week 5</cite>
-                    </div>
-
-                    <!-- ── Without / With contrast ── -->
-                    <div class="upsell__contrast">
-                        <div class="upsell__contrast-col upsell__contrast-col--without">
-                            <h3 class="upsell__contrast-title">Without AI Companion</h3>
-                            <ul class="upsell__contrast-list">
-                                <li>Alone with urges on hard days</li>
-                                <li>Guessing what to do when you slip</li>
-                                <li>White-knuckling it on willpower</li>
-                                <li>Motivation fades without support</li>
-                                <li>Generic advice that doesn't fit your situation</li>
-                            </ul>
-                        </div>
-                        <div class="upsell__contrast-col upsell__contrast-col--with">
-                            <h3 class="upsell__contrast-title">With AI Companion</h3>
-                            <ul class="upsell__contrast-list">
-                                <li>24/7 support — always in your corner</li>
-                                <li>Clear direction the moment you need it</li>
-                                <li>Accountability without shame or judgment</li>
-                                <li>Progress explained, not just tracked</li>
-                                <li>Personalised to your exact plan and triggers</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- ── Value stack ── -->
-                    <div class="upsell__section upsell__value-stack">
-                        <h2 class="upsell__section-title">Everything included</h2>
-                        <ul class="upsell__stack-list">
-                            <li class="upsell__stack-item">
-                                <span class="upsell__stack-check">✓</span>
-                                <span class="upsell__stack-label">AI Coach</span>
-                                <span class="upsell__stack-value">€39.99/mo</span>
-                            </li>
-                            <li class="upsell__stack-item">
-                                <span class="upsell__stack-check">✓</span>
-                                <span class="upsell__stack-label">AI Help</span>
-                                <span class="upsell__stack-value">€29.99/mo</span>
-                            </li>
-                            <li class="upsell__stack-item">
-                                <span class="upsell__stack-check">✓</span>
-                                <span class="upsell__stack-label">24/7 availability</span>
-                                <span class="upsell__stack-value"></span>
-                            </li>
-                            <li class="upsell__stack-item">
-                                <span class="upsell__stack-check">✓</span>
-                                <span class="upsell__stack-label">Personalised to your plan</span>
-                                <span class="upsell__stack-value"></span>
-                            </li>
+                    <!-- ── Block 4: Feature — AI Coach (dark) ── -->
+                    <div class="upsell__feature-block upsell__feature-block--dark">
+                        <div class="upsell__feature-tag">AI Coach</div>
+                        <h2 class="upsell__feature-title">Your 24/7 recovery coach</h2>
+                        <img class="upsell__feature-photo" src="${assetBase}/feature_coach.png" alt="AI Coach" loading="lazy">
+                        <ul class="upsell__feature-list">
+                            <li>Understands exactly where you are in your journey</li>
+                            <li>Checks in on hard days so you don't face them alone</li>
+                            <li>Keeps you on track without relying on willpower</li>
                         </ul>
-                        <div class="upsell__stack-total">
-                            <span>Full bundle value</span>
-                            <span>${regularPrice}</span>
+                    </div>
+
+                    <!-- ── Block 5: Feature — AI Help (light) ── -->
+                    <div class="upsell__feature-block">
+                        <div class="upsell__feature-tag">AI Help</div>
+                        <h2 class="upsell__feature-title">Instant answers when urges hit</h2>
+                        <img class="upsell__feature-photo" src="${assetBase}/feature_help.png" alt="AI Help" loading="lazy">
+                        <ul class="upsell__feature-list">
+                            <li>Explains <em>why</em> you feel what you feel, in plain language</li>
+                            <li>Gives you actionable steps mid-craving, not generic advice</li>
+                            <li>Available inside the app the moment you need it</li>
+                        </ul>
+                    </div>
+
+                    <!-- ── Block 6: Feature — Daily Progress (dark) ── -->
+                    <div class="upsell__feature-block upsell__feature-block--dark">
+                        <div class="upsell__feature-tag">Daily Progress</div>
+                        <h2 class="upsell__feature-title">Stay consistent every single day</h2>
+                        <img class="upsell__feature-photo" src="${assetBase}/progress.png" alt="Progress tracking" loading="lazy">
+                        <ul class="upsell__feature-list">
+                            <li>Daily check-ins that keep you accountable</li>
+                            <li>Progress insights that show how far you've come</li>
+                            <li>Celebrate milestones that make recovery feel real</li>
+                        </ul>
+                    </div>
+
+                    <!-- ── Block 7: World map social proof ── -->
+                    <div class="upsell__worldmap">
+                        <img class="upsell__worldmap-img" src="../../assets/world-map-dots.svg" alt="" loading="lazy">
+                        <p class="upsell__worldmap-stat"><strong>50,000+</strong> people worldwide are recovering with Mind Compass</p>
+                    </div>
+
+                    <!-- ── Block 8: Testimonial horizontal carousel ── -->
+                    <div class="upsell__reviews">
+                        <h2 class="upsell__reviews-title">What people are saying</h2>
+                        <div class="upsell__reviews-scroll">
+                            <div class="upsell__review-card">
+                                <div class="upsell__review-stars">★★★★★</div>
+                                <p class="upsell__review-text">"Day 12 hit like a wall. I almost gave up. The AI Coach helped me understand what was happening and what to do. I finished the whole plan."</p>
+                                <div class="upsell__review-author">
+                                    <div class="upsell__review-avatar">M</div>
+                                    <div>
+                                        <div class="upsell__review-name">Marcus D.</div>
+                                        <div class="upsell__review-meta">Completed Day 28</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upsell__review-card">
+                                <div class="upsell__review-stars">★★★★★</div>
+                                <p class="upsell__review-text">"I used to spiral when I slipped. AI Help showed me exactly what to do instead of giving up. I'm now on day 41 — never thought I'd get here."</p>
+                                <div class="upsell__review-author">
+                                    <div class="upsell__review-avatar">S</div>
+                                    <div>
+                                        <div class="upsell__review-name">Sophie K.</div>
+                                        <div class="upsell__review-meta">Day 41</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upsell__review-card">
+                                <div class="upsell__review-stars">★★★★★</div>
+                                <p class="upsell__review-text">"Having the AI check in on me every morning changed everything. I'm not fighting this alone anymore. Completely worth every penny."</p>
+                                <div class="upsell__review-author">
+                                    <div class="upsell__review-avatar">J</div>
+                                    <div>
+                                        <div class="upsell__review-name">James R.</div>
+                                        <div class="upsell__review-meta">Week 8</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ── Pricing block ── -->
-                    <div class="upsell__section upsell__pricing-block">
-                        <h2 class="upsell__section-title">Today only</h2>
-                        <div class="upsell__price-reveal">
-                            <span class="upsell__price-original">${regularPrice}</span>
-                            <span class="upsell__price-intro">${introPrice} <span class="upsell__price-period">first month</span></span>
-                        </div>
-                        <p class="upsell__price-then">Then ${regularPrice} · cancel anytime</p>
-                        <p class="upsell__price-note">Charged to your saved card in one tap — no re-entering card details.</p>
+                    <!-- ── Block 9: Final showcase + full legal ── -->
+                    <div class="upsell__final">
+                        <img class="upsell__final-img" src="${assetBase}/final_showcase.png" alt="Mind Compass app" loading="lazy">
+                        <p class="upsell__final-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel. You can cancel subscription anytime from the app settings or by contacting us.</p>
                     </div>
 
-                    <!-- ── Guarantee ── -->
-                    <div class="upsell__guarantee">
-                        <span class="upsell__guarantee-icon">🛡</span>
-                        <div>
-                            <p class="upsell__guarantee-title">30-Day Money-Back Guarantee</p>
-                            <p class="upsell__guarantee-copy">If you don't feel the AI Companion made a difference in your first month, we'll refund you — no questions asked.</p>
-                        </div>
-                    </div>
-
-                    <!-- Bottom padding so content clears the sticky CTA -->
-                    <div style="height: 130px;"></div>
+                    <!-- Spacer so content clears the floating CTA -->
+                    <div style="height: 100px;"></div>
                 </main>
 
-                <!-- ── Sticky bottom CTA ── -->
-                <div class="upsell__sticky-cta">
-                    <button id="upsell-upgrade-btn" class="cta-button upsell__upgrade-btn" data-screen="${safeId}">
-                        Confirm Payment
-                    </button>
-                    <button id="upsell-skip-btn" class="upsell__skip-btn">
-                        No thanks, continue without AI features
-                    </button>
-                </div>
+                <!-- ── Floating CTA (no container, drop shadow only) ── -->
+                <button id="upsell-upgrade-btn" class="cta-button upsell__float-btn" data-screen="${safeId}" data-upsell-confirm="true">
+                    CONFIRM PAYMENT
+                </button>
+
             </div>
         `;
     },
@@ -4781,7 +4785,9 @@ const Events = {
         log.info(`[User Action] CTA clicked on ${screenId}`);
 
         // Upsell upgrade button — trigger off-session charge then proceed
-        if (button.id === 'upsell-upgrade-btn') {
+        // Matches both the floating CTA (id=upsell-upgrade-btn) and the
+        // early inline CTA (no id, but data-upsell-confirm set on both).
+        if (button.dataset.upsellConfirm) {
             this.handleUpsellUpgrade(button);
             return;
         }
@@ -5178,9 +5184,12 @@ const App = {
 
     async handleUpsellUpgrade(button) {
         if (button.disabled) return;
-        button.disabled = true;
-        button.classList.add('cta-button--disabled');
-        button.textContent = 'Processing…';
+        // Disable all confirm buttons to prevent double submission
+        document.querySelectorAll('[data-upsell-confirm]').forEach(b => {
+            b.disabled = true;
+            b.classList.add('cta-button--disabled');
+            b.textContent = 'Processing…';
+        });
 
         const email    = State.getAnswer('email_capture') || '';
         const currency = State.data.checkoutCurrency || Currency.detect();
