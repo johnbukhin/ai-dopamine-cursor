@@ -5717,21 +5717,20 @@ body {
 .upsell__float-btn {
     position: fixed;
     bottom: max(20px, env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 40px);
+    /* Center with left/right + margin instead of left:50%+transform, so that
+       .cta-button:hover/active transform: translateY() cannot shift it off-screen. */
+    left: 20px;
+    right: 20px;
+    width: auto;
     max-width: 430px;
+    margin: 0 auto;
     font-size: 16px;
     font-weight: 700;
     z-index: 200;
     box-shadow: 0 8px 32px rgba(91, 91, 214, 0.45);
 }
 
-/* .cta-button:hover and :active set transform: translateY() which would overwrite
-   translateX(-50%) and shift the fixed button off-center. Keep the centering. */
-.upsell__float-btn:hover {
-    transform: translateX(-50%) translateY(-2px);
-}
+.upsell__float-btn:hover,
 .upsell__float-btn:active {
-    transform: translateX(-50%) translateY(0);
+    transform: none;
 }
