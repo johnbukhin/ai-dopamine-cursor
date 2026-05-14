@@ -158,12 +158,23 @@ export default async function handler(req, res) {
         // Resolve the PaymentIntent — expand returns it as an object, but guard
         // against the string-ID case just in case.
         let clientSecret = null;
+        let piId = null;
         const pi = finalized.payment_intent;
         if (typeof pi === 'object' && pi !== null) {
             clientSecret = pi.client_secret;
+            piId = pi.id;
         } else if (typeof pi === 'string') {
             const piObj = await stripe.paymentIntents.retrieve(pi);
             clientSecret = piObj.client_secret;
+            piId = pi;
+        }
+
+        // Save the card to the customer after payment so create-upsell can
+        // charge it off-session without prompting the user again.
+        if (piId) {
+            await stripe.paymentIntents.update(piId, {
+                setup_future_usage: 'off_session',
+            });
         }
 
         if (!clientSecret) {
