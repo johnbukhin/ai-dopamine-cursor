@@ -32,7 +32,7 @@ After making code changes to `funnel/`:
    lsof -ti:8080 | xargs kill -9 2>/dev/null || true && cd /Users/yevhen/cursor-projects/ClaudeCode && python3 -m http.server 8080 &
    ```
 
-2. **Provide test URL**: http://localhost:8080/funnel/
+2. **Provide test URL**: http://localhost:8080/funnel/funnels/v2/
 
 3. **Tell user**: "Open browser console (Cmd+Option+I) to check for errors"
 

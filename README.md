@@ -74,7 +74,7 @@ ClaudeCode/
 python3 -m http.server 8080
 
 # Open in browser
-open http://localhost:8080/funnel/
+open http://localhost:8080/funnel/funnels/v2/
 ```
 
 Features:

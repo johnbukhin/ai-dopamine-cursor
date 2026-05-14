@@ -134,7 +134,7 @@ funnel/
 **Running Locally:**
 ```bash
 python3 -m http.server 8080
-# Open http://localhost:8080/funnel/
+# Open http://localhost:8080/funnel/funnels/v2/
 ```
 
 ## Development Patterns
