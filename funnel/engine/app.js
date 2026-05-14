@@ -5252,6 +5252,31 @@ const App = {
     },
 
     /**
+     * Attach direct click listeners on upsell screen buttons.
+     *
+     * position:fixed elements on iOS Safari do not reliably propagate
+     * touch-synthesized click events to ancestor containers, so the
+     * appEl-level event delegation in handleClick() misses them.
+     * Direct listeners on the elements themselves always fire.
+     *
+     * Called automatically from App.render() when screenType === 'upsell'.
+     */
+    initUpsell() {
+        const upgradeBtn = document.getElementById('upsell-upgrade-btn');
+        if (upgradeBtn) {
+            upgradeBtn.addEventListener('click', () => {
+                this.handleUpsellUpgrade(upgradeBtn);
+            }, { once: true });
+        }
+        const skipBtn = document.getElementById('upsell-skip-btn');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => {
+                this.handleUpsellSkip();
+            }, { once: true });
+        }
+    },
+
+    /**
      * Bootstrap Stripe Payment Element on the checkout screen.
      *
      * Flow:
@@ -5807,6 +5832,13 @@ const App = {
         // Bootstrap Stripe Payment Element after DOM is ready for checkout screen
         if ((screenData.screenType || screenData.type) === 'checkout') {
             this.initStripe(screenData);
+        }
+
+        // Attach direct listeners on upsell buttons — position:fixed elements on
+        // iOS Safari don't reliably bubble touch-synthesized click events to appEl,
+        // so event delegation alone is not sufficient here.
+        if ((screenData.screenType || screenData.type) === 'upsell') {
+            this.initUpsell();
         }
 
         // Post-render animation hooks — gated by screen type to skip unnecessary DOM queries
