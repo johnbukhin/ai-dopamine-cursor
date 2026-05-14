@@ -95,12 +95,10 @@ export default async function handler(req, res) {
         // 1. Look up an existing Stripe Customer by email to avoid duplicates;
         //    create a new one only if none exists. This prevents orphaned
         //    customers + invoices when the user navigates back and re-submits.
-        //    Set currency on new customers so all their invoices use the right
-        //    currency_option from the multi-currency price.
         const existing = await stripe.customers.list({ email, limit: 1 });
         const customer = existing.data.length > 0
             ? existing.data[0]
-            : await stripe.customers.create({ email, currency });
+            : await stripe.customers.create({ email });
 
         // 1b. Cancel any open subscription schedules for this customer so that
         //     prefetch calls (which fire on paywall load and on tier change) do not
