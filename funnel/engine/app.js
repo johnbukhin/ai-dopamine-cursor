@@ -3722,7 +3722,7 @@ const Screens = {
                     <div class="upsell__intro">
                         <p class="upsell__eyebrow">Special one-time offer</p>
                         <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
-                        <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. Only now just at <s class="upsell__intro-strike">${regularPrice}</s> <strong class="upsell__intro-highlight">${introPrice}</strong> a month.</p>
+                        <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. Only now just at <s class="upsell__intro-strike">${regularAmount}</s> <strong class="upsell__intro-highlight">${introPrice}</strong> a month.</p>
                         <div class="upsell__intro-card">
                             <img src="${assetBase}/hero_v2.png" alt="" loading="lazy">
                         </div>

@@ -29,31 +29,33 @@ const PLAN_MAP = {
 
 // Per-currency display strings for each plan tier.
 // Keys mirror the currency codes passed by the frontend detectCurrency() helper.
+// Must stay in sync with Currency.PRICES in funnel/engine/app.js — both drive
+// the same price display (paywall + checkout summary).
 const CURRENCY_DISPLAY = {
     usd: {
-        '7_day':   { intro: '$5',  regular: '$20/wk after first week' },
-        '1_month': { intro: '$10', regular: '$35/mo after first month' },
-        '3_month': { intro: '$20', regular: '$60/3 mo after first 3 months' },
+        '7_day':   { intro: '$9.99',    regular: '$49.99/mo after first week' },
+        '1_month': { intro: '$19.99',   regular: '$49.99/mo after first month' },
+        '3_month': { intro: '$34.99',   regular: '$49.99/mo after first 3 months' },
     },
     eur: {
-        '7_day':   { intro: '€5',  regular: '€19/wk after first week' },
-        '1_month': { intro: '€10', regular: '€33/mo after first month' },
-        '3_month': { intro: '€19', regular: '€57/3 mo after first 3 months' },
+        '7_day':   { intro: '€9.99',    regular: '€49.99/mo after first week' },
+        '1_month': { intro: '€19.99',   regular: '€49.99/mo after first month' },
+        '3_month': { intro: '€34.99',   regular: '€49.99/mo after first 3 months' },
     },
     gbp: {
-        '7_day':   { intro: '£4',  regular: '£16/wk after first week' },
-        '1_month': { intro: '£8',  regular: '£28/mo after first month' },
-        '3_month': { intro: '£16', regular: '£48/3 mo after first 3 months' },
+        '7_day':   { intro: '£8.99',    regular: '£41.99/mo after first week' },
+        '1_month': { intro: '£16.99',   regular: '£41.99/mo after first month' },
+        '3_month': { intro: '£29.99',   regular: '£41.99/mo after first 3 months' },
     },
     cad: {
-        '7_day':   { intro: 'CA$7',  regular: 'CA$27/wk after first week' },
-        '1_month': { intro: 'CA$14', regular: 'CA$48/mo after first month' },
-        '3_month': { intro: 'CA$27', regular: 'CA$82/3 mo after first 3 months' },
+        '7_day':   { intro: 'CA$13.99', regular: 'CA$67.99/mo after first week' },
+        '1_month': { intro: 'CA$26.99', regular: 'CA$67.99/mo after first month' },
+        '3_month': { intro: 'CA$46.99', regular: 'CA$67.99/mo after first 3 months' },
     },
     aud: {
-        '7_day':   { intro: 'A$8',  regular: 'A$31/wk after first week' },
-        '1_month': { intro: 'A$16', regular: 'A$55/mo after first month' },
-        '3_month': { intro: 'A$31', regular: 'A$94/3 mo after first 3 months' },
+        '7_day':   { intro: 'A$15.99',  regular: 'A$76.99/mo after first week' },
+        '1_month': { intro: 'A$30.99',  regular: 'A$76.99/mo after first month' },
+        '3_month': { intro: 'A$52.99',  regular: 'A$76.99/mo after first 3 months' },
     },
 };
 

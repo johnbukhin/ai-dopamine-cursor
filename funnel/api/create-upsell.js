@@ -46,8 +46,18 @@ async function logUpsellError({ email, stripeCustomerId, currency, reason, rawEr
     }
 }
 
+const ALLOWED_ORIGINS = [
+    'https://ai-dopamine-addict.vercel.app',
+    'https://mind-compass-webapp.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+];
+
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', 'https://ai-dopamine-addict.vercel.app');
+    const origin = req.headers.origin || '';
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -83,6 +93,24 @@ export default async function handler(req, res) {
         }
 
         const customer = customers.data[0];
+
+        // 1b. Guard against duplicate upsell subscriptions. If the customer
+        //     already has an active subscription on either upsell price, return
+        //     success immediately — idempotent for the caller.
+        const activeSubs = await stripe.subscriptions.list({
+            customer: customer.id,
+            status: 'active',
+            limit: 10,
+        });
+        const alreadySubscribed = activeSubs.data.some(sub =>
+            sub.items.data.some(item =>
+                item.price.id === introPriceId || item.price.id === regularPriceId
+            )
+        );
+        if (alreadySubscribed) {
+            console.info('[create-upsell] Customer already has active upsell subscription', customer.id);
+            return res.status(200).json({ success: true, alreadyExists: true });
+        }
 
         // 2. Retrieve the most recently attached payment method.
         const pms = await stripe.paymentMethods.list({

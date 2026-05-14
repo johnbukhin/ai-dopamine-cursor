@@ -9,6 +9,7 @@ import { UrgeHelp } from './components/UrgeHelp';
 import { isSameDay, subDays } from 'date-fns';
 import { Plan28 } from './components/Plan28';
 import { Settings } from './components/Settings';
+import { ProGate } from './components/ProGate';
 import { supabase } from './src/lib/supabase';
 import { planData, getRequiredTaskKeys, DayCompletion } from './data/planData';
 import { lessonsData } from './data/lessonsData';
@@ -38,6 +39,8 @@ export default function App() {
   // Active plan cycle start — used to scope plan_progress queries/writes.
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [hasUpsellAccess, setHasUpsellAccess] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   // Day-level completion timestamps — loaded from day_completions table.
   // lesson_completed_at : when the lesson was finished (drives next-day green stone).
@@ -52,8 +55,12 @@ export default function App() {
       const { data: { user } } = await supabase!.auth.getUser();
       if (!user) return;
 
-      // Run all three data fetches in parallel for speed
-      const [checkInsResult, appStateResult, coachResult] = await Promise.all([
+      setUserEmail(user.email ?? '');
+
+      interface SubRow { plan_label: string; current_period_end: string | null; }
+
+      // Run all data fetches in parallel for speed
+      const [checkInsResult, appStateResult, coachResult, subsResult] = await Promise.all([
         // Check-ins: all rows for this user, oldest first so streak calc is correct
         supabase!
           .from('check_ins')
@@ -74,6 +81,13 @@ export default function App() {
           .select('messages')
           .eq('user_id', user.id)
           .maybeSingle(),
+
+        // Subscriptions: check for active upsell access
+        supabase!
+          .from('subscriptions')
+          .select('plan_label, current_period_end')
+          .eq('user_email', user.email ?? '')
+          .order('paid_at', { ascending: false }),
       ]);
 
       // ── Check-ins ──────────────────────────────────────────────────────────
@@ -152,6 +166,18 @@ export default function App() {
         setChatHistory([WELCOME_MESSAGE, ...coachResult.data.messages]);
       }
       // If no stored messages, chatHistory stays as [WELCOME_MESSAGE] (default)
+
+      // ── Upsell access ──────────────────────────────────────────────────────
+      if (subsResult.data) {
+        const upsellLabels = ['AI Companion (Intro Month)', 'AI Companion (Monthly)'];
+        const now = new Date();
+        const active = (subsResult.data as SubRow[]).some(
+          s =>
+            upsellLabels.includes(s.plan_label) &&
+            (!s.current_period_end || new Date(s.current_period_end) > now)
+        );
+        setHasUpsellAccess(active);
+      }
     };
 
     loadUserData();
@@ -212,9 +238,17 @@ export default function App() {
     setDayCompletions({});
     setPlanStartedAt(null);
     setChatHistory([WELCOME_MESSAGE]);
+    setHasUpsellAccess(false);
+    setUserEmail('');
     setIsAuthenticated(false);
     setCurrentView(View.LOGIN);
   };
+
+  // Grant access immediately on successful ProGate upgrade — the Stripe webhook
+  // that writes the Supabase row arrives seconds later, so re-querying here would
+  // race and almost always miss the row. We trust data.success === true from
+  // create-upsell, so optimistic state update is correct.
+  const grantUpsellAccess = () => setHasUpsellAccess(true);
 
   // Celebration signal passed to Dashboard. Decided here (not in Dashboard)
   // so we have the authoritative pre-check-in state without racing the
@@ -388,6 +422,7 @@ export default function App() {
         currentView={currentView}
         onChangeView={setCurrentView}
         onLogout={handleLogout}
+        hasUpsellAccess={hasUpsellAccess}
       />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden relative pb-[4.5rem] md:pb-0 w-full">
@@ -408,19 +443,37 @@ export default function App() {
         )}
 
         {currentView === View.AI_COACH && (
-          <AICoach
-            checkInHistory={checkIns}
-            messages={chatHistory}
-            setMessages={setChatHistory}
-          />
+          hasUpsellAccess ? (
+            <AICoach
+              checkInHistory={checkIns}
+              messages={chatHistory}
+              setMessages={setChatHistory}
+            />
+          ) : (
+            <ProGate
+              featureName="AI Coach"
+              featureDescription="Get personalized coaching from your AI companion. Analyze your patterns, reflect on triggers, and build lasting strategies — all tailored to your journey."
+              userEmail={userEmail}
+              onUnlocked={grantUpsellAccess}
+            />
+          )
         )}
 
         {currentView === View.URGE_HELP && (
-          <UrgeHelp
-            checkInHistory={checkIns}
-            chatHistory={chatHistory}
-            setChatHistory={setChatHistory}
-          />
+          hasUpsellAccess ? (
+            <UrgeHelp
+              checkInHistory={checkIns}
+              chatHistory={chatHistory}
+              setChatHistory={setChatHistory}
+            />
+          ) : (
+            <ProGate
+              featureName="Urge Help"
+              featureDescription="Immediate support when cravings hit hardest. Your AI companion guides you through proven techniques to break the urge cycle in real time."
+              userEmail={userEmail}
+              onUnlocked={grantUpsellAccess}
+            />
+          )
         )}
 
         {currentView === View.PLAN_21 && (

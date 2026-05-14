@@ -6,38 +6,59 @@ interface SidebarProps {
   currentView: View;
   onChangeView: (view: View) => void;
   onLogout: () => void;
+  hasUpsellAccess?: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onLogout }) => {
-  const NavItem = ({ view, icon: Icon, label }: { view: View; icon: any; label: string }) => (
-    <button
-      onClick={() => onChangeView(view)}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-        currentView === view
-          ? 'bg-purple-100 text-purple-900 font-semibold'
-          : 'text-gray-600 hover:bg-purple-50 hover:text-purple-900'
-      }`}
-    >
-      <Icon size={20} />
-      <span>{label}</span>
-    </button>
-  );
+const PRO_VIEWS = new Set([View.AI_COACH, View.URGE_HELP]);
 
-  const MobileNavItem = ({ view, icon: Icon, label }: { view: View; icon: any; label: string }) => (
-    <button
-      onClick={() => onChangeView(view)}
-      className={`flex-1 flex flex-col items-center justify-center py-2 px-1 transition-colors ${
-        currentView === view
-          ? 'text-purple-900 font-semibold'
-          : 'text-gray-400 hover:text-purple-600'
-      }`}
-    >
-      <div className={`p-1.5 rounded-full ${currentView === view ? 'bg-purple-100' : 'bg-transparent'}`}>
-        <Icon size={22} />
-      </div>
-      <span className="text-[10px] mt-1">{label}</span>
-    </button>
-  );
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onLogout, hasUpsellAccess = false }) => {
+  const NavItem = ({ view, icon: Icon, label }: { view: View; icon: any; label: string }) => {
+    const isPro = PRO_VIEWS.has(view) && !hasUpsellAccess;
+    return (
+      <button
+        onClick={() => onChangeView(view)}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+          currentView === view
+            ? 'bg-purple-100 text-purple-900 font-semibold'
+            : 'text-gray-600 hover:bg-purple-50 hover:text-purple-900'
+        }`}
+      >
+        <div className="relative flex-shrink-0">
+          <Icon size={20} />
+          {isPro && (
+            <span className="absolute -top-1.5 -right-2 bg-purple-600 text-white text-[8px] font-bold px-1 py-px rounded-full leading-none">
+              PRO
+            </span>
+          )}
+        </div>
+        <span>{label}</span>
+      </button>
+    );
+  };
+
+  const MobileNavItem = ({ view, icon: Icon, label }: { view: View; icon: any; label: string }) => {
+    const isPro = PRO_VIEWS.has(view) && !hasUpsellAccess;
+    return (
+      <button
+        onClick={() => onChangeView(view)}
+        className={`flex-1 flex flex-col items-center justify-center py-2 px-1 transition-colors ${
+          currentView === view
+            ? 'text-purple-900 font-semibold'
+            : 'text-gray-400 hover:text-purple-600'
+        }`}
+      >
+        <div className={`relative p-1.5 rounded-full ${currentView === view ? 'bg-purple-100' : 'bg-transparent'}`}>
+          <Icon size={22} />
+          {isPro && (
+            <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-[8px] font-bold px-1 py-px rounded-full leading-none">
+              PRO
+            </span>
+          )}
+        </div>
+        <span className="text-[10px] mt-1">{label}</span>
+      </button>
+    );
+  };
 
   // --- Components ---
 
