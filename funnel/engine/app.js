@@ -5816,8 +5816,11 @@ const App = {
             if (this._prefetchAbort) { this._prefetchAbort.abort(); this._prefetchAbort = null; }
         }
 
-        // Update DOM
-        document.getElementById('app').innerHTML = html;
+        // Update DOM and reset scroll to top for every new screen
+        const appEl = document.getElementById('app');
+        appEl.innerHTML = html;
+        appEl.scrollTop = 0;
+        window.scrollTo(0, 0);
 
         // Start loading animation for transition screens
         if ((screenData.screenType || screenData.type) === 'transition') {
