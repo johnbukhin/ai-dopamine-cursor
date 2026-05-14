@@ -4961,7 +4961,7 @@ const Events = {
         }
 
         try {
-            const response = await fetch('../api/create-user', {
+            const response = await fetch('/api/create-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -5191,7 +5191,7 @@ const App = {
         }
 
         try {
-            const resp = await fetch('../api/create-upsell', {
+            const resp = await fetch('/api/create-upsell', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ email, currency }),
@@ -5224,7 +5224,7 @@ const App = {
 
         this._checkoutPrefetch = {
             tierId,
-            promise: fetch('../api/create-checkout', {
+            promise: fetch('/api/create-checkout', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ tierId, email, currency }),
@@ -5327,7 +5327,7 @@ const App = {
             if (!data?.clientSecret) {
                 // Fallback: prefetch unavailable, timed out, or returned an error
                 log.info('[Checkout] Prefetch miss — fetching create-checkout now');
-                const response = await fetch('../api/create-checkout', {
+                const response = await fetch('/api/create-checkout', {
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body:    JSON.stringify({ tierId, email, currency }),
