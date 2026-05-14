@@ -41,6 +41,7 @@ export default function App() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [hasUpsellAccess, setHasUpsellAccess] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [autoOpenWelcomeLesson, setAutoOpenWelcomeLesson] = useState(false);
 
   // Day-level completion timestamps — loaded from day_completions table.
   // lesson_completed_at : when the lesson was finished (drives next-day green stone).
@@ -122,6 +123,7 @@ export default function App() {
           .select('plan_started_at')
           .single();
         activePlanStartedAt = inserted?.plan_started_at ?? new Date().toISOString();
+        setAutoOpenWelcomeLesson(true);
       }
 
       setPlanStartedAt(activePlanStartedAt);
@@ -501,6 +503,7 @@ export default function App() {
             completedTasks={completedPlanTasks}
             onTaskToggle={handlePlanTaskToggle}
             dayCompletions={dayCompletions}
+            autoOpenWelcomeLesson={autoOpenWelcomeLesson}
           />
         )}
 

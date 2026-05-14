@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { planData, PlanDay, DayCompletion } from '../data/planData';
 import { JourneyPath } from './JourneyPath';
 import { LessonBottomSheet } from './LessonBottomSheet';
@@ -10,6 +10,8 @@ interface Plan28Props {
   onTaskToggle: (dayNumber: number, taskKey: string) => void;
   // Timestamps from day_completions table — used to compute green/yellow stones.
   dayCompletions: Record<number, DayCompletion>;
+  // When true, automatically open the Day 0 Welcome lesson on mount (new users).
+  autoOpenWelcomeLesson?: boolean;
 }
 
 /**
@@ -33,6 +35,7 @@ export const Plan28: React.FC<Plan28Props> = ({
   completedTasks,
   onTaskToggle,
   dayCompletions,
+  autoOpenWelcomeLesson = false,
 }) => {
   // today at midnight — stable for the component's lifetime (Plan28 remounts on
   // tab switch so this is always fresh when the user re-opens the Journey tab).
@@ -83,6 +86,16 @@ export const Plan28: React.FC<Plan28Props> = ({
   // without the content disappearing mid-slide.
   const [selectedDay, setSelectedDay] = useState<PlanDay | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // New users: open the Welcome lesson (Day 0) automatically on first login.
+  useEffect(() => {
+    if (!autoOpenWelcomeLesson) return;
+    const day0 = planData.find(d => d.day === 0);
+    if (day0) {
+      setSelectedDay(day0);
+      setIsSheetOpen(true);
+    }
+  }, [autoOpenWelcomeLesson]);
 
   const handleSelectLesson = (day: PlanDay) => {
     setSelectedDay(day);
