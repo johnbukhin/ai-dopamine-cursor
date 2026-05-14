@@ -3724,7 +3724,7 @@ const Screens = {
                         <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
                         <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. Only now just at <s class="upsell__intro-strike">${regularPrice}</s> <strong class="upsell__intro-highlight">${introPrice}</strong> a month.</p>
                         <div class="upsell__intro-card">
-                            <img src="${assetBase}/hero.png" alt="" loading="lazy">
+                            <img src="${assetBase}/hero_v2.png" alt="" loading="lazy">
                         </div>
                         <p class="upsell__intro-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel.</p>
                     </div>
@@ -3757,7 +3757,7 @@ const Screens = {
                     <div class="upsell__feature-block upsell__feature-block--dark">
                         <div class="upsell__feature-tag">Daily Progress</div>
                         <h2 class="upsell__feature-title">Stay consistent every single day</h2>
-                        <img class="upsell__feature-photo" src="${assetBase}/progress.png" alt="Progress tracking" loading="lazy">
+                        <img class="upsell__feature-photo" src="${assetBase}/progress_v2.png" alt="Progress tracking" loading="lazy">
                         <ul class="upsell__feature-list">
                             <li>Daily check-ins that keep you accountable</li>
                             <li>Progress insights that show how far you've come</li>
