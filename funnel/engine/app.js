@@ -50,6 +50,143 @@ const Security = {
 };
 
 // ========================================
+// Currency Detection
+// ========================================
+const Currency = {
+    // Maps navigator.language locale prefixes → ISO 4217 currency code.
+    // EUR is the fallback for all unrecognised locales.
+    _LOCALE_MAP: {
+        'en-US': 'usd', 'en-us': 'usd',
+        'en-CA': 'cad', 'en-ca': 'cad',
+        'en-AU': 'aud', 'en-au': 'aud',
+        'en-NZ': 'aud', 'en-nz': 'aud', // NZ uses AUD as closest match
+        'en-GB': 'gbp', 'en-gb': 'gbp',
+        'en-IE': 'eur', 'en-ie': 'eur',
+    },
+
+    // Canonical display info for each supported currency code.
+    _META: {
+        usd: { symbol: '$',    name: 'USD' },
+        eur: { symbol: '€',    name: 'EUR' },
+        gbp: { symbol: '£',    name: 'GBP' },
+        cad: { symbol: 'CA$',  name: 'CAD' },
+        aud: { symbol: 'A$',   name: 'AUD' },
+    },
+
+    // Per-currency pricing for each plan tier on the paywall.
+    // All currencies use X.99 psychological pricing at EUR-equivalent scale.
+    // original  = full regular price (struck through)
+    // discounted = intro/promotional price actually charged
+    // perDay    = discounted ÷ plan days
+    PRICES: {
+        usd: {
+            '7_day':   { original: '$49.99',   discounted: '$9.99',   perDay: '$1.42/day', regularAfter: '$49.99/mo after first week' },
+            '1_month': { original: '$49.99',   discounted: '$19.99',  perDay: '$0.66/day', regularAfter: '$49.99/mo after first month' },
+            '3_month': { original: '$99.99',   discounted: '$34.99',  perDay: '$0.38/day', regularAfter: '$49.99/mo after first 3 months' },
+        },
+        eur: {
+            '7_day':   { original: '€49.99',   discounted: '€9.99',   perDay: '€1.42/day', regularAfter: '€49.99/mo after first week' },
+            '1_month': { original: '€49.99',   discounted: '€19.99',  perDay: '€0.66/day', regularAfter: '€49.99/mo after first month' },
+            '3_month': { original: '€99.99',   discounted: '€34.99',  perDay: '€0.38/day', regularAfter: '€49.99/mo after first 3 months' },
+        },
+        gbp: {
+            '7_day':   { original: '£41.99',   discounted: '£8.99',   perDay: '£1.28/day', regularAfter: '£41.99/mo after first week' },
+            '1_month': { original: '£41.99',   discounted: '£16.99',  perDay: '£0.56/day', regularAfter: '£41.99/mo after first month' },
+            '3_month': { original: '£84.99',   discounted: '£29.99',  perDay: '£0.33/day', regularAfter: '£41.99/mo after first 3 months' },
+        },
+        cad: {
+            '7_day':   { original: 'CA$67.99', discounted: 'CA$13.99', perDay: 'CA$1.99/day', regularAfter: 'CA$67.99/mo after first week' },
+            '1_month': { original: 'CA$67.99', discounted: 'CA$26.99', perDay: 'CA$0.89/day', regularAfter: 'CA$67.99/mo after first month' },
+            '3_month': { original: 'CA$135.99',discounted: 'CA$46.99', perDay: 'CA$0.52/day', regularAfter: 'CA$67.99/mo after first 3 months' },
+        },
+        aud: {
+            '7_day':   { original: 'A$76.99',  discounted: 'A$15.99',  perDay: 'A$2.28/day', regularAfter: 'A$76.99/mo after first week' },
+            '1_month': { original: 'A$76.99',  discounted: 'A$30.99',  perDay: 'A$1.03/day', regularAfter: 'A$76.99/mo after first month' },
+            '3_month': { original: 'A$153.99', discounted: 'A$52.99',  perDay: 'A$0.58/day', regularAfter: 'A$76.99/mo after first 3 months' },
+        },
+    },
+
+    // Per-currency legal disclaimer shown at the bottom of the paywall.
+    // References the 1-month plan prices (discounted intro + regular monthly).
+    DISCLAIMERS: {
+        usd: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is $19.99, then $49.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        eur: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is €19.99, then €49.99/month (prices incl. VAT). Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        gbp: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is £16.99, then £41.99/month (prices incl. VAT). Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        cad: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is CA$26.99, then CA$67.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+        aud: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is A$30.99, then A$76.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+    },
+
+    // Return the disclaimer text for the detected (or given) currency.
+    disclaimer(code) {
+        return this.DISCLAIMERS[code || this.detect()] || this.DISCLAIMERS.eur;
+    },
+
+    // Upsell bundle pricing per currency.
+    // priceId values are the actual Stripe test price IDs — safe to expose in
+    // frontend code since they are not secret (like the publishable key).
+    // Upsell add-on subscription pricing (intro × 1 month, then regular).
+    UPSELL_PRICES: {
+        usd: { intro: '$19.99', regular: '$69.99/mo' },
+        eur: { intro: '€19.99', regular: '€69.99/mo' },
+        gbp: { intro: '£16.99', regular: '£59.99/mo' },
+        cad: { intro: 'CA$26.99', regular: 'CA$94.99/mo' },
+        aud: { intro: 'A$30.99', regular: 'A$106.99/mo' },
+    },
+
+    // Detect currency from browser signals. Cached after first call.
+    // Timezone is the primary signal — far more reliable than navigator.language
+    // because many European users have their browser set to en-US locale while
+    // physically located in Europe.
+    _detected: null,
+    detect() {
+        if (this._detected) return this._detected;
+
+        // Dev/QA override: ?currency=eur in the URL forces a specific currency
+        const urlOverride = new URLSearchParams(window.location.search).get('currency');
+        if (urlOverride && this._META[urlOverride.toLowerCase()]) {
+            this._detected = urlOverride.toLowerCase();
+            return this._detected;
+        }
+
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (tz) {
+                if (/^Europe\//.test(tz)) {
+                    // Europe/London → GBP; all other European zones → EUR
+                    this._detected = tz === 'Europe/London' ? 'gbp' : 'eur';
+                    return this._detected;
+                }
+                if (/^Australia\//.test(tz) || tz === 'Pacific/Auckland') {
+                    this._detected = 'aud';
+                    return this._detected;
+                }
+                // Canadian timezones inside America/
+                if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Regina|Halifax|St_Johns|Moncton|Whitehorse|Yellowknife|Dawson)/.test(tz)) {
+                    this._detected = 'cad';
+                    return this._detected;
+                }
+                // All other timezones (America/*, Asia/*, Africa/*, etc.) → USD
+                this._detected = 'usd';
+                return this._detected;
+            }
+        } catch (e) { /* Intl not supported — fall through to locale */ }
+
+        // Locale-based fallback for environments where Intl.DateTimeFormat is unavailable
+        const locale = navigator.language || 'en-US';
+        const code = this._LOCALE_MAP[locale]
+            || this._LOCALE_MAP[locale.toLowerCase()]
+            || (['en'].includes(locale.split('-')[0]) ? 'usd' : 'eur');
+        this._detected = code;
+        return code;
+    },
+
+    // Return the symbol for the detected (or given) currency.
+    symbol(code) {
+        return this._META[code || this.detect()]?.symbol || '€';
+    },
+};
+
+// ========================================
 // Scoring Engine — real scoring from likert answers
 // ========================================
 const Scoring = {
@@ -519,9 +656,12 @@ const State = {
         answers: {},
         history: [],      // Navigation history for back button
         startedAt: null,
-        selectedTier: '1_month',  // Phase 3c: Default pricing tier
-        openFaqIndex: null,       // Phase 3c: Currently open FAQ (null = all closed)
-        accountCreated: false     // Whether user account has been created
+        selectedTier: '1_month',    // Default subscription pricing tier
+        openFaqIndex: null,         // Currently open FAQ item (null = all closed)
+        accountCreated: false,      // Whether user account has been created
+        upsellTier: '1_month',      // Selected upsell bundle duration
+        checkoutCurrency: null,     // Currency used at checkout (set after payment succeeds)
+        hasUpsell: false            // Whether user purchased the upsell bundle
     },
 
     /**
@@ -1505,10 +1645,11 @@ const Components = {
         const safeId              = Security.escapeHtml(tier.id);
         const selectedClass       = isSelected ? 'pricing-card--selected' : '';
 
-        // Per-day price badge: parse "$5.71/day" → currency symbol + integer + decimal
-        const currencyMatch = (tier.pricePerDay || '').match(/[€$£¥]/);
-        const currency = currencyMatch ? currencyMatch[0] : '$';
-        const perDayRaw = (tier.pricePerDay || '').replace(/[€$£¥]/g, '').replace('/day', '').trim();
+        // Per-day price badge: parse "CA$1.00/day" → prefix ("CA$") + integer + decimal
+        const perDayStr = tier.pricePerDay || '';
+        const prefixMatch = perDayStr.match(/^(CA\$|A\$|[€$£¥])/);
+        const currency = prefixMatch ? prefixMatch[1] : '$';
+        const perDayRaw = perDayStr.slice(currency.length).replace('/day', '').trim();
         const [perDayInt, perDayDec] = perDayRaw.split('.');
 
         return `
@@ -1546,15 +1687,28 @@ const Components = {
     },
 
     /**
-     * Render pricing tiers container (paywall)
+     * Render pricing tiers container (paywall).
+     * For non-EUR locales, overrides the hardcoded EUR prices from screens.json
+     * with the user's detected currency values. For EUR, passes tier data through
+     * unchanged so the original screens.json prices are displayed as designed.
      * @param {Array<Object>} tiers - Array of pricing tier objects
      * @param {string} selectedTierId - Currently selected tier ID
      * @returns {string} HTML string
      */
     pricingTiers(tiers, selectedTierId) {
-        const cardsHtml = tiers.map(tier => 
-            this.pricingCard(tier, tier.id === selectedTierId)
-        ).join('');
+        const currencyCode   = Currency.detect();
+        const currencyPrices = Currency.PRICES[currencyCode] || null;
+
+        const cardsHtml = tiers.map(tier => {
+            const cp = currencyPrices?.[tier.id];
+            const enrichedTier = cp ? {
+                ...tier,
+                originalPrice:   cp.original,
+                discountedPrice: cp.discounted,
+                pricePerDay:     cp.perDay,
+            } : tier;
+            return this.pricingCard(enrichedTier, enrichedTier.id === selectedTierId);
+        }).join('');
 
         return `
             <div class="pricing-tiers">
@@ -3299,14 +3453,16 @@ const Screens = {
         const safeId = Security.escapeHtml(screenData.id);
 
         // Resolve selected tier to display the order summary
-        const tierId = State.data.selectedTier || '1_month';
-        const paywall = Router.getScreen('paywall');
-        const tier = paywall?.pricingTiers?.find(t => t.id === tierId);
+        const tierId       = State.data.selectedTier || '1_month';
+        const paywall      = Router.getScreen('paywall');
+        const tier         = paywall?.pricingTiers?.find(t => t.id === tierId);
+        const currencyCode = Currency.detect();
+        const cp           = Currency.PRICES[currencyCode]?.[tierId] || null;
 
-        // Display labels — fall back to generic strings if paywall data missing
+        // Display labels — prefer currency-detected prices over hardcoded JSON values
         const tierName    = Security.escapeHtml(tier?.name || 'Personalized Plan');
-        const origPrice   = Security.escapeHtml(tier?.originalPrice || tier?.price || '');
-        const introPrice  = Security.escapeHtml(tier?.discountedPrice || tier?.price || '');
+        const origPrice   = Security.escapeHtml(cp?.original || tier?.originalPrice || tier?.price || '');
+        const introPrice  = Security.escapeHtml(cp?.discounted || tier?.discountedPrice || tier?.price || '');
         const savingsText = Security.escapeHtml(tier?.savings || '');
 
         // Promo code (cosmetic display only — discount is applied server-side)
@@ -3431,8 +3587,8 @@ const Screens = {
                         ${Components.ctaButton(ctaText, safeId)}
                     </div>
 
-                    <!-- 8. Legal disclaimer -->
-                    ${screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : ''}
+                    <!-- 8. Legal disclaimer — currency-aware, falls back to screens.json value -->
+                    ${Components.legalDisclaimer(Currency.disclaimer() || screenData.legalDisclaimer || '')}
 
                     <!-- 9. Payment security + icons -->
                     ${screenData.trustElements?.paymentSecurity ?
@@ -3480,7 +3636,7 @@ const Screens = {
                             Components.personalizedHeadline(screenData.headline),
                             Components.promoTicket(promoCode, initialMins),
                             Components.contextTags(mainChallenge, goal),
-                            screenData.legalDisclaimer ? Components.legalDisclaimer(screenData.legalDisclaimer) : '',
+                            Components.legalDisclaimer(Currency.disclaimer() || screenData.legalDisclaimer || ''),
                             screenData.trustElements?.paymentSecurity ?
                                 Components.paymentIcons(
                                     screenData.trustElements.paymentSecurity.headline,
@@ -3496,6 +3652,180 @@ const Screens = {
                     ${screenData.companyInfo ? Components.companyFooter(screenData.companyInfo) : ''}
 
                 </main>
+            </div>
+        `;
+    },
+
+    /**
+     * Render post-checkout upsell screen — AI Companion bundle offer.
+     *
+     * Long-scroll 10-block layout. No Payment Element is shown; the CTA triggers
+     * a server-side off-session charge via /api/create-upsell. If no saved PM
+     * exists, or charge fails, the user is silently forwarded to thank_you.
+     *
+     * Layout:
+     *   Topbar  — progress stepper (Payment ✓ → Bonus → Access Plan) + SKIP link
+     *   Block 1 — hero image with headline and price overlay
+     *   Block 2 — product showcase (two split images + tagline)
+     *   Block 3 — early inline CTA with legal
+     *   Block 4 — Feature: AI Coach (dark bg)
+     *   Block 5 — Feature: AI Help (light bg)
+     *   Block 6 — Feature: Daily Progress (dark bg)
+     *   Block 7 — World map social proof
+     *   Block 8 — Testimonial horizontal carousel
+     *   Block 9 — Final showcase image + full legal disclaimer
+     *   Float   — fixed "CONFIRM PAYMENT" button (no container)
+     *
+     * @param {Object} screenData - Screen data from JSON
+     * @returns {string} HTML string
+     */
+    upsell(screenData) {
+        const safeId        = Security.escapeHtml(screenData.id);
+        const currencyCode  = Currency.detect();
+        const up            = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
+        const introPrice    = Security.escapeHtml(up.intro);
+        const regularPrice  = Security.escapeHtml(up.regular);
+        const regularAmount = Security.escapeHtml(up.regular.replace('/mo', ''));
+
+        const assetBase = 'assets/upsell';
+
+        return `
+            <div class="screen upsell-screen" data-screen="${safeId}">
+
+                <!-- ── Topbar: brand/skip row + progress stepper row ── -->
+                <div class="upsell__topbar">
+                    <div class="upsell__topbar-brand-row">
+                        <span class="upsell__brand-name">Mind Compass</span>
+                        <button id="upsell-skip-btn" class="upsell__skip-link">SKIP →</button>
+                    </div>
+                    <div class="upsell__stepper">
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--done">✓</div>
+                            <span class="upsell__step-label upsell__step-label--done">Payment</span>
+                        </div>
+                        <div class="upsell__step-line upsell__step-line--done"></div>
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--current">2</div>
+                            <span class="upsell__step-label upsell__step-label--current">Bonus</span>
+                        </div>
+                        <div class="upsell__step-line"></div>
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--future">3</div>
+                            <span class="upsell__step-label">Access Plan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <main class="content upsell">
+
+                    <!-- ── Block 1: Intro — title, subtitle+pricing, image, legal ── -->
+                    <div class="upsell__intro">
+                        <p class="upsell__eyebrow">Special one-time offer</p>
+                        <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
+                        <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. Only now just at <s class="upsell__intro-strike">${regularAmount}</s> <strong class="upsell__intro-highlight">${introPrice}</strong> a month.</p>
+                        <div class="upsell__intro-card">
+                            <img src="${assetBase}/hero_v2.png" alt="" loading="lazy">
+                        </div>
+                        <p class="upsell__intro-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel.</p>
+                    </div>
+
+                    <!-- ── Block 4: Feature — AI Coach (dark) ── -->
+                    <div class="upsell__feature-block upsell__feature-block--dark">
+                        <div class="upsell__feature-tag">AI Coach</div>
+                        <h2 class="upsell__feature-title">Your 24/7 recovery coach</h2>
+                        <img class="upsell__feature-photo" src="${assetBase}/feature_coach.png" alt="AI Coach" loading="lazy">
+                        <ul class="upsell__feature-list">
+                            <li>Understands exactly where you are in your journey</li>
+                            <li>Checks in on hard days so you don't face them alone</li>
+                            <li>Keeps you on track without relying on willpower</li>
+                        </ul>
+                    </div>
+
+                    <!-- ── Block 5: Feature — AI Help (light) ── -->
+                    <div class="upsell__feature-block">
+                        <div class="upsell__feature-tag">AI Help</div>
+                        <h2 class="upsell__feature-title">Instant answers when urges hit</h2>
+                        <img class="upsell__feature-photo" src="${assetBase}/feature_help.png" alt="AI Help" loading="lazy">
+                        <ul class="upsell__feature-list">
+                            <li>Explains <em>why</em> you feel what you feel, in plain language</li>
+                            <li>Gives you actionable steps mid-craving, not generic advice</li>
+                            <li>Available inside the app the moment you need it</li>
+                        </ul>
+                    </div>
+
+                    <!-- ── Block 6: Feature — Daily Progress (dark) ── -->
+                    <div class="upsell__feature-block upsell__feature-block--dark">
+                        <div class="upsell__feature-tag">Daily Progress</div>
+                        <h2 class="upsell__feature-title">Stay consistent every single day</h2>
+                        <img class="upsell__feature-photo" src="${assetBase}/progress_v2.png" alt="Progress tracking" loading="lazy">
+                        <ul class="upsell__feature-list">
+                            <li>Daily check-ins that keep you accountable</li>
+                            <li>Progress insights that show how far you've come</li>
+                            <li>Celebrate milestones that make recovery feel real</li>
+                        </ul>
+                    </div>
+
+                    <!-- ── Block 7: World map social proof ── -->
+                    <div class="upsell__worldmap">
+                        <img class="upsell__worldmap-img" src="../../assets/world-map-dots.svg" alt="" loading="lazy">
+                        <p class="upsell__worldmap-stat"><strong>50,000+</strong> people worldwide are recovering with Mind Compass</p>
+                    </div>
+
+                    <!-- ── Block 8: Testimonial horizontal carousel ── -->
+                    <div class="upsell__reviews">
+                        <h2 class="upsell__reviews-title">What people are saying</h2>
+                        <div class="upsell__reviews-scroll">
+                            <div class="upsell__review-card">
+                                <div class="upsell__review-stars">★★★★★</div>
+                                <p class="upsell__review-text">"Day 12 hit like a wall. I almost gave up. The AI Coach helped me understand what was happening and what to do. I finished the whole plan."</p>
+                                <div class="upsell__review-author">
+                                    <div class="upsell__review-avatar">M</div>
+                                    <div>
+                                        <div class="upsell__review-name">Marcus D.</div>
+                                        <div class="upsell__review-meta">Completed Day 28</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upsell__review-card">
+                                <div class="upsell__review-stars">★★★★★</div>
+                                <p class="upsell__review-text">"I used to spiral when I slipped. AI Help showed me exactly what to do instead of giving up. I'm now on day 41 — never thought I'd get here."</p>
+                                <div class="upsell__review-author">
+                                    <div class="upsell__review-avatar">S</div>
+                                    <div>
+                                        <div class="upsell__review-name">Sophie K.</div>
+                                        <div class="upsell__review-meta">Day 41</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upsell__review-card">
+                                <div class="upsell__review-stars">★★★★★</div>
+                                <p class="upsell__review-text">"Having the AI check in on me every morning changed everything. I'm not fighting this alone anymore. Completely worth every penny."</p>
+                                <div class="upsell__review-author">
+                                    <div class="upsell__review-avatar">J</div>
+                                    <div>
+                                        <div class="upsell__review-name">James R.</div>
+                                        <div class="upsell__review-meta">Week 8</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Block 9: Final showcase + full legal ── -->
+                    <div class="upsell__final">
+                        <img class="upsell__final-img" src="${assetBase}/final_showcase.png" alt="Mind Compass app" loading="lazy">
+                        <p class="upsell__final-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel. You can cancel subscription anytime from the app settings or by contacting us.</p>
+                    </div>
+
+                    <!-- Spacer so content clears the floating CTA -->
+                    <div style="height: 100px;"></div>
+                </main>
+
+                <!-- ── Floating CTA (no container, drop shadow only) ── -->
+                <button id="upsell-upgrade-btn" class="cta-button upsell__float-btn" data-screen="${safeId}" data-upsell-confirm="true">
+                    CONFIRM PAYMENT
+                </button>
+
             </div>
         `;
     },
@@ -4065,6 +4395,13 @@ const Events = {
             return;
         }
 
+        // Upsell skip button
+        const upsellSkip = e.target.closest('#upsell-skip-btn');
+        if (upsellSkip) {
+            this.handleUpsellSkip();
+            return;
+        }
+
         // FAQ question click (Phase 3c)
         const faqQuestion = e.target.closest('.faq-question');
         if (faqQuestion) {
@@ -4435,6 +4772,14 @@ const Events = {
     handleCtaClick(button) {
         const screenId = button.dataset.screen;
         log.info(`[User Action] CTA clicked on ${screenId}`);
+
+        // Upsell upgrade button — trigger off-session charge then proceed
+        // Matches both the floating CTA (id=upsell-upgrade-btn) and the
+        // early inline CTA (no id, but data-upsell-confirm set on both).
+        if (button.dataset.upsellConfirm) {
+            this.handleUpsellUpgrade(button);
+            return;
+        }
 
         // Generic CTA: navigate to next screen for known screen types
         const screenData = Router.getScreen(screenId);
@@ -4816,9 +5161,60 @@ const App = {
      *
      * Called from App.render() on paywall render, and on every tier change.
      */
+
+    // ── Upsell handlers ──────────────────────────────────────────────────────
+
+    handleUpsellSkip() {
+        const screen = Router.getScreen(State.data.currentScreen);
+        State.pushHistory(screen?.id || 'upsell');
+        const nextScreen = Router.getNextScreen(screen?.id || 'upsell');
+        if (nextScreen) Router.navigate(nextScreen);
+    },
+
+    async handleUpsellUpgrade(button) {
+        if (button.disabled) return;
+        // Disable all confirm buttons to prevent double submission
+        document.querySelectorAll('[data-upsell-confirm]').forEach(b => {
+            b.disabled = true;
+            b.classList.add('cta-button--disabled');
+            b.textContent = 'Processing…';
+        });
+
+        const email    = State.getAnswer('email_capture') || '';
+        const currency = State.data.checkoutCurrency || Currency.detect();
+
+        if (!email || isDev()) {
+            log.info('[Upsell] Dev mock or no email — skipping upsell charge');
+            State.set('hasUpsell', true);
+            this.handleUpsellSkip();
+            return;
+        }
+
+        try {
+            const resp = await fetch('../api/create-upsell', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ email, currency }),
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                State.set('hasUpsell', true);
+                log.info('[Upsell] Subscription created');
+            } else {
+                log.warn('[Upsell] Subscription skipped:', data.reason);
+            }
+        } catch (err) {
+            log.error('[Upsell] Network error:', err.message);
+        }
+
+        this.handleUpsellSkip();
+    },
+
     prefetchCheckout() {
-        const tierId = State.data.selectedTier || '1_month';
-        const email  = State.getAnswer('email_capture') || '';
+        const tierId   = State.data.selectedTier || '1_month';
+        const email    = State.getAnswer('email_capture') || '';
+        const currency = Currency.detect();
         if (!email || isDev()) return;
 
         // Cancel any in-flight prefetch for a stale tier
@@ -4831,7 +5227,7 @@ const App = {
             promise: fetch('../api/create-checkout', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ tierId, email }),
+                body:    JSON.stringify({ tierId, email, currency }),
                 signal:  this._prefetchAbort.signal,
             })
             .then(r => r.json())
@@ -4872,8 +5268,9 @@ const App = {
     async initStripe(screenData) {
         if (this._stripeInitializing) return;
         this._stripeInitializing = true;
-        const tierId = State.data.selectedTier || '1_month';
-        const email  = State.getAnswer('email_capture') || '';
+        const tierId   = State.data.selectedTier || '1_month';
+        const email    = State.getAnswer('email_capture') || '';
+        const currency = Currency.detect();
 
         const payBtn  = document.getElementById('checkout-pay-btn');
         const errorEl = document.getElementById('checkout-error');
@@ -4933,7 +5330,7 @@ const App = {
                 const response = await fetch('../api/create-checkout', {
                     method:  'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ tierId, email }),
+                    body:    JSON.stringify({ tierId, email, currency }),
                 });
                 const raw = await response.text();
                 try {
@@ -5014,8 +5411,10 @@ const App = {
                         return;
                     }
 
-                    // Payment succeeded — proceed to thank_you
-                    log.info('[Checkout] Payment confirmed, navigating to thank_you');
+                    // Payment succeeded — store currency so the upsell screen can charge
+                    // in the same currency without re-detecting.
+                    State.set('checkoutCurrency', currency);
+                    log.info('[Checkout] Payment confirmed, navigating to upsell/thank_you');
                     State.pushHistory(screenData.id);
                     const nextScreen = Router.getNextScreen(screenData.id);
                     if (nextScreen) {
@@ -5344,6 +5743,9 @@ const App = {
                 break;
             case 'checkout':
                 html = Screens.checkout(screenData);
+                break;
+            case 'upsell':
+                html = Screens.upsell(screenData);
                 break;
             case 'payment':
                 html = Screens.paywall(screenData);

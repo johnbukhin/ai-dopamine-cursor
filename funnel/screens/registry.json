@@ -3,6 +3,12 @@
     "id": "checkout",
     "screenType": "checkout",
     "headline": "Complete Your Order",
+    "nextScreenLogic": "upsell"
+  },
+  {
+    "id": "upsell",
+    "screenType": "upsell",
+    "headline": "You're in! One last thing…",
     "nextScreenLogic": "thank_you"
   },
   {
