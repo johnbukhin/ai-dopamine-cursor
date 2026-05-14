@@ -39,18 +39,7 @@ export default function App() {
   // Active plan cycle start — used to scope plan_progress queries/writes.
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
-  // Optimistic upsell grant: set true immediately if funnel passed ?upsell=1,
-  // then clean the param from the URL so it doesn't persist across refreshes.
-  const [hasUpsellAccess, setHasUpsellAccess] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('upsell') === '1') {
-      // Remove the param without triggering a navigation
-      const clean = window.location.href.replace(/[?&]upsell=1/, '').replace(/\?$/, '');
-      window.history.replaceState(null, '', clean);
-      return true;
-    }
-    return false;
-  });
+  const [hasUpsellAccess, setHasUpsellAccess] = useState(false);
   const [userEmail, setUserEmail] = useState('');
 
   // Day-level completion timestamps — loaded from day_completions table.
@@ -192,9 +181,8 @@ export default function App() {
       if (subsResult.data) {
         const active = checkUpsellAccess(subsResult.data as SubRow[]);
         if (active) setHasUpsellAccess(true);
-        // Webhook may not have written the upsell row yet (fires 2–10s after
-        // payment). Retry once after 8s — only if still locked to avoid
-        // overwriting an optimistic true granted via ?upsell=1.
+        // create-upsell writes immediately but may be slightly behind webapp load.
+        // Retry once after 8s — only if still locked.
         else {
           setTimeout(async () => {
             const { data: retryRows } = await supabase!

@@ -5022,12 +5022,11 @@ const Events = {
                     // Supabase session cross-origin (localStorage is scoped per origin and
                     // cannot be read by a different domain).
                     // The webapp reads, consumes, and strips the hash on mount.
-                    const upsellParam = State.data.hasUpsell ? '?upsell=1' : '';
                     const hash = result.access_token && result.refresh_token
                         ? '#access_token=' + encodeURIComponent(result.access_token) +
                           '&refresh_token=' + encodeURIComponent(result.refresh_token)
                         : '';
-                    window.location.href = CONFIG.webappUrl + upsellParam + hash;
+                    window.location.href = CONFIG.webappUrl + hash;
                     return;
                 }
                 // Local dev: CONFIG.webappUrl is empty — navigate to the next funnel screen.
@@ -5453,7 +5452,60 @@ const App = {
                     // Payment succeeded — store currency so the upsell screen can charge
                     // in the same currency without re-detecting.
                     State.set('checkoutCurrency', currency);
-                    log.info('[Checkout] Payment confirmed, navigating to upsell/thank_you');
+                    log.info('[Checkout] Payment confirmed — provisioning Supabase account');
+
+                    // Fire-and-forget provision: create the auth user + profile immediately
+                    // so the DB record exists before the user reaches account creation.
+                    // We store the session tokens so create-user.js can be called with
+                    // password-only at account creation (user already exists).
+                    try {
+                        const scoreData = Scoring.calculate();
+                        const userName  = State.getAnswer('name_capture');
+                        const promoCode = Components.generatePromoCode(userName, 50);
+                        const funnelVersion =
+                            window.location.pathname.match(/\/funnels\/([^/]+)\//)?.[1] ||
+                            window.location.pathname.match(/\/funnel-([^/]+)/)?.[1] ||
+                            null;
+
+                        const provRes = await fetch('/api/provision-account', {
+                            method:  'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email,
+                                name:           userName || null,
+                                selectedPlan:   State.data.selectedTier,
+                                promoCode,
+                                quizAnswers:    State.data.answers,
+                                gender:         State.getAnswer('landing') || null,
+                                ageGroup:       State.getAnswer('age_selection') || State.getAnswer('question_age') || null,
+                                mainChallenge:  Scoring.getMainChallenge() || null,
+                                goal:           State.getAnswer('question_33') ? Scoring.getGoal() : null,
+                                scores: {
+                                    overall:              scoreData.overall?.pct              ?? null,
+                                    dopamine_sensitivity: scoreData.dopamine_sensitivity?.pct  ?? null,
+                                    emotional_regulation: scoreData.emotional_regulation?.pct  ?? null,
+                                    pattern_stage:        scoreData.pattern_stage?.pct         ?? null,
+                                    physical_impact:      scoreData.physical_impact?.pct       ?? null,
+                                },
+                                funnelVersion,
+                            }),
+                        });
+                        const provData = await provRes.json();
+                        if (provData.provisioned) {
+                            State.set('provisionTokens', {
+                                access_token:  provData.access_token,
+                                refresh_token: provData.refresh_token,
+                            });
+                            log.info('[Checkout] Account provisioned successfully');
+                        } else {
+                            log.warn('[Checkout] Provision returned false:', provData.reason);
+                        }
+                    } catch (provErr) {
+                        // Non-fatal — account creation at the next screen is the fallback
+                        log.warn('[Checkout] provision-account call failed:', provErr.message);
+                    }
+
+                    log.info('[Checkout] Navigating to upsell/create_account');
                     State.pushHistory(screenData.id);
                     const nextScreen = Router.getNextScreen(screenData.id);
                     if (nextScreen) {

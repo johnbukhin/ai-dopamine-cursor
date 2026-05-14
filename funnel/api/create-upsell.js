@@ -175,6 +175,35 @@ export default async function handler(req, res) {
         }
 
         console.info('[create-upsell] Subscription schedule created for', email, schedule.id);
+
+        // Write immediately to Supabase so the webapp sees the upsell subscription
+        // without waiting for the webhook (which fires 2–10s later).
+        // The webhook will upsert again with the final invoice data — that's fine.
+        try {
+            const subId = typeof sub === 'string' ? sub : sub?.id;
+            if (subId) {
+                const introPrice = await stripe.prices.retrieve(introPriceId);
+                await supabase.from('subscriptions').upsert(
+                    {
+                        stripe_customer_id:     customer.id,
+                        stripe_subscription_id: subId,
+                        user_email:             email,
+                        status:                 'active',
+                        paid_at:                new Date().toISOString(),
+                        amount_paid:            introPrice.unit_amount,
+                        currency:               currency,
+                        current_period_end:     new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
+                        plan_label:             'AI Companion (Intro Month)',
+                        cancel_at_period_end:   false,
+                    },
+                    { onConflict: 'stripe_subscription_id' }
+                );
+            }
+        } catch (dbErr) {
+            // Non-fatal — webhook will write it eventually
+            console.error('[create-upsell] Supabase upsert error (non-fatal):', dbErr.message);
+        }
+
         return res.status(200).json({ success: true, scheduleId: schedule.id });
 
     } catch (err) {
