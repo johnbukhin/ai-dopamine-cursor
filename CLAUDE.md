@@ -29,10 +29,10 @@ After making code changes to `funnel/`:
 
 1. **Restart the server** (always do this after code changes):
    ```bash
-   lsof -ti:8080 | xargs kill -9 2>/dev/null || true && cd /Users/yevhen/cursor-projects/ClaudeCode && python3 -m http.server 8080 &
+   lsof -ti:8080 | xargs kill -9 2>/dev/null || true && cd /Users/yevhen/cursor-projects/ClaudeCode/funnel && python3 -m http.server 8080 &
    ```
 
-2. **Provide test URL**: http://localhost:8080/funnel/funnels/v2/
+2. **Provide test URL**: http://localhost:8080/funnel-v2/
 
 3. **Tell user**: "Open browser console (Cmd+Option+I) to check for errors"
 
@@ -68,7 +68,7 @@ The script tests 5 areas — all regressions from the purchase/login flow fixes:
 
 **Local page load check:**
 ```bash
-curl -s http://localhost:8080/funnel/funnels/v2/ | grep -o '<title>[^<]*</title>'
+curl -s http://localhost:8080/funnel-v2/ | grep -o '<title>[^<]*</title>'
 # Must return <title>Mind Compass</title>
 ```
 

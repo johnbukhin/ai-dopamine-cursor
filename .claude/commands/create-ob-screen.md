@@ -225,5 +225,5 @@ Screen IDs use the `ob_` prefix and are descriptive and short:
 
 Tell the user:
 - The screen ID and where it was added
-- The test URL: `http://localhost:8080/funnel/funnels/<funnel>/` (start server first with the command in CLAUDE.md)
+- The test URL: `http://localhost:8080/<funnel>/` (serve from `funnel/` dir — see CLAUDE.md)
 - Remind them to restart the server after any JS/JSON change

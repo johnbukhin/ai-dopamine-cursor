@@ -71,10 +71,10 @@ ClaudeCode/
 
 ```bash
 # Start local server from project root
-python3 -m http.server 8080
+cd funnel && python3 -m http.server 8080
 
 # Open in browser
-open http://localhost:8080/funnel/funnels/v2/
+open http://localhost:8080/funnel-v2/
 ```
 
 Features:

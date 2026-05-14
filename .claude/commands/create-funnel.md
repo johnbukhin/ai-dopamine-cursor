@@ -158,8 +158,8 @@ If there are missing IDs, add the screen objects to `screens.json` or fix the ID
 ### Step 9 — Report back
 
 Tell the user:
-- **Test URL:** `http://localhost:8080/funnel/funnels/<slug>/`
-  (start server: `lsof -ti:8080 | xargs kill -9 2>/dev/null || true && cd /Users/yevhen/cursor-projects/ClaudeCode && python3 -m http.server 8080 &`)
+- **Test URL:** `http://localhost:8080/<slug>/`
+  (start server from `funnel/` dir: `lsof -ti:8080 | xargs kill -9 2>/dev/null || true && cd /Users/yevhen/cursor-projects/ClaudeCode/funnel && python3 -m http.server 8080 &`)
 - **Production URL** (after push + Vercel deploy): `https://<vercel-domain>/<url-slug>`
 - **Sequence summary:** how many screens, which paywall is used
 - What screens were added to local `screens.json` vs reused from registry
