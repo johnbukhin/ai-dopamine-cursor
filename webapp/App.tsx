@@ -39,7 +39,14 @@ export default function App() {
   // Active plan cycle start — used to scope plan_progress queries/writes.
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
-  const [hasUpsellAccess, setHasUpsellAccess] = useState(false);
+  const [hasUpsellAccess, setHasUpsellAccess] = useState(
+    () => localStorage.getItem('mc_has_upsell') === '1'
+  );
+  const setUpsellAccess = (val: boolean) => {
+    setHasUpsellAccess(val);
+    if (val) localStorage.setItem('mc_has_upsell', '1');
+    else localStorage.removeItem('mc_has_upsell');
+  };
   const [userEmail, setUserEmail] = useState('');
   const [autoOpenWelcomeLesson, setAutoOpenWelcomeLesson] = useState(false);
 
@@ -182,7 +189,7 @@ export default function App() {
 
       if (subsResult.data) {
         const active = checkUpsellAccess(subsResult.data as SubRow[]);
-        if (active) setHasUpsellAccess(true);
+        if (active) setUpsellAccess(true);
         // create-upsell writes immediately but may be slightly behind webapp load.
         // Retry once after 8s — only if still locked.
         else {
@@ -193,7 +200,7 @@ export default function App() {
               .eq('user_email', user.email ?? '')
               .order('paid_at', { ascending: false });
             if (retryRows && checkUpsellAccess(retryRows as SubRow[])) {
-              setHasUpsellAccess(true);
+              setUpsellAccess(true);
             }
           }, 8000);
         }
@@ -258,7 +265,7 @@ export default function App() {
     setDayCompletions({});
     setPlanStartedAt(null);
     setChatHistory([WELCOME_MESSAGE]);
-    setHasUpsellAccess(false);
+    setUpsellAccess(false);
     setUserEmail('');
     setIsAuthenticated(false);
     setCurrentView(View.LOGIN);
@@ -268,7 +275,7 @@ export default function App() {
   // that writes the Supabase row arrives seconds later, so re-querying here would
   // race and almost always miss the row. We trust data.success === true from
   // create-upsell, so optimistic state update is correct.
-  const grantUpsellAccess = () => setHasUpsellAccess(true);
+  const grantUpsellAccess = () => setUpsellAccess(true);
 
   // Celebration signal passed to Dashboard. Decided here (not in Dashboard)
   // so we have the authoritative pre-check-in state without racing the
