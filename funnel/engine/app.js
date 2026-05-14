@@ -3293,18 +3293,31 @@ const Screens = {
 
         return `
             <div class="screen create-account-screen" data-screen="${safeId}">
-                ${Components.header()}
+
+                <!-- Progress stepper — reuses upsell topbar styles; step 3 is current -->
+                <div class="upsell__topbar">
+                    <div class="upsell__topbar-brand-row">
+                        <span class="upsell__brand-name">Mind Compass</span>
+                    </div>
+                    <div class="upsell__stepper">
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--done">✓</div>
+                            <span class="upsell__step-label upsell__step-label--done">Payment</span>
+                        </div>
+                        <div class="upsell__step-line upsell__step-line--done"></div>
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--done">✓</div>
+                            <span class="upsell__step-label upsell__step-label--done">Bonus</span>
+                        </div>
+                        <div class="upsell__step-line upsell__step-line--done"></div>
+                        <div class="upsell__step-item">
+                            <div class="upsell__step-circle upsell__step-circle--current">3</div>
+                            <span class="upsell__step-label upsell__step-label--current">Access Plan</span>
+                        </div>
+                    </div>
+                </div>
 
                 <main class="content create-account">
-                    <div class="create-account__icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <line x1="19" y1="8" x2="19" y2="14"/>
-                            <line x1="22" y1="11" x2="16" y2="11"/>
-                        </svg>
-                    </div>
-
                     <h1 class="headline">${safeHeadline}</h1>
                     ${safeSubheadline ? `<p class="subheadline">${safeSubheadline}</p>` : ''}
 
