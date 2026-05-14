@@ -2655,6 +2655,7 @@ body {
    ======================================== */
 .create-account {
     text-align: center;
+    padding-top: 24px;
 }
 
 .create-account__icon {
