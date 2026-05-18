@@ -3,6 +3,7 @@ import { CheckIn, CheckInStatus, View } from '../types';
 import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays, Waves } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isFuture } from 'date-fns';
 import { count as readUrgeCount } from '../src/lib/urgeLog';
+import { ProgressPeak } from './HeroVariants';
 
 interface DashboardProps {
   checkIns: CheckIn[];
@@ -158,9 +159,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
+    if (h < 5)  return 'Good night';
     if (h < 12) return 'Good morning';
     if (h < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 22) return 'Good evening';
+    return 'Good night';
   }, []);
 
   const daysInMonth = eachDayOfInterval({
@@ -204,13 +207,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
   return (
     <div className="flex-1 h-full overflow-y-auto pb-28 md:pb-8">
       
-      {/* Edge-to-Edge Header Image */}
-      <div className="w-full h-56 md:h-64 relative mb-4 overflow-hidden">
-        <img src="/illustrations/dashboard.png" alt="Dashboard" className="w-full h-full object-cover scale-[1.4] origin-center" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
-        <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
-          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Today</span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-purple-900 mt-1">{greeting}</h2>
+      {/* Hand-drawn SVG hero — shares the cross-tab HeroVariants visual style. */}
+      <div className="w-full relative mb-4">
+        <ProgressPeak />
+        <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
+          <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
+            Today
+          </span>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
+            {greeting}
+          </h2>
         </div>
       </div>
       

@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { FeelingId, UrgeActionId, UrgeContextSeed, UrgeOutcome, CheckIn, ChatMessage } from '../types';
-import { StageProgress, type Stage } from './urgeHelp/StageProgress';
+import { type Stage } from './urgeHelp/StageProgress';
 import { PauseStage } from './urgeHelp/PauseStage';
 import { LocateStage } from './urgeHelp/LocateStage';
 import { ActStage } from './urgeHelp/ActStage';
@@ -194,8 +194,6 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({
   // single visual constant binding the four stages together.
   return (
     <div className="flex-1 flex flex-col bg-rose-50 relative overflow-hidden">
-      <StageProgress current={stage} />
-
       <div className="flex-1 flex flex-col min-h-0">
         {stage === 'pause' && <PauseStage onComplete={goToLocate} />}
 

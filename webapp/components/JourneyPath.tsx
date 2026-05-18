@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PlanDay } from '../data/planData';
 import { DecorativeStone, LessonStone, LabelSide, LessonState } from './JourneyStone';
-import { JourneyHero } from './JourneyHero';
+import { PlanTrail } from './HeroVariants';
 
 /* Note: a "What to Expect Today" info popover used to live on lesson stones,
    but the data is already inside the lesson sheet itself. The duplicate (i)
@@ -181,11 +181,11 @@ export const JourneyPath: React.FC<JourneyPathProps> = ({
           scene into the bg, and the SVG's own stone path is styled identically
           to the DOM stones below so the two read as one continuous path. */}
       <div className="relative">
-        <JourneyHero />
+        <PlanTrail />
         {/* Title overlays the upper-left sky region of the illustration. */}
-        <div className="absolute top-4 md:top-8 left-4 md:left-8 pointer-events-none">
+        <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
           <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
-            Phase 1
+            Day {activePlanDay}
           </span>
           <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
             Your Journey

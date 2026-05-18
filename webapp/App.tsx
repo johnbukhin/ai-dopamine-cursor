@@ -444,7 +444,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-purple-50 text-gray-900 font-sans overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen h-dvh w-full bg-purple-50 text-gray-900 font-sans overflow-hidden">
       <Sidebar
         currentView={currentView}
         onChangeView={setCurrentView}
@@ -452,7 +452,7 @@ export default function App() {
         hasUpsellAccess={hasUpsellAccess}
       />
 
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative pb-[4.5rem] md:pb-0 w-full">
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0 w-full">
         {/* Gradient fade from status-bar color (#FAF5FF) into content — mobile only.
             Masks the hard edge between the iOS status bar and the tab content.
             pointer-events-none so it never blocks scroll or tap targets. */}
@@ -496,7 +496,7 @@ export default function App() {
           ) : (
             <ProGate
               featureName="Urge Help"
-              featureDescription="Immediate support when cravings hit hardest. Your AI companion guides you through proven techniques to break the urge cycle in real time."
+              featureDescription="Immediate support when cravings hit hardest. Your AI companion guides you through proven, science-backed techniques to break the urge cycle in real time."
               userEmail={userEmail}
               onUnlocked={grantUpsellAccess}
             />
