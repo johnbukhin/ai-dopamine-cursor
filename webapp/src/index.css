@@ -101,10 +101,129 @@ body {
 .animate-backdrop-in  { animation: backdrop-fade-in  280ms ease-out; }
 .animate-backdrop-out { animation: backdrop-fade-out 240ms ease-in forwards; }
 
+/* HelpTree canopy: slow wind sway. Used in PauseStage (Help tab) where the
+   user is breathing through an urge — the visual rhythm reinforces the pace.
+   transform-box: fill-box puts the pivot at the element's own bounding box,
+   so transform-origin: center bottom hinges the canopy at its trunk-join. */
+@keyframes tree-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50%      { transform: rotate(5deg);  }
+}
+.animate-tree-sway {
+  animation: tree-sway 6s ease-in-out infinite;
+  transform-origin: center bottom;
+  transform-box: fill-box;
+}
+
+/* Plan stones: balancing-stones wobble. Each stone rocks slightly around its
+   own base; --wobble-amp is set inline per-stone so distant (smaller) stones
+   sway more than the planted foreground ones. */
+@keyframes stone-wobble {
+  0%, 100% { transform: rotate(calc(var(--wobble-amp, 3deg) * -1)); }
+  50%      { transform: rotate(var(--wobble-amp, 3deg)); }
+}
+.animate-stone-wobble {
+  animation: stone-wobble 3s ease-in-out infinite;
+  transform-origin: center bottom;
+  transform-box: fill-box;
+}
+
+/* Progress flag: pennant flutters in irregular wind. Asymmetric keyframes
+   (uneven timing and magnitudes) avoid the mechanical "metronome" feel.
+   Six stops total (0, 18, 35, 52, 78, 100). */
+@keyframes flag-wave {
+  0%   { transform: scaleX(1)    rotate(0deg);    }
+  18%  { transform: scaleX(0.74) rotate(-3deg);   }
+  35%  { transform: scaleX(0.93) rotate(1.2deg);  }
+  52%  { transform: scaleX(0.80) rotate(-2deg);   }
+  78%  { transform: scaleX(0.96) rotate(0.7deg);  }
+  100% { transform: scaleX(1)    rotate(0deg);    }
+}
+.animate-flag-wave {
+  animation: flag-wave 3.2s ease-in-out infinite;
+  transform-origin: left center;
+  transform-box: fill-box;
+}
+
+/* Help wind streaks: faint ellipses drift left-to-right across the sky.
+   Different per-streak delay + duration (set inline) prevents lock-step. */
+@keyframes wind-drift {
+  0%   { transform: translateX(0);     opacity: 0;   }
+  15%  {                               opacity: 0.5; }
+  85%  {                               opacity: 0.5; }
+  100% { transform: translateX(880px); opacity: 0;   }
+}
+.animate-wind-drift {
+  animation: wind-drift 7s linear infinite;
+}
+
+/* Coach lighthouse: multiple beams pulse out of phase to simulate a
+   slow-rotating beacon. Each beam path uses this keyframe with its own
+   animationDelay (set inline) so the bright "wave" walks across the scene. */
+@keyframes lighthouse-beam-pulse {
+  0%, 100% { opacity: 0.05; }
+  50%      { opacity: 0.45; }
+}
+.animate-lighthouse-beam {
+  animation: lighthouse-beam-pulse 3.5s ease-in-out infinite;
+}
+@keyframes lighthouse-glow-pulse {
+  0%, 100% { opacity: 0.32; }
+  50%      { opacity: 0.72; }
+}
+.animate-lighthouse-glow {
+  animation: lighthouse-glow-pulse 3.5s ease-in-out infinite;
+}
+
+/* Profile campfire: flames flicker (1.5s), glow breathes slower (2.4s)
+   so the two rhythms don't lock and the fire feels alive. */
+@keyframes flame-flicker {
+  0%, 100% { transform: scaleY(1)    scaleX(1);    }
+  25%      { transform: scaleY(1.13) scaleX(0.91); }
+  50%      { transform: scaleY(0.91) scaleX(1.09); }
+  75%      { transform: scaleY(1.09) scaleX(0.93); }
+}
+.animate-flame-flicker {
+  animation: flame-flicker 1.5s ease-in-out infinite;
+  transform-origin: center bottom;
+  transform-box: fill-box;
+}
+@keyframes campfire-glow-breathe {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.12); }
+}
+.animate-campfire-glow {
+  animation: campfire-glow-breathe 2.6s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Profile sparks: each spark emerges from the flame, drifts upward, and
+   fades out. Peak opacity per spark is set inline via --spark-peak so the
+   four sparks keep their original colour weights. Stagger via animationDelay
+   means there's almost always one spark mid-flight. */
+@keyframes spark-rise {
+  0%   { transform: translateY(10px);  opacity: 0; }
+  18%  { opacity: var(--spark-peak, 0.85); }
+  100% { transform: translateY(-55px); opacity: 0; }
+}
+.animate-spark-rise {
+  animation: spark-rise 2.6s ease-out infinite;
+}
+
 /* Respect users who request reduced motion: silence the persistent glow
    and reduce sheet/backdrop animations to near-instant. */
 @media (prefers-reduced-motion: reduce) {
   .animate-stone-glow,
+  .animate-tree-sway,
+  .animate-stone-wobble,
+  .animate-flag-wave,
+  .animate-wind-drift,
+  .animate-lighthouse-beam,
+  .animate-lighthouse-glow,
+  .animate-flame-flicker,
+  .animate-campfire-glow,
+  .animate-spark-rise,
   .animate-sheet-up,
   .animate-sheet-down,
   .animate-backdrop-in,

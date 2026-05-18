@@ -4,6 +4,7 @@ import { getCoachResponse } from '../services/claudeService';
 import { CheckIn, ChatMessage, UrgeContextSeed } from '../types';
 import { URGE_ACTION_BY_ID } from '../data/urgeData';
 import { supabase } from '../src/lib/supabase';
+import { CoachLighthouse } from './HeroVariants';
 
 interface AICoachProps {
     checkInHistory: CheckIn[];
@@ -43,10 +44,14 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   const messagesRef = useRef(messages);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
 
+  // Auto-scroll to the latest message only when a NEW message arrives.
+  // Skipping the initial mount keeps the hero header visible on first open.
+  const prevMessagesLengthRef = useRef(messages.length);
   useEffect(() => {
-    if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (messages.length > prevMessagesLengthRef.current && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+    prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   const handleSend = async () => {
@@ -119,14 +124,18 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   return (
     <div className="flex flex-col h-full bg-purple-50">
       <div className={`flex-1 overflow-y-auto ${compact ? 'pb-4' : 'pb-28 md:pb-4'}`} ref={scrollRef}>
-        {/* Edge-to-Edge Header Image — hidden in compact (modal) mode where
-            the host already provides its own chrome. */}
+        {/* Hand-drawn SVG hero — shares the cross-tab HeroVariants visual style.
+            Hidden in compact (modal) mode where the host provides its chrome. */}
         {!compact && (
-          <div className="w-full h-48 md:h-56 relative mb-6 overflow-hidden">
-            <img src="/illustrations/coach.png" alt="AI Coach" className="w-full h-full object-cover scale-[1.4] origin-center" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-purple-50" />
-            <div className="absolute bottom-10 md:bottom-12 left-4 md:left-8 right-4 md:right-8">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-purple-900 mt-1">Your AI Coach</h2>
+          <div className="w-full relative mb-6">
+            <CoachLighthouse />
+            <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
+              <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
+                Mentor
+              </span>
+              <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
+                Your AI Coach
+              </h2>
             </div>
           </div>
         )}

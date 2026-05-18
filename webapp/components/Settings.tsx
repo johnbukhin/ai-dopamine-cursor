@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { CancelFlow } from './CancelFlow';
+import { ProfileCampfire } from './HeroVariants';
 
 
 type SettingsTab = 'Profile' | 'Access' | 'Terms';
@@ -372,19 +373,27 @@ export const Settings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   );
 
   return (
-    <div className="p-4 pt-12 md:pt-8 sm:p-6 lg:p-8 h-full bg-gray-50 flex flex-col pb-28 md:pb-8">
-      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1 min-h-0">
-        <div className="mb-8 flex-shrink-0">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+    <div className="h-full overflow-y-auto bg-gray-50">
+      {/* Hand-drawn SVG hero — shares the cross-tab HeroVariants visual style. */}
+      <div className="relative">
+        <ProfileCampfire />
+        <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
+          <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
+            Your Space
+          </span>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
+            Profile
+          </h2>
         </div>
-        <div className="flex space-x-4 border-b border-gray-200 mb-6 flex-shrink-0">
+      </div>
+
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-[calc(env(safe-area-inset-bottom)+8rem)] md:pb-8">
+        <div className="flex space-x-4 border-b border-gray-200 mb-6">
           <TabButton tabName="Profile" />
           <TabButton tabName="Access" />
           <TabButton tabName="Terms" />
         </div>
-        <div className="flex-1 overflow-y-auto pb-16">
-          {renderContent()}
-        </div>
+        {renderContent()}
       </div>
     </div>
   );

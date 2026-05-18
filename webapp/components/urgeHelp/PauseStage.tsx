@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { HelpTree } from '../HeroVariants';
 
 interface PauseStageProps {
   /** Called when the timer hits zero OR the user taps the skip button. */
@@ -12,7 +13,7 @@ const TOTAL_SECONDS = 180;
 
 /** Geometry for the progress ring. Kept large on mobile (`w-72 h-72`) so the
  *  countdown reads from arm's length while the user is mid-crisis. */
-const SIZE = 280;
+const SIZE = 266;
 const STROKE_WIDTH = 20;
 const RADIUS = (SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -56,76 +57,76 @@ export const PauseStage: React.FC<PauseStageProps> = ({ onComplete }) => {
   const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8 animate-in fade-in duration-500 relative">
-      {/* Soft background illustration anchored at the top — same image as the
-          legacy stage, kept because it matches the rose palette and reads as
-          "calm" rather than "alarm". */}
-      <div className="absolute top-0 left-0 right-0 h-64 md:h-80 z-0 overflow-hidden">
-        <img
-          src="/illustrations/urge.png"
-          alt=""
-          aria-hidden="true"
-          className="w-full h-full object-cover mix-blend-multiply opacity-40 scale-[1.4] origin-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-rose-50/60 to-rose-50" />
-      </div>
-
-      <h2 className="text-xl md:text-2xl font-medium text-rose-900 mb-2 text-center max-w-md leading-relaxed relative z-10 mt-8">
-        You don't need to decide right now.
-      </h2>
-      <p className="text-sm md:text-base text-rose-700/80 mb-8 md:mb-10 text-center max-w-md relative z-10">
-        3 minutes is all your brain needs to weaken the urge.
-      </p>
-
-      <div className="relative w-72 h-72 mb-10 z-10">
-        <svg
-          className="w-full h-full -rotate-90"
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          aria-hidden="true"
-        >
-          <circle
-            cx={SIZE / 2}
-            cy={SIZE / 2}
-            r={RADIUS}
-            stroke="currentColor"
-            strokeWidth={STROKE_WIDTH}
-            fill="transparent"
-            className="text-rose-200"
-          />
-          <circle
-            cx={SIZE / 2}
-            cy={SIZE / 2}
-            r={RADIUS}
-            stroke="currentColor"
-            strokeWidth={STROKE_WIDTH}
-            fill="transparent"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            className="text-rose-800 transition-all duration-1000 ease-linear"
-          />
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
-          <span className="text-6xl md:text-7xl font-light text-rose-900 tracking-tight tabular-nums">
-            {display}
+    <div className="flex-1 flex flex-col animate-in fade-in duration-500 min-h-0">
+      {/* Hand-drawn SVG hero — flows at the top so it never overlaps the
+          timer copy. The SVG's own bottom alpha mask blends into the rose-50
+          page background, so no extra colour overlay is needed. */}
+      <div className="relative flex-shrink-0">
+        <HelpTree />
+        <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
+          <span className="text-xs md:text-sm font-bold text-rose-700/80 uppercase tracking-wider">
+            Pause and breathe
           </span>
-          <span className="text-[10px] font-bold text-rose-800/40 uppercase tracking-widest mt-2">
-            Breathe
-          </span>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-rose-900 mt-1 drop-shadow-sm leading-tight whitespace-nowrap">
+            3 minutes is enough
+            <br />
+            to weaken the urge
+          </h2>
         </div>
       </div>
 
-      <p className="text-stone-500 mb-8 font-medium text-sm md:text-base text-center max-w-xs">
-        Urges rise and fall like waves. This one will too.
-      </p>
+      {/* Content — centered in the remaining vertical space below the hero. */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8 min-h-0">
+        <div className="relative w-[17.1rem] h-[17.1rem] mb-10">
+          <svg
+            className="w-full h-full -rotate-90"
+            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            aria-hidden="true"
+          >
+            <circle
+              cx={SIZE / 2}
+              cy={SIZE / 2}
+              r={RADIUS}
+              stroke="currentColor"
+              strokeWidth={STROKE_WIDTH}
+              fill="transparent"
+              className="text-rose-200"
+            />
+            <circle
+              cx={SIZE / 2}
+              cy={SIZE / 2}
+              r={RADIUS}
+              stroke="currentColor"
+              strokeWidth={STROKE_WIDTH}
+              fill="transparent"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="text-rose-800 transition-all duration-1000 ease-linear"
+            />
+          </svg>
 
-      <button
-        onClick={onComplete}
-        className="px-6 py-3 bg-white border border-rose-200 text-rose-800 rounded-xl hover:bg-rose-50 transition-colors font-semibold text-sm tracking-wide shadow-sm"
-      >
-        I'm grounded — skip ahead
-      </button>
+          <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
+            <span className="text-6xl md:text-7xl font-light text-rose-900 tracking-tight tabular-nums">
+              {display}
+            </span>
+            <span className="text-[10px] font-bold text-rose-800/40 uppercase tracking-widest mt-2">
+              Breathe
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={onComplete}
+          className="px-6 py-3 bg-white border border-rose-200 text-rose-800 rounded-xl hover:bg-rose-50 transition-colors font-semibold text-sm tracking-wide shadow-sm"
+        >
+          I'm grounded — skip ahead
+        </button>
+
+        <p className="mt-2 text-xs text-stone-400 text-center max-w-xs font-normal">
+          Urges rise and fall like waves. This one will too.
+        </p>
+      </div>
     </div>
   );
 };

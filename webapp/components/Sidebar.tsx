@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onL
           <NavItem view={View.DASHBOARD} icon={CalendarCheck} label="Progress" />
           <NavItem view={View.AI_COACH} icon={Brain} label="AI Coach" />
           <NavItem view={View.URGE_HELP} icon={Anchor} label="Urge Help" />
-          <NavItem view={View.SETTINGS} icon={Settings} label="Settings" />
+          <NavItem view={View.SETTINGS} icon={Settings} label="Profile" />
         </div>
       </nav>
 
@@ -98,12 +98,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onL
   );
 
   const MobileBottomNav = () => (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-purple-100 flex justify-around items-center px-1 pb-safe z-40 h-[4.5rem] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <div
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-purple-100 flex justify-around items-center px-1 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+      style={{
+        height: 'calc(4.5rem + env(safe-area-inset-bottom))',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
       <MobileNavItem view={View.PLAN_21} icon={Route} label="Plan" />
       <MobileNavItem view={View.DASHBOARD} icon={CalendarCheck} label="Progress" />
       <MobileNavItem view={View.AI_COACH} icon={Brain} label="Coach" />
       <MobileNavItem view={View.URGE_HELP} icon={Anchor} label="Help" />
-      <MobileNavItem view={View.SETTINGS} icon={Settings} label="Settings" />
+      <MobileNavItem view={View.SETTINGS} icon={Settings} label="Profile" />
     </div>
   );
 
