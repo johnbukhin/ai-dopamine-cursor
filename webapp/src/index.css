@@ -7,6 +7,24 @@ body {
   color: #111827; /* gray-900 */
 }
 
+/* ─── Cross-tab transitions ────────────────────────────────────────────────
+   Tab switches use the View Transitions API in App.tsx. The browser captures
+   the old + new view and animates them simultaneously — the previous tab's
+   hero fades out while the next tab's hero fades in. These overrides tune
+   the default 250 ms cross-fade to be a touch slower and use the same
+   ease-out curve as the rest of the app's micro-interactions. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms;
+  }
+}
+
 /* Hide scrollbar utility (used across multiple components) */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;

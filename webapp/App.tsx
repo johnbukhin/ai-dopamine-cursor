@@ -29,6 +29,23 @@ const BYPASS_AUTH = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(BYPASS_AUTH);
   const [currentView, setCurrentView] = useState<View>(BYPASS_AUTH ? View.PLAN_21 : View.LOGIN);
+
+  // Smooth cross-fade between tabs via the View Transitions API. The browser
+  // snapshots the old + new view and animates them out/in simultaneously so
+  // any element that differs (hero illustration, layout, content) appears to
+  // dissolve between states. Falls back to an instant switch on browsers
+  // without support (Safari < 18, older Chrome).
+  const withTransition = (fn: () => void) => {
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => unknown;
+    };
+    if (typeof doc.startViewTransition === 'function') {
+      doc.startViewTransition(fn);
+    } else {
+      fn();
+    }
+  };
+  const changeView = (next: View) => withTransition(() => setCurrentView(next));
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [checkInPayload, setCheckInPayload] = useState<{ tasksCompleted: boolean } | null>(null);
 
@@ -189,7 +206,7 @@ export default function App() {
 
       if (subsResult.data) {
         const active = checkUpsellAccess(subsResult.data as SubRow[]);
-        if (active) setUpsellAccess(true);
+        if (active) withTransition(() => setUpsellAccess(true));
         // create-upsell writes immediately but may be slightly behind webapp load.
         // Retry once after 8s — only if still locked.
         else {
@@ -200,7 +217,7 @@ export default function App() {
               .eq('user_email', user.email ?? '')
               .order('paid_at', { ascending: false });
             if (retryRows && checkUpsellAccess(retryRows as SubRow[])) {
-              setUpsellAccess(true);
+              withTransition(() => setUpsellAccess(true));
             }
           }, 8000);
         }
@@ -275,7 +292,10 @@ export default function App() {
   // that writes the Supabase row arrives seconds later, so re-querying here would
   // race and almost always miss the row. We trust data.success === true from
   // create-upsell, so optimistic state update is correct.
-  const grantUpsellAccess = () => setUpsellAccess(true);
+  // Wrap in transition so the ProGate → AICoach/UrgeHelp swap cross-fades
+  // (same animation as switching tabs) — the locked grayscale hero dissolves
+  // into the live coloured hero.
+  const grantUpsellAccess = () => withTransition(() => setUpsellAccess(true));
 
   // Celebration signal passed to Dashboard. Decided here (not in Dashboard)
   // so we have the authoritative pre-check-in state without racing the
@@ -447,7 +467,7 @@ export default function App() {
     <div className="flex flex-col md:flex-row h-screen h-dvh w-full bg-purple-50 text-gray-900 font-sans overflow-hidden">
       <Sidebar
         currentView={currentView}
-        onChangeView={setCurrentView}
+        onChangeView={changeView}
         onLogout={handleLogout}
         hasUpsellAccess={hasUpsellAccess}
       />
@@ -465,7 +485,7 @@ export default function App() {
             hasCheckedInToday={hasCheckedInToday}
             celebrationSignal={celebrationSignal}
             onOpenCheckIn={() => handleOpenCheckIn({ tasksCompleted: false })}
-            onChangeView={setCurrentView}
+            onChangeView={changeView}
           />
         )}
 
