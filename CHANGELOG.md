@@ -4,6 +4,36 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #44)
+- **Hand-drawn SVG hero illustrations across all 5 tabs** (`webapp/components/HeroVariants.tsx`) — replaces realistic PNG headers with vector heroes sharing one visual language (sunset palette, layered purple mountains, green hills, bottom-fade composition). One focal element per tab:
+  - **Plan** — trail of stones winding through hills (`PlanTrail`)
+  - **Progress** — snow-capped peak with planted flag (`ProgressPeak`)
+  - **Coach** — striped lighthouse with light beam (`CoachLighthouse`)
+  - **Help** — deeply-rooted tree (`HelpTree`)
+  - **Profile** — evening campfire with rising sparks (`ProfileCampfire`)
+- **Subtle per-element CSS animations** (`webapp/src/index.css`) — stones wobble (top stones seek balance), flag flutters via asymmetric keyframes, 3 lighthouse beams pulse out of phase, tree canopy sways + wind streaks drift across sky, campfire flames flicker + glow breathes + sparks rise periodically; all respect `prefers-reduced-motion`
+- **Cross-fade between tabs via View Transitions API** — `withTransition()` helper in `App.tsx` wraps every state setter that swaps tab content (`changeView`, `grantUpsellAccess`, background subscription sync); browser snapshots old + new view and animates them out/in simultaneously (350 ms `cubic-bezier(0.4, 0, 0.2, 1)`); graceful fallback to instant switch on Safari < 18 / older Chrome / Firefox
+- **ProGate paywall hero preview** — locked Coach/Help tabs show the corresponding hero illustration behind the lock at `opacity-40 grayscale pointer-events-none`, anchored to the top in the same position as the unlocked tab; explicit `HERO_BY_FEATURE` map so adding future PRO features doesn't silently inherit the wrong illustration
+- **Plan eyebrow dynamic "Day X"** — eyebrow text now reads `Day {activePlanDay}`, synced to the orange-glowing active stone
+- **Greeting extended to 4 periods** (`Dashboard.tsx`) — now covers `Good night` (22:00–04:59), `Good morning`, `Good afternoon`, `Good evening`
+
+### Changed (Issue #44)
+- **Settings tab renamed to Profile** — mobile bottom nav + desktop sidebar both labelled "Profile"; page heading uses `ProfileCampfire` hero with "Your Space / Profile" overlay; outer layout restructured from nested flex chain to a single `overflow-y-auto` container
+- **Help tab redesigned** — removed `StageProgress` indicator (PAUSE/LOCATE/ACT/REFLECT bar); `PauseStage.tsx` layout flowed (hero at top via `HelpTree`, content centered below); heading "3 minutes is enough / to weaken the urge" forced 2 lines; footnote "Urges rise and fall like waves…" moved under the button as small gray; timer scaled −5%; removed "You don't need to decide right now." subtitle
+- **AICoach skips initial-mount auto-scroll** — `useRef` tracks previous messages length; effect only scrolls when length grows, so the hero header is visible on first tab open instead of being scrolled past
+- **ProGate copy + contrast tweaks** — lock circle `bg-purple-100 → bg-purple-200`, icon `text-purple-600 → text-purple-700`; description text `text-gray-500 → text-gray-600`; Urge Help description now includes "science-backed techniques"
+- **Progress far mountain** — custom darker gradient (`pp-mtn-far-bold`: `#D8C7F5 → #BFA8EE`) + `opacity="0.75"` so the snow-capped peak stands out from the sky while staying lighter than the mid range
+- **Bottom-fade gradient smoothed** — 6 stops instead of 4 (`0/60/74/84/92/100%`) for a more gradual blend into the page background
+- **Hero title overlays shifted +25 px down** from the original `top-4 md:top-8` baseline (now `top-[41px] md:top-[57px]`) so eyebrow + h2 don't sit too close to the device notch
+
+### Fixed (Issue #44)
+- **iOS safe-area handling** — `App.tsx` outer container now uses `h-screen h-dvh` (dynamic viewport on Safari 15.4+ / Chrome 108+); `main` pb extends to `calc(4.5rem + env(safe-area-inset-bottom))`; `Sidebar.tsx` mobile nav replaces the broken `pb-safe` utility (silently dropped by Tailwind v4) with inline `style` using `calc(4.5rem + env(safe-area-inset-bottom))` for both height and `padding-bottom`, so icons sit above the home indicator on notched iPhones
+- **Settings Log Out button cut off** by mobile nav on small viewports — fixed via the safe-area work above plus larger scroll-area `pb-[calc(env(safe-area-inset-bottom)+8rem)]`
+
+### Removed (Issue #44)
+- **`webapp/components/JourneyHero.tsx`** — replaced by `PlanTrail` in `HeroVariants.tsx`
+- **`webapp/public/illustrations/{dashboard,coach,urge}.png`** — orphan PNG assets no longer referenced after the SVG hero swap
+
 ### Added (Issue #41)
 - **Post-checkout upsell screen** — shown between checkout and account creation; hero image, AI Coach + AI Help feature cards, social proof, 1-month/3-month price toggle, sticky upgrade CTA
 - **One-click upsell charge** (`funnel/api/create-upsell.js`) — server-side Stripe subscription schedule (intro price × 1 month → regular recurring) off existing payment method; logs to `upsell_errors` table on failure; writes subscription row to Supabase immediately (no webhook wait)
