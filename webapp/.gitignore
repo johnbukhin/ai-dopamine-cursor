@@ -17,3 +17,6 @@ vite.config.ts.timestamp-*
 
 # OS
 .DS_Store
+
+# Generated at build/dev time by scripts/copy-screens.mjs (sourced from funnel/funnel-v2/screens.json)
+public/data/screens.json

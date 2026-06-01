@@ -4,7 +4,7 @@ import { CancelFlow } from './CancelFlow';
 import { ProfileCampfire } from './HeroVariants';
 
 
-type SettingsTab = 'Profile' | 'Access' | 'Terms';
+type SettingsTab = 'Data' | 'Privacy' | 'Access' | 'Terms';
 
 // ---------------------------------------------------------------------------
 // Subscription row shape as stored in Supabase (written by webhook.js)
@@ -17,6 +17,38 @@ interface Subscription {
   paid_at: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// users_profile row shape — populated by funnel/api/provision-account.js
+// after Stripe payment. quiz_answers stores the raw funnel answer map:
+//   { [screenId]: { value: string | number | string[], timestamp: string } }
+// ---------------------------------------------------------------------------
+interface QuizAnswer {
+  value: string | number | string[];
+  timestamp?: string;
+}
+
+interface UserProfile {
+  email: string | null;
+  name: string | null;
+  gender: string | null;
+  age_group: string | null;
+  main_challenge: string | null;
+  goal: string | null;
+  score_overall: number | null;
+  score_dopamine_sensitivity: number | null;
+  score_emotional_regulation: number | null;
+  score_pattern_stage: number | null;
+  score_physical_impact: number | null;
+  quiz_answers: Record<string, QuizAnswer> | null;
+}
+
+// Subset of funnel screen shape we need to render labels.
+interface FunnelScreen {
+  id: string;
+  type: string;
+  headline?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -36,10 +68,207 @@ function formatDate(iso: string | null): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/** Render any quiz_answers value as a comma-separated string. */
+function formatAnswer(value: QuizAnswer['value'] | undefined): string {
+  if (value == null) return '—';
+  if (Array.isArray(value)) return value.length ? value.join(', ') : '—';
+  return String(value);
+}
+
+// Multi-choice question ids whose values are arrays (life stressors, symptoms, etc.).
+// Pulled from funnel/funnel-v2/screens.json screens of type "multiple_choice".
+const GOALS_SYMPTOMS_QUESTIONS = ['question_30', 'question_31', 'question_32', 'question_33', 'question_34'];
+
 // ---------------------------------------------------------------------------
-// Profile tab
+// Data tab — read-only view of the user's onboarding answers
 // ---------------------------------------------------------------------------
-const ProfileSettings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+const DataSettings: React.FC = () => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Guards against setState on an unmounted component if the user navigates
+    // away from the Profile tab before the parallel load resolves.
+    let mounted = true;
+
+    const load = async () => {
+      if (!supabase) { if (mounted) setLoading(false); return; }
+
+      // Fetch the user's profile row and the funnel question text in parallel.
+      // screens.json is copied into public/data at build time (scripts/copy-screens.mjs).
+      try {
+        const [{ data: userData }, screensRes] = await Promise.all([
+          supabase.auth.getUser(),
+          fetch('/data/screens.json'),
+        ]);
+
+        const userId = userData?.user?.id;
+        if (!userId) { if (mounted) setLoading(false); return; }
+
+        const { data: profileData, error: profileErr } = await supabase
+          .from('users_profile')
+          .select('email, name, gender, age_group, main_challenge, goal, score_overall, score_dopamine_sensitivity, score_emotional_regulation, score_pattern_stage, score_physical_impact, quiz_answers')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (profileErr) throw profileErr;
+        if (mounted) setProfile(profileData as UserProfile | null);
+
+        // screens.json is a soft dependency — a network/parse failure should
+        // never mask the profile we already loaded. labelFor() falls back to
+        // "Question N" when the map stays empty.
+        if (screensRes.ok) {
+          try {
+            const screens: FunnelScreen[] = await screensRes.json();
+            const map: Record<string, string> = {};
+            for (const s of screens) {
+              if (s.id && s.headline) map[s.id] = s.headline.replace(/^"|"$/g, '');
+            }
+            if (mounted) setLabels(map);
+          } catch {
+            // Swallow — labels remain empty and the UI falls back gracefully.
+          }
+        }
+      } catch (e: unknown) {
+        if (mounted) setError(e instanceof Error ? e.message : 'Failed to load profile data');
+      }
+      if (mounted) setLoading(false);
+    };
+    load();
+
+    return () => { mounted = false; };
+  }, []);
+
+  /** Resolve a question id to its human-readable text, with a graceful fallback. */
+  const labelFor = (id: string) => labels[id] || id.replace(/^question_/, 'Question ');
+
+  if (loading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Data</h2>
+        <p className="text-sm text-gray-500">Loading your profile…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Data</h2>
+        <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Data</h2>
+        <div className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6">
+          <p className="text-sm text-gray-500">No profile data found.</p>
+          <p className="text-xs text-gray-400 mt-1">Your onboarding answers will appear here once you complete the quiz.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const answers = profile.quiz_answers || {};
+  const goalsRows = GOALS_SYMPTOMS_QUESTIONS
+    .map(id => ({ id, value: answers[id]?.value }))
+    .filter(row => row.value !== undefined);
+
+  // Sub-score rows for the Assessment section. Each row keeps its display
+  // label next to the score, so a missing/null value renders as "—".
+  const scoreRows: { label: string; value: number | null }[] = [
+    { label: 'Overall',               value: profile.score_overall },
+    { label: 'Dopamine sensitivity',  value: profile.score_dopamine_sensitivity },
+    { label: 'Emotional regulation',  value: profile.score_emotional_regulation },
+    { label: 'Pattern stage',         value: profile.score_pattern_stage },
+    { label: 'Physical impact',       value: profile.score_physical_impact },
+  ];
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Data</h2>
+
+      {/* Demographics ------------------------------------------------------- */}
+      <section className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6 mb-4">
+        <h3 className="text-base leading-6 font-semibold text-gray-900 mb-3">Demographics</h3>
+        <dl className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <dt className="font-medium text-gray-700">Gender</dt>
+            <dd className="text-gray-500">{profile.gender || '—'}</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-700">Age group</dt>
+            <dd className="text-gray-500">{profile.age_group || '—'}</dd>
+          </div>
+        </dl>
+      </section>
+
+      {/* Goals & Symptoms --------------------------------------------------- */}
+      <section className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6 mb-4">
+        <h3 className="text-base leading-6 font-semibold text-gray-900 mb-3">Goals & Symptoms</h3>
+        {goalsRows.length === 0 ? (
+          <p className="text-sm text-gray-500">No answers recorded.</p>
+        ) : (
+          <dl className="space-y-3 text-sm">
+            {goalsRows.map(row => (
+              <div key={row.id}>
+                <dt className="font-medium text-gray-700">{labelFor(row.id)}</dt>
+                <dd className="text-gray-500 mt-0.5">{formatAnswer(row.value)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </section>
+
+      {/* Assessment (pre-computed sub-scores from likert q1–q27) ------------ */}
+      <section className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6 mb-4">
+        <h3 className="text-base leading-6 font-semibold text-gray-900 mb-3">Assessment</h3>
+        <p className="text-xs text-gray-400 mb-3">Computed from your responses to the 27 assessment questions.</p>
+        <dl className="grid grid-cols-2 gap-3 text-sm">
+          {scoreRows.map(row => (
+            <div key={row.label}>
+              <dt className="font-medium text-gray-700">{row.label}</dt>
+              <dd className="text-gray-500">{row.value != null ? row.value : '—'}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* Profile basics ----------------------------------------------------- */}
+      <section className="bg-white shadow sm:rounded-lg px-4 py-5 sm:p-6 mb-4">
+        <h3 className="text-base leading-6 font-semibold text-gray-900 mb-3">Profile</h3>
+        <dl className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <dt className="font-medium text-gray-700">Name</dt>
+            <dd className="text-gray-500">{profile.name || '—'}</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-700">Email</dt>
+            <dd className="text-gray-500 break-all">{profile.email || '—'}</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-700">Main challenge</dt>
+            <dd className="text-gray-500">{profile.main_challenge || '—'}</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-700">Goal</dt>
+            <dd className="text-gray-500">{profile.goal || '—'}</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Privacy tab (formerly "Profile") — account credentials and session control
+// ---------------------------------------------------------------------------
+const PrivacySettings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -83,7 +312,7 @@ const ProfileSettings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Privacy</h2>
       <form onSubmit={handleSave} className="space-y-6 max-w-md">
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -335,34 +564,75 @@ const AccessSettings: React.FC = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Terms tab
+// Terms tab — links out to the four legal pages hosted on the funnel domain.
+// Fallback uses the canonical production funnel host (matches scripts/
+// smoke-test.sh and the CORS allowlists in funnel/api/*.js). Legal pages live
+// at /legal/*.html on the funnel root — funnel/vercel.json redirects the
+// older /funnel-v2/*.html paths there. The example value in
+// .env.local.example + Login.tsx fallback are stale and broken (tracked as
+// a follow-up cleanup) — do not copy from them.
 // ---------------------------------------------------------------------------
-const TermsSettings: React.FC = () => (
-  <div>
-    <h2 className="text-2xl font-bold text-gray-800 mb-6">Terms</h2>
-    <p className="text-sm text-gray-500">Legal documents are in preparation and will be published here shortly.</p>
-  </div>
-);
+const FUNNEL_URL = import.meta.env.VITE_FUNNEL_URL || 'https://ai-dopamine-addict.vercel.app';
+
+const LEGAL_LINKS: { label: string; path: string }[] = [
+  { label: 'Terms of Use and Service', path: '/legal/terms-of-use.html' },
+  { label: 'Privacy Policy',           path: '/legal/privacy-policy.html' },
+  { label: 'Subscription Policy',      path: '/legal/subscription-policy.html' },
+  { label: 'Cookie Policy',            path: '/legal/cookie-policy.html' },
+];
+
+const TermsSettings: React.FC = () => {
+  // Strip trailing slash so we don't end up with "//legal/..." in the href.
+  const funnelBase = FUNNEL_URL.replace(/\/$/, '');
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Terms</h2>
+      <div className="bg-white shadow sm:rounded-lg overflow-hidden">
+        <ul className="divide-y divide-gray-200">
+          {LEGAL_LINKS.map(link => (
+            <li key={link.path}>
+              <a
+                href={`${funnelBase}${link.path}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between px-4 py-4 sm:px-6 text-sm font-medium text-purple-700 hover:bg-purple-50 transition-colors"
+              >
+                <span>{link.label}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Settings shell
 // ---------------------------------------------------------------------------
 export const Settings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>('Profile');
+  const [activeTab, setActiveTab] = useState<SettingsTab>('Data');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'Profile': return <ProfileSettings onLogout={onLogout} />;
+      case 'Data':    return <DataSettings />;
+      case 'Privacy': return <PrivacySettings onLogout={onLogout} />;
       case 'Access':  return <AccessSettings />;
       case 'Terms':   return <TermsSettings />;
-      default:        return <ProfileSettings onLogout={onLogout} />;
+      default:        return <DataSettings />;
     }
   };
 
   const TabButton: React.FC<{ tabName: SettingsTab }> = ({ tabName }) => (
     <button
       onClick={() => setActiveTab(tabName)}
-      className={`px-4 py-2 text-sm font-medium rounded-md ${
+      className={`px-4 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
         activeTab === tabName
           ? 'bg-purple-100 text-purple-700'
           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -388,8 +658,10 @@ export const Settings: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       </div>
 
       <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-[calc(env(safe-area-inset-bottom)+8rem)] md:pb-8">
-        <div className="flex space-x-4 border-b border-gray-200 mb-6">
-          <TabButton tabName="Profile" />
+        {/* overflow-x-auto keeps 4 tabs scrollable on narrow phones rather than wrapping. */}
+        <div className="flex space-x-4 border-b border-gray-200 mb-6 overflow-x-auto">
+          <TabButton tabName="Data" />
+          <TabButton tabName="Privacy" />
           <TabButton tabName="Access" />
           <TabButton tabName="Terms" />
         </div>
