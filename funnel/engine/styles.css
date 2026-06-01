@@ -2563,6 +2563,13 @@ body {
     flex-wrap: wrap;
 }
 
+/* When the address line is absent (e.g. pre-incorporation), keep the
+   pre-existing gap between the company name and the policy links by
+   matching the address element's bottom margin. */
+.company-footer__name + .footer-links {
+    margin-top: var(--spacing-md);
+}
+
 .footer-link {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);

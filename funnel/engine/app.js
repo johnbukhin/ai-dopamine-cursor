@@ -884,6 +884,20 @@ const Router = {
 };
 
 // ========================================
+// Legal Pages — shared URL map
+// ========================================
+// Single source of truth for funnel → legal-page links.
+// Pages live at /legal/* (served as static from funnel/legal/).
+// Both legalDisclaimer() (paywall disclaimer text) and companyFooter()
+// (paywall company block) resolve link names through this map.
+const LEGAL_PATHS = {
+    'Terms of Use':        '/legal/terms-of-use.html',
+    'Privacy Policy':      '/legal/privacy-policy.html',
+    'Subscription Policy': '/legal/subscription-policy.html',
+    'Cookie Policy':       '/legal/cookie-policy.html',
+};
+
+// ========================================
 // UI Components
 // ========================================
 const Components = {
@@ -1493,18 +1507,20 @@ const Components = {
     legalDisclaimer(text) {
         // Sanitize the input text first
         let safeText = Security.escapeHtml(text);
-        
-        const policyLinks = {
-            'Terms of Use and Service': 'terms-of-use.html',
-            'Privacy Policy': 'privacy-policy.html',
-            'Subscription Policy': 'subscription-policy.html',
-            'Cookie Policy': 'cookie-policy.html'
-        };
-        
-        // Replace policy names with links using regex for robustness
-        Object.entries(policyLinks).forEach(([name, url]) => {
-            const regex = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-            safeText = safeText.replace(regex, `<a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a>`);
+
+        // Patterns are matched in this order. The "Terms of Use( and Service)?"
+        // form prevents the shorter "Terms of Use" from also matching inside the
+        // longer phrase and producing nested anchors.
+        const patterns = [
+            { regex: /Terms of Use(?: and Service)?/g, url: LEGAL_PATHS['Terms of Use'] },
+            { regex: /Privacy Policy/g,                url: LEGAL_PATHS['Privacy Policy'] },
+            { regex: /Subscription Policy/g,           url: LEGAL_PATHS['Subscription Policy'] },
+            { regex: /Cookie Policy/g,                 url: LEGAL_PATHS['Cookie Policy'] },
+        ];
+        patterns.forEach(({ regex, url }) => {
+            safeText = safeText.replace(regex, m =>
+                `<a href="${url}" target="_blank" rel="noopener noreferrer">${m}</a>`
+            );
         });
         
         return `
@@ -2202,15 +2218,26 @@ const Components = {
     companyFooter(companyInfo) {
         const safeName = Security.escapeHtml(companyInfo.name || '');
         const safeAddress = Security.escapeHtml(companyInfo.address || '');
-        
-        const linksHtml = (companyInfo.links || []).map(link => 
-            `<a href="#${link.toLowerCase().replace(/\s+/g, '-')}" class="footer-link">${Security.escapeHtml(link)}</a>`
-        ).join('');
+
+        // Resolve each link name through the shared LEGAL_PATHS map. Unknown
+        // names fall back to "#" so a typo doesn't crash the page; the warning
+        // surfaces in the console so QA can spot it before the dead link ships.
+        const linksHtml = (companyInfo.links || []).map(link => {
+            const url = LEGAL_PATHS[link];
+            if (!url) log.warn('[companyFooter] Unknown legal link name (check screens.json companyInfo.links):', link);
+            return `<a href="${url || '#'}" class="footer-link" target="_blank" rel="noopener noreferrer">${Security.escapeHtml(link)}</a>`;
+        }).join('');
+
+        // address line is omitted entirely when companyInfo.address is empty
+        // (e.g. pre-incorporation state — no registered office to display).
+        const addressHtml = safeAddress
+            ? `<p class="company-footer__address">${safeAddress}</p>`
+            : '';
 
         return `
             <div class="company-footer">
                 <p class="company-footer__name">${safeName}</p>
-                <p class="company-footer__address">${safeAddress}</p>
+                ${addressHtml}
                 <div class="footer-links">
                     ${linksHtml}
                 </div>
