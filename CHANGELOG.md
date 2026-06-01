@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed (Issue #46)
+- **Legal pages rewritten for pre-incorporation reality** (`funnel/legal/{terms-of-use,privacy-policy,subscription-policy,cookie-policy}.html`) — operator name `Compass Limited` / `Mind Compass Ltd` → `Mind Compass` (trade name); dropped fake addresses (`Flat/Office XXX, Limassol`, `123 Wellness Street, London`) and placeholder registration numbers; LCIA/JAMS arbitration removed (no entity to bind), replaced with `§12.1 Informal Resolution` + `§12.2 Court Jurisdiction`; `§16.1 Governing Law` keeps Cyprus + mandatory consumer-protection caveat
+- **Subscription Policy genericised** — `§2 Subscription Plans` no longer lists "7-Day / 1-Month / 3-Month" names or prices ("displayed at the time of purchase"); `§6 Refunds` says "where expressly advertised on the offer or checkout page" + statutory rights caveat
+- **`§1 Service` + `§9.2`** — explicit not-therapy framing: *"not a substitute for professional medical advice, diagnosis, treatment, therapy, mental health care, or any other professional service"*
+- **`§16.5 Legal Status` added** — single explicit pre-incorporation disclosure (`"Mind Compass is currently operated as a trade name… A registered legal entity, registered office address, and company registration number will be added upon incorporation"`), no per-page banner clutter
+- **`funnel/funnels/{v1,v2}/screens.json` `companyInfo` consolidated** — both funnels now `{ name: "Mind Compass", links: [...] }`; v1 fake `support@mind-compass.app` email gone, paywall fallback disclaimer matches v2
+- **Legal pages moved to shared `funnel/legal/`** (`git mv` from `funnel/funnels/v2/`) — single source of truth; v1, v2, and future funnels link to `/legal/*` via the shared `LEGAL_PATHS` map
+- **Paywall in-screen disclaimer (`engine/app.js DISCLAIMERS`) kept with specific prices + VAT** — required by App Store §3.1.2(a) / EU CRD Art. 8(2) / FTC ROSCA for pre-purchase disclosure adjacent to the CTA; only the long-form policy docs are now generic
+
+### Fixed (Issue #46)
+- **Broken `#hash` policy links in `companyFooter`** (orphan from Issue #26) — paywall company footer rendered `<a href="#terms-of-use">` etc., which scrolled in-page instead of opening the policy; now resolves to real `/legal/*.html` via shared `LEGAL_PATHS`
+- **`legalDisclaimer` nested-anchor risk** — old regex map could double-link "Terms of Use" inside the longer "Terms of Use and Service" phrase; new `/Terms of Use(?: and Service)?/g` pattern matches both forms once
+- **`companyFooter` empty `<address>` element** — now omitted entirely when `companyInfo.address` is absent (no empty `<p>` rendered)
+
+### Added (Issue #46)
+- **`LEGAL_PATHS` const** (`funnel/engine/app.js`) — single source of truth for funnel → legal-page URLs, used by both `legalDisclaimer()` and `companyFooter()`
+- **`log.warn` on unknown legal link names** in `companyFooter` — surfaces typos in `screens.json companyInfo.links` to the dev console during QA instead of silently rendering a dead `#` link
+- **`funnel/vercel.json` `/legal/:path+` rewrite** — explicit (functionally a no-op, but documents intent + insurance against future config drift)
+- **301 redirects** from old `/funnel-v2/{terms-of-use,privacy-policy,subscription-policy,cookie-policy}.html` paths → new `/legal/...` so any ad/App Store/indexed link survives the move
+- **Adjacent-sibling CSS selector** (`.company-footer__name + .footer-links`) — preserves the visual gap when the address line is absent (pre-incorporation), zero behaviour change when the address returns
+
 ### Added (Issue #44)
 - **Hand-drawn SVG hero illustrations across all 5 tabs** (`webapp/components/HeroVariants.tsx`) — replaces realistic PNG headers with vector heroes sharing one visual language (sunset palette, layered purple mountains, green hills, bottom-fade composition). One focal element per tab:
   - **Plan** — trail of stones winding through hills (`PlanTrail`)
