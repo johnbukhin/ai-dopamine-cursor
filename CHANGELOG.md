@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #52)
+- **Data sub-tab on Profile** (`webapp/components/Settings.tsx`, new `DataSettings`) — read-only display of the user's onboarding answers, grouped into Demographics / Goals & Symptoms / Assessment / Profile. Pulls from existing `users_profile.quiz_answers` JSONB (no new table; persistence already done by `funnel/api/provision-account.js`). Forward-only — pre-`provision-account.js` users see "No profile data found".
+- **`supabase/migrations/20260601_users_profile_rls.sql`** — `ENABLE ROW LEVEL SECURITY` on `users_profile` + `SELECT` policy `auth.uid() = id` so the webapp's anon client can read the row under the user's JWT. Server-side writers (`funnel/api/{provision-account,create-user}.js`) use `SUPABASE_SERVICE_ROLE_KEY` (bypass RLS) so ingestion is unaffected.
+- **`webapp/scripts/copy-screens.mjs`** — `predev`/`prebuild` hook copies `funnel/funnel-v2/screens.json` → `webapp/public/data/screens.json`. Question labels in Data tab come from that file (with `Question N` fallback). Fails loudly with actionable error if source missing (e.g. partial-tree deploy without `funnel/`).
+- **Terms sub-tab populated** — 4 anchor links to `/legal/{terms-of-use,privacy-policy,subscription-policy,cookie-policy}.html` on the funnel domain, opening in new tabs (`target="_blank" rel="noopener noreferrer"`). Built from `VITE_FUNNEL_URL` so a single env var stays source of truth across Login.tsx + Settings.tsx.
+- **`overflow-x-auto` + `whitespace-nowrap`** on the Settings tab row — 4 tabs scroll cleanly on small phones instead of clipping or wrapping.
+
+### Changed (Issue #52)
+- **`Profile` sub-tab renamed to `Privacy`** (`ProfileSettings` → `PrivacySettings`) — same component, same contents (email read-only, password change, Log Out). Sidebar entry stays labelled "Profile" and the page hero/heading are unchanged.
+- **Default Settings sub-tab → `Data`** (was `Profile`) — users land on their onboarding answers first; Privacy/Access/Terms are one click away.
+
+### Fixed (Issue #52 — related cleanup)
+- **Stale `VITE_FUNNEL_URL` fallback in 3 places** (`webapp/.env.local.example:18`, `webapp/components/Login.tsx:7`, the new `Settings.tsx` Terms tab) — value `https://ai-dopamine-cursor.vercel.app/funnel/` was set in March 2026 and never updated when PR #49 (`funnels/` flatten) removed the `/funnel/` prefix. Hardcoded URLs everywhere else in the repo (CORS allowlists in `funnel/api/*.js`, `scripts/smoke-test.sh`, `webapp/components/ProGate.tsx`) have used `https://ai-dopamine-addict.vercel.app` since #41 (April 2026); all three fallbacks now match. Side effect: also fixes the Login "Start my Compass journey" link which was 404'ing in prod whenever the env var wasn't explicitly set.
+
 ### Fixed (Issue #50 — workstream A)
 - **Cancellation doc/product mismatch** (`funnel/legal/terms-of-use.html` §6.3 + `subscription-policy.html` §5) — docs said email-only cancellation despite an in-app cancel flow shipping in `webapp/components/CancelFlow.tsx` + `Settings.tsx`. Now describes the real path (`Sidebar Profile → Access tab, then click Cancel`); email kept as alternative. Closes audit Critical #3 (CA ARL / FTC Click-to-Cancel violation) at the documentation layer.
 - **Privacy Policy §11 timeline contradiction** — §5 said 45 days (CCPA), §11 said 30 days (general). Now reads `30 days under GDPR, 45 days for California (CCPA)`.
