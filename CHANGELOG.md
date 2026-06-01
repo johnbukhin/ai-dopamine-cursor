@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed (Issue #50 — workstream A)
+- **Cancellation doc/product mismatch** (`funnel/legal/terms-of-use.html` §6.3 + `subscription-policy.html` §5) — docs said email-only cancellation despite an in-app cancel flow shipping in `webapp/components/CancelFlow.tsx` + `Settings.tsx`. Now describes the real path (`Sidebar Profile → Access tab, then click Cancel`); email kept as alternative. Closes audit Critical #3 (CA ARL / FTC Click-to-Cancel violation) at the documentation layer.
+- **Privacy Policy §11 timeline contradiction** — §5 said 45 days (CCPA), §11 said 30 days (general). Now reads `30 days under GDPR, 45 days for California (CCPA)`.
+- **Subscription Policy §4 currency claim** — was implicitly EUR-only; actual paywall shows USD/EUR/GBP/CAD/AUD per `engine/app.js DISCLAIMERS` map. Now lists the 5 detected currencies explicitly.
+
+### Added (Issue #50 — workstream A)
+- **Medical disclaimer callout box** (`.medical-disclaimer` CSS class — amber bg `#FEF3C7`, `#F59E0B` left border, `#78350F` text) at the top of `terms-of-use.html` + `subscription-policy.html`. Most "conspicuous" treatment for the regulatory disclaimer requirement (~8.5:1 contrast, WCAG AAA). Privacy + Cookie deliberately excluded as data docs.
+- **Terms §2 Eligibility** — explicit 18+ representation; renumbered §2 → §3 through §17 → §18 across the file (single internal cross-ref `Section 16.1` → `Section 17.1` in §13.2 updated; no external code/doc references Terms sections by number).
+- **Trade-name pre-incorporation disclosure** added to `subscription-policy.html` + `cookie-policy.html` footers, matching the wording already present in `privacy-policy.html` footer + `terms-of-use.html` §17.5.
+
 ### Changed (Issue #48)
 - **Flattened funnel directory layout** — `funnel/funnels/v1/` → `funnel/funnel-v1/` and `funnel/funnels/v2/` → `funnel/funnel-v2/` (`git mv`, history preserved). Files now live where the public URL says they live; no symlink, no rewrite, no nested `funnels/` wrapper. Public URLs `/funnel-v1/` and `/funnel-v2/` unchanged → zero SEO/marketing breakage.
 - **`../../` → `../` inside moved files** (16 lines across `funnel-v{1,2}/index.html` and `funnel-v{1,2}/screens.json`) — paths now correctly resolve from the new one-level-deep location instead of relying on browser path-clamping.
