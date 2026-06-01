@@ -40,15 +40,16 @@ Ask the user (if not already in arguments):
 ### Step 2 — Read source files
 
 Before creating anything, read:
-- `funnel/funnels/v1/config.json` and `funnel/funnels/v2/config.json` — to understand sequence format
-- `funnel/funnels/v1/screens.json` or `funnel/funnels/v2/screens.json` — if basing on existing
+- `funnel/funnel-v1/config.json` and `funnel/funnel-v2/config.json` — to understand sequence format
+- `funnel/funnel-v1/screens.json` or `funnel/funnel-v2/screens.json` — if basing on existing
 - `funnel/screens/registry.json` — to know which screen IDs are already globally available
-- `funnel/vercel.json` — to add the new route correctly
 
 ### Step 3 — Create the funnel directory
 
+The directory name MUST start with `funnel-` so the URL matches the path (Vercel serves it directly, no rewrites needed):
+
 ```bash
-mkdir -p funnel/funnels/<slug>
+mkdir -p funnel/funnel-<slug>
 ```
 
 ### Step 4 — Create index.html
@@ -62,15 +63,15 @@ This file is IDENTICAL for every funnel — it just loads the shared engine. Wri
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mind Compass</title>
-    <link rel="icon" href="../../assets/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="../../engine/styles.css">
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../engine/styles.css">
 </head>
 <body>
     <div id="app">
         <div class="loading-spinner">Loading...</div>
     </div>
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="../../engine/app.js"></script>
+    <script src="../engine/app.js"></script>
 </body>
 </html>
 ```
@@ -113,8 +114,8 @@ A flat JSON array of screen objects for screens **not** already in the registry.
     "headline": "Take the Quiz",
     "subheadline": "Find your personalized plan",
     "options": [
-      { "id": "male", "label": "Male", "image": "../../assets/male.png" },
-      { "id": "female", "label": "Female", "image": "../../assets/female.png" }
+      { "id": "male", "label": "Male", "image": "../assets/male.png" },
+      { "id": "female", "label": "Female", "image": "../assets/female.png" }
     ]
   }
 ]
@@ -124,28 +125,17 @@ For screen JSON structure by type, see the `/create-ob-screen` command reference
 
 **Do NOT include in screens.json:** `checkout`, `thank_you`, `create_account`, `app_dashboard` — they're in the registry.
 
-### Step 7 — Add route to vercel.json
+### Step 7 — Validate
 
-Read `funnel/vercel.json`. Add a new entry to the `rewrites` array:
-
-```json
-{
-  "source": "/<url-slug>",
-  "destination": "/funnels/<slug>/index.html"
-}
-```
-
-### Step 8 — Validate
-
-Run this to confirm all sequence IDs resolve:
+No `vercel.json` change is needed — Vercel serves `funnel/funnel-<slug>/` directly at URL `/funnel-<slug>/`. Just confirm all sequence IDs resolve:
 
 ```bash
 python3 -c "
 import json, sys
 slug = '<slug>'
 reg = json.load(open('funnel/screens/registry.json'))
-local = json.load(open(f'funnel/funnels/{slug}/screens.json'))
-cfg = json.load(open(f'funnel/funnels/{slug}/config.json'))
+local = json.load(open(f'funnel/funnel-{slug}/screens.json'))
+cfg = json.load(open(f'funnel/funnel-{slug}/config.json'))
 all_ids = {s['id'] for s in reg + local}
 missing = [sid for sid in cfg['sequence'] if sid not in all_ids]
 print('Sequence length:', len(cfg['sequence']))
