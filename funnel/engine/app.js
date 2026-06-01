@@ -4960,13 +4960,9 @@ const Events = {
             physical_impact:       scoreData.physical_impact?.pct       ?? null,
         };
 
-        // Parse funnel version from URL. Handles both URL shapes:
-        //   /funnels/v2/   (localhost direct access)
-        //   /funnel-v2/    (Vercel rewrite)
+        // Parse funnel version from URL path: /funnel-v2/ → "v2"
         const funnelVersion =
-            window.location.pathname.match(/\/funnels\/([^/]+)\//)?.[1] ||
-            window.location.pathname.match(/\/funnel-([^/]+)/)?.[1] ||
-            null;
+            window.location.pathname.match(/\/funnel-([^/]+)/)?.[1] || null;
 
         // V2 uses 'age_selection'; V1 uses 'question_age' — fall back gracefully
         const ageGroup = State.getAnswer('age_selection') || State.getAnswer('question_age') || null;
@@ -5490,9 +5486,7 @@ const App = {
                         const userName  = State.getAnswer('name_capture');
                         const promoCode = Components.generatePromoCode(userName, 50);
                         const funnelVersion =
-                            window.location.pathname.match(/\/funnels\/([^/]+)\//)?.[1] ||
-                            window.location.pathname.match(/\/funnel-([^/]+)/)?.[1] ||
-                            null;
+                            window.location.pathname.match(/\/funnel-([^/]+)/)?.[1] || null;
 
                         const provRes = await fetch('/api/provision-account', {
                             method:  'POST',

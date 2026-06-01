@@ -5,10 +5,10 @@ You are creating a new onboarding screen for the Mind Compass funnel app.
 ## Architecture context
 
 Screens live in one of two places:
-- `funnel/funnels/<funnel>/screens.json` — funnel-specific screens (questions, interstitials, loading)
+- `funnel/funnel-<version>/screens.json` — funnel-specific screens (questions, interstitials, loading)
 - `funnel/screens/registry.json` — shared screens reusable across multiple funnels (paywall variants, checkout, etc.)
 
-The engine (`funnel/engine/app.js`) renders screens. Each funnel defines its screen order in `funnel/funnels/<funnel>/config.json` as a `sequence` array of screen IDs.
+The engine (`funnel/engine/app.js`) renders screens. Each funnel defines its screen order in `funnel/funnel-<version>/config.json` as a `sequence` array of screen IDs.
 
 ## Naming convention
 
@@ -37,18 +37,18 @@ Screen IDs use the `ob_` prefix and are descriptive and short:
 3. **Create the screen JSON object** with the correct fields for its type (see reference below)
 
 4. **Add it to the right file:**
-   - If funnel-specific: add to `funnel/funnels/<funnel>/screens.json`
+   - If funnel-specific: add to `funnel/funnel-<version>/screens.json`
    - If shared/reusable: add to `funnel/screens/registry.json`
 
-5. **Insert the ID into the sequence** in `funnel/funnels/<funnel>/config.json` at the correct position
+5. **Insert the ID into the sequence** in `funnel/funnel-<version>/config.json` at the correct position
 
 6. **Validate** that the new screen ID resolves — run:
    ```bash
    python3 -c "
    import json
    reg = json.load(open('funnel/screens/registry.json'))
-   local = json.load(open('funnel/funnels/v1/screens.json'))
-   cfg = json.load(open('funnel/funnels/v1/config.json'))
+   local = json.load(open('funnel/funnel-v1/screens.json'))
+   cfg = json.load(open('funnel/funnel-v1/config.json'))
    all_ids = {s['id'] for s in reg + local}
    missing = [sid for sid in cfg['sequence'] if sid not in all_ids]
    print('Missing IDs:', missing or 'NONE')
@@ -159,8 +159,8 @@ Screen IDs use the `ob_` prefix and are descriptive and short:
   "beforeAfter": {
     "nowLabel": "Now",
     "goalLabel": "Your Goal",
-    "nowImage": "../../assets/before_state.png",
-    "goalImage": "../../assets/after_state.png",
+    "nowImage": "../assets/before_state.png",
+    "goalImage": "../assets/after_state.png",
     "metrics": [
       { "label": "Self-control", "nowState": "Hijacked", "goalState": "Restored", "nowFill": 0.2, "goalFill": 0.9 }
     ]
