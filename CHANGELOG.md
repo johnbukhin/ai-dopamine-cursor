@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed (Issue #48)
+- **Flattened funnel directory layout** — `funnel/funnels/v1/` → `funnel/funnel-v1/` and `funnel/funnels/v2/` → `funnel/funnel-v2/` (`git mv`, history preserved). Files now live where the public URL says they live; no symlink, no rewrite, no nested `funnels/` wrapper. Public URLs `/funnel-v1/` and `/funnel-v2/` unchanged → zero SEO/marketing breakage.
+- **`../../` → `../` inside moved files** (16 lines across `funnel-v{1,2}/index.html` and `funnel-v{1,2}/screens.json`) — paths now correctly resolve from the new one-level-deep location instead of relying on browser path-clamping.
+- **`engine/app.js` funnel-version regex deduplicated** — two call sites (profile-collection + provision-account flows) both had a dead `/funnels/v2/` fallback regex from the old layout; simplified to single `/funnel-([^/]+)/` match in both places.
+- **`.claude/commands/create-funnel.md` Step 7 rewritten** — adding a new funnel no longer requires a `vercel.json` rewrite; the convention is now `funnel/funnel-<slug>/` and Vercel serves it directly.
+
+### Removed (Issue #48)
+- **`funnel/funnel-v2` symlink** — was added in #e06d309 to make localhost match production; now obsolete since both serve directly.
+- **4 `/funnel-v{1,2}/` rewrites from `funnel/vercel.json`** — flat layout means URL == path, no rewrite needed; only `/legal/:path+` rewrite remains.
+- **Dead `/funnels/v2/` regex** (`engine/app.js`, 2 occurrences) — that URL shape never existed in production and no longer exists locally.
+
 ### Changed (Issue #46)
 - **Legal pages rewritten for pre-incorporation reality** (`funnel/legal/{terms-of-use,privacy-policy,subscription-policy,cookie-policy}.html`) — operator name `Compass Limited` / `Mind Compass Ltd` → `Mind Compass` (trade name); dropped fake addresses (`Flat/Office XXX, Limassol`, `123 Wellness Street, London`) and placeholder registration numbers; LCIA/JAMS arbitration removed (no entity to bind), replaced with `§12.1 Informal Resolution` + `§12.2 Court Jurisdiction`; `§16.1 Governing Law` keeps Cyprus + mandatory consumer-protection caveat
 - **Subscription Policy genericised** — `§2 Subscription Plans` no longer lists "7-Day / 1-Month / 3-Month" names or prices ("displayed at the time of purchase"); `§6 Refunds` says "where expressly advertised on the offer or checkout page" + statutory rights caveat
