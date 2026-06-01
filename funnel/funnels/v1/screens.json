@@ -1715,9 +1715,7 @@
       }
     ],
     "companyInfo": {
-      "name": "Mind Compass Ltd",
-      "address": "123 Wellness Street, London, EC1A 1BB, United Kingdom",
-      "email": "support@mind-compass.app",
+      "name": "Mind Compass",
       "links": [
         "Terms of Use",
         "Privacy Policy",
@@ -1804,6 +1802,6 @@
         "Build a future you can be proud of"
       ]
     },
-    "legalDisclaimer": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal. First month is \u20ac19.99, then \u20ac49.99/month (prices incl. VAT). Cancel via the app or email: support@mind-compass.app. See our Subscription Policy for details."
+    "legalDisclaimer": "By clicking \"GET MY PLAN\", you agree to automatic subscription renewal at the rate shown above. Cancel anytime via aicompass.tech@gmail.com. See our Subscription Policy for details."
   }
 ]

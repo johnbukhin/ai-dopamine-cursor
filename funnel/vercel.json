@@ -14,6 +14,26 @@
       "source": "/funnel-v2",
       "destination": "/funnel-v2/",
       "permanent": false
+    },
+    {
+      "source": "/funnel-v2/terms-of-use.html",
+      "destination": "/legal/terms-of-use.html",
+      "permanent": true
+    },
+    {
+      "source": "/funnel-v2/privacy-policy.html",
+      "destination": "/legal/privacy-policy.html",
+      "permanent": true
+    },
+    {
+      "source": "/funnel-v2/subscription-policy.html",
+      "destination": "/legal/subscription-policy.html",
+      "permanent": true
+    },
+    {
+      "source": "/funnel-v2/cookie-policy.html",
+      "destination": "/legal/cookie-policy.html",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -32,6 +52,10 @@
     {
       "source": "/funnel-v2/:path+",
       "destination": "/funnels/v2/:path+"
+    },
+    {
+      "source": "/legal/:path+",
+      "destination": "/legal/:path+"
     }
   ],
   "headers": [
