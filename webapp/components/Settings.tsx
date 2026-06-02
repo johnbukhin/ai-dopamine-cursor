@@ -583,6 +583,8 @@ const LEGAL_LINKS: { label: string; path: string }[] = [
 
 const TermsSettings: React.FC = () => {
   // Strip trailing slash so we don't end up with "//legal/..." in the href.
+  // ?return=webapp tells the legal page's back-link to point back to the
+  // webapp instead of the funnel home (funnel-context visits omit it).
   const funnelBase = FUNNEL_URL.replace(/\/$/, '');
 
   return (
@@ -592,7 +594,7 @@ const TermsSettings: React.FC = () => {
         {LEGAL_LINKS.map(link => (
           <li key={link.path}>
             <a
-              href={`${funnelBase}${link.path}`}
+              href={`${funnelBase}${link.path}?return=webapp`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-purple-700 hover:underline underline-offset-4 transition-colors"

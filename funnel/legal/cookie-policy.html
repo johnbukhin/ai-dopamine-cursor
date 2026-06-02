@@ -266,5 +266,17 @@
     </p>
     <p style="font-size: 13px; color: #6b7280; margin-top: 16px;">Mind Compass is currently operated as a trade name and is not yet a registered legal entity. A registered legal entity name, registered office address, and company registration number will be added to this Policy upon incorporation.</p>
 </div>
+<script>
+    // Context-aware back link: webapp's Terms tab appends ?return=webapp so
+    // users land back in the webapp instead of the funnel home. Default
+    // ("/") preserved for funnel-context visits (paywall footer, onboarding).
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('return') === 'webapp') {
+            var link = document.querySelector('a.back-link');
+            if (link) link.href = 'https://mind-compass-webapp.vercel.app/';
+        }
+    })();
+</script>
 </body>
 </html>

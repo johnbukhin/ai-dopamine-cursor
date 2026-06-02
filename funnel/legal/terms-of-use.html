@@ -272,5 +272,17 @@
         Website: <a href="https://ai-dopamine-cursor.vercel.app">ai-dopamine-cursor.vercel.app</a>
     </p>
 </div>
+<script>
+    // Context-aware back link: webapp's Terms tab appends ?return=webapp so
+    // users land back in the webapp instead of the funnel home. Default
+    // ("/") preserved for funnel-context visits (paywall footer, onboarding).
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('return') === 'webapp') {
+            var link = document.querySelector('a.back-link');
+            if (link) link.href = 'https://mind-compass-webapp.vercel.app/';
+        }
+    })();
+</script>
 </body>
 </html>
