@@ -26,6 +26,10 @@ All notable changes to this project will be documented in this file.
 ### Security (Issue #54)
 - **`track_llm_spend` RPC EXECUTE revoked from PUBLIC, granted only to `service_role`** — RPC is intentionally not callable from authenticated clients; all writes flow through `api/_lib/spend.js` after `verifyUser()` validates the JWT and passes the trusted `user.id`. Read access to own `llm_usage` row is permitted via standard RLS SELECT policy so the frontend can render the quota reset date in the banner.
 
+### Changed (Issue #54 — post-merge follow-ups)
+- **`New conversation` button visual** (`webapp/components/AICoach.tsx`, commit `0fb0b2f`) — was a text-only purple link that blended into the assistant message bubble; now a white pill with `border-purple-200`, `font-semibold`, `shadow-sm`. Clear button affordance against the purple background. Hover state lifts to `bg-purple-50` + `border-purple-400`.
+- **Quick-reply chips forced onto one row** (same file) — `flex-wrap` → `flex-nowrap` + `whitespace-nowrap` per chip so `Tell me more` / `Give me an action` / `Different approach` no longer break to a second line. Tighter spacing (`gap-2` → `gap-1.5`, chip `px-3` → `px-2.5`) so all three fit comfortably on narrow phones; `overflow-x-auto` as a safety net for extreme viewports.
+
 ### Added (Issue #52)
 - **Data sub-tab on Profile** (`webapp/components/Settings.tsx`, new `DataSettings`) — read-only display of the user's onboarding answers, grouped into Demographics / Goals & Symptoms / Assessment / Profile. Pulls from existing `users_profile.quiz_answers` JSONB (no new table; persistence already done by `funnel/api/provision-account.js`). Forward-only — pre-`provision-account.js` users see "No profile data found".
 - **`supabase/migrations/20260601_users_profile_rls.sql`** — `ENABLE ROW LEVEL SECURITY` on `users_profile` + `SELECT` policy `auth.uid() = id` so the webapp's anon client can read the row under the user's JWT. Server-side writers (`funnel/api/{provision-account,create-user}.js`) use `SUPABASE_SERVICE_ROLE_KEY` (bypass RLS) so ingestion is unaffected.
