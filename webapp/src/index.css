@@ -34,6 +34,29 @@ body {
   scrollbar-width: none;
 }
 
+/* Coach "New conversation" button — text + icon pulse between purple-700 and
+   emerald-600 so the action stands out without competing with the message
+   bubble. Uses `color` (cascades to lucide icon via currentColor) and
+   `border-color` so the pill outline follows the same beat. */
+@keyframes coach-reset-pulse {
+  0%, 100% {
+    color: #7E22CE; /* purple-700 */
+    border-color: #E9D5FF; /* purple-200 */
+  }
+  50% {
+    color: #059669; /* emerald-600 */
+    border-color: #6EE7B7; /* emerald-300 */
+  }
+}
+.animate-coach-reset-pulse {
+  animation: coach-reset-pulse 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-coach-reset-pulse {
+    animation: none;
+  }
+}
+
 /* Plus-sign decoration on the Check-in card pulses in sync with the rotating
    CTA phrase (3s cycle). Period matches CTA_CYCLE_MS in Dashboard.tsx. */
 @keyframes pulse-130 {

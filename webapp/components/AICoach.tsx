@@ -203,17 +203,17 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
               Visible in both Coach-tab and CoachModal modes; only shown
               once there's at least one real message worth resetting. */}
           {!isEmpty && (
-            <div className="flex justify-end -mb-1">
+            <div className="flex justify-center -mt-3 mb-1">
               <button
                 onClick={() => setShowResetModal(true)}
                 disabled={isLoading}
                 aria-label="Start a new conversation"
-                className="flex items-center gap-1.5 text-xs font-semibold text-purple-700
-                           bg-white border border-purple-200 hover:bg-purple-50 hover:border-purple-400
-                           px-3 py-1.5 rounded-full transition-colors shadow-sm
-                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-purple-200"
+                className="animate-coach-reset-pulse flex items-center gap-2 text-sm font-semibold
+                           bg-white border-2 hover:bg-purple-50
+                           px-4 py-2 rounded-full shadow-sm
+                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
-                <RotateCcw size={13} />
+                <RotateCcw size={16} />
                 <span>New conversation</span>
               </button>
             </div>
