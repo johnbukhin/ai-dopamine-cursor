@@ -34,22 +34,25 @@ body {
   scrollbar-width: none;
 }
 
-/* Coach "New conversation" button — text + icon pulse between purple-700 and
-   emerald-600 so the action stands out without competing with the message
-   bubble. Uses `color` (cascades to lucide icon via currentColor) and
-   `border-color` so the pill outline follows the same beat. */
+/* Coach "New conversation" button — text + icon snap-pulse between vibrant
+   purple-600 and emerald-500. Each color is held for ~49% of the cycle; the
+   transition window is kept under 1% (≈18ms at 1.8s) so the single
+   interpolated frame between violet and green is gone before the eye can
+   register the desaturated midpoint that RGB blending would produce.
+   Uses `color` (cascades to lucide icon via currentColor) and `border-color`
+   so the pill outline follows the same beat. */
 @keyframes coach-reset-pulse {
-  0%, 100% {
-    color: #7E22CE; /* purple-700 */
-    border-color: #E9D5FF; /* purple-200 */
+  0%, 49% {
+    color: #9333EA; /* purple-600 */
+    border-color: #A855F7; /* purple-500 */
   }
-  50% {
-    color: #059669; /* emerald-600 */
-    border-color: #6EE7B7; /* emerald-300 */
+  50%, 100% {
+    color: #10B981; /* emerald-500 */
+    border-color: #34D399; /* emerald-400 */
   }
 }
 .animate-coach-reset-pulse {
-  animation: coach-reset-pulse 2.4s ease-in-out infinite;
+  animation: coach-reset-pulse 1.8s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-coach-reset-pulse {

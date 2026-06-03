@@ -203,7 +203,7 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
               Visible in both Coach-tab and CoachModal modes; only shown
               once there's at least one real message worth resetting. */}
           {!isEmpty && (
-            <div className="flex justify-center -mt-3 mb-1">
+            <div className="flex justify-center -mt-10 mb-2">
               <button
                 onClick={() => setShowResetModal(true)}
                 disabled={isLoading}
