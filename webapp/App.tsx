@@ -13,12 +13,8 @@ import { ProGate } from './components/ProGate';
 import { supabase } from './src/lib/supabase';
 import { planData, getRequiredTaskKeys, DayCompletion } from './data/planData';
 import { lessonsData } from './data/lessonsData';
-
-// Hardcoded welcome message — never stored in DB, always prepended at load time.
-const WELCOME_MESSAGE: ChatMessage = {
-  role: 'assistant',
-  content: "Hello. I'm your Mind Compass coach.\n\nI'm here to help you reflect, analyze patterns, and maintain control.\n\nWhat's on your mind today?",
-};
+import { invalidateMemoryCache } from './services/claudeService';
+import { COACH_WELCOME_MESSAGE as WELCOME_MESSAGE } from './constants';
 
 // Dev-only: skip the login screen when VITE_DEV_BYPASS_AUTH=true in .env.local.
 // Hard-gated on import.meta.env.DEV so the flag is *physically impossible* to
@@ -286,6 +282,9 @@ export default function App() {
     setUserEmail('');
     setIsAuthenticated(false);
     setCurrentView(View.LOGIN);
+    // Drop the module-level Coach memory cache so the next signed-in user
+    // doesn't inherit the previous user's summary.
+    invalidateMemoryCache();
   };
 
   // Grant access immediately on successful ProGate upgrade — the Stripe webhook
