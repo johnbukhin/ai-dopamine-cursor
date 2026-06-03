@@ -34,25 +34,29 @@ body {
   scrollbar-width: none;
 }
 
-/* Coach "New conversation" button — text + icon snap-pulse between vibrant
-   purple-600 and emerald-500. Each color is held for ~49% of the cycle; the
-   transition window is kept under 1% (≈18ms at 1.8s) so the single
-   interpolated frame between violet and green is gone before the eye can
-   register the desaturated midpoint that RGB blending would produce.
-   Uses `color` (cascades to lucide icon via currentColor) and `border-color`
-   so the pill outline follows the same beat. */
+/* Coach "New conversation" button — text + icon smooth-pulse between vibrant
+   purple-600 and emerald-500, bridged through a saturated blue midpoint so
+   the RGB interpolation never collapses to a desaturated grey. The pulse
+   reads as purple → (vibrant blue blend) → green → (vibrant blue blend) →
+   purple, with each main colour held briefly at its peak via the keyframe
+   spans. Uses `color` (cascades to lucide icon via currentColor) and
+   `border-color` so the pill outline follows the same beat. */
 @keyframes coach-reset-pulse {
-  0%, 49% {
-    color: #9333EA; /* purple-600 */
+  0%, 100% {
+    color: #9333EA;        /* purple-600 */
     border-color: #A855F7; /* purple-500 */
   }
-  50%, 100% {
-    color: #10B981; /* emerald-500 */
+  25%, 75% {
+    color: #2563EB;        /* blue-600 — saturated bridge */
+    border-color: #3B82F6; /* blue-500 */
+  }
+  50% {
+    color: #10B981;        /* emerald-500 */
     border-color: #34D399; /* emerald-400 */
   }
 }
 .animate-coach-reset-pulse {
-  animation: coach-reset-pulse 1.8s linear infinite;
+  animation: coach-reset-pulse 2.4s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-coach-reset-pulse {
