@@ -203,14 +203,15 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
               Visible in both Coach-tab and CoachModal modes; only shown
               once there's at least one real message worth resetting. */}
           {!isEmpty && (
-            <div className="flex justify-end -mb-2">
+            <div className="flex justify-end -mb-1">
               <button
                 onClick={() => setShowResetModal(true)}
                 disabled={isLoading}
                 aria-label="Start a new conversation"
-                className="flex items-center gap-1.5 text-xs text-purple-700/80 hover:text-purple-900
-                           hover:bg-purple-100 px-2.5 py-1.5 rounded-lg transition-colors
-                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                className="flex items-center gap-1.5 text-xs font-semibold text-purple-700
+                           bg-white border border-purple-200 hover:bg-purple-50 hover:border-purple-400
+                           px-3 py-1.5 rounded-full transition-colors shadow-sm
+                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-purple-200"
               >
                 <RotateCcw size={13} />
                 <span>New conversation</span>
@@ -269,15 +270,17 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
 
           {/* Quick-reply chips under the latest assistant message. Hidden the
               moment the user starts typing so the keyboard doesn't compete
-              with chips for attention. */}
+              with chips for attention. Single-row layout; horizontal scroll
+              kicks in on extremely narrow screens so chips never wrap. */}
           {showQuickReplies && (
-            <div className="flex flex-wrap gap-2 pl-11">
+            <div className="flex flex-nowrap gap-1.5 pl-11 overflow-x-auto">
               {COACH_QUICK_REPLIES.map((reply) => (
                 <button
                   key={reply}
                   onClick={() => handleSend(reply)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-white border border-purple-200
-                             text-purple-700 hover:bg-purple-100 hover:border-purple-300 transition-colors"
+                  className="flex-shrink-0 text-xs px-2.5 py-1.5 rounded-full bg-white border border-purple-200
+                             text-purple-700 hover:bg-purple-100 hover:border-purple-300 transition-colors
+                             whitespace-nowrap"
                 >
                   {reply}
                 </button>
