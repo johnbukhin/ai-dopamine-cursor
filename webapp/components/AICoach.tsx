@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, Send, User as UserIcon, Loader2 } from 'lucide-react';
-import { getCoachResponse } from '../services/claudeService';
+import { Brain, Send, User as UserIcon, RotateCcw } from 'lucide-react';
+import { getCoachResponse, FALLBACK_COPY } from '../services/claudeService';
 import { CheckIn, ChatMessage, UrgeContextSeed } from '../types';
 import { URGE_ACTION_BY_ID } from '../data/urgeData';
 import { supabase } from '../src/lib/supabase';
 import { CoachLighthouse } from './HeroVariants';
+import { ResetChatModal } from './ResetChatModal';
+import { COACH_WELCOME_MESSAGE, COACH_STARTER_PROMPTS, COACH_QUICK_REPLIES } from '../constants';
 
 interface AICoachProps {
     checkInHistory: CheckIn[];
@@ -32,7 +34,7 @@ function formatUrgeContext(seed: UrgeContextSeed | null | undefined): string {
         seed.intensity != null ? `- Self-reported intensity: ${seed.intensity}/10` : null,
         action ? `- Most recent action they tried: ${action}` : null,
         `- Time on Help tab so far: ${seed.elapsedSec}s`,
-        'Respond using the Urge structure from the system prompt. Reference what they\'ve already done — do not suggest the same action again.',
+        "Respond in urge mode: one grounding action + one reframe sentence. Don't suggest an action they've already tried.",
     ].filter(Boolean);
     return lines.join('\n');
 }
@@ -40,9 +42,19 @@ function formatUrgeContext(seed: UrgeContextSeed | null | undefined): string {
 export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setMessages, currentUrgeContext, compact = false }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  // When the server returns 402, we lock the input area to a banner. The
+  // ISO string lets us format the "Resets on Mar 4, 2026" copy.
+  const [quotaEndsAt, setQuotaEndsAt] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef(messages);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
+
+  // Generation counter — bumped on reset so a Coach response that arrives
+  // AFTER the user already reset the chat doesn't persist its (now stale)
+  // messages back to the freshly-wiped `coach_messages` row.
+  // (Peer-review MEDIUM #1.)
+  const chatGenRef = useRef(0);
 
   // Auto-scroll to the latest message only when a NEW message arrives.
   // Skipping the initial mount keeps the hero header visible on first open.
@@ -54,13 +66,23 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  // Send a message, optionally pre-filled from a chip click. We accept the
+  // text as a parameter (instead of always reading from `input` state) so
+  // chip clicks can dispatch immediately without a render round-trip.
+  const handleSend = async (override?: string) => {
+    const userMsg = (override ?? input).trim();
+    if (!userMsg || isLoading || quotaEndsAt) return;
 
-    const userMsg = input;
-    setInput('');
+    if (!override) setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsLoading(true);
+
+    // Capture identity at call time so racy state changes (chat reset, sign-
+    // out, sign-in as another user) can't corrupt this call's persist write.
+    const startGen = chatGenRef.current;
+    const startUserId = supabase
+      ? (await supabase.auth.getUser()).data.user?.id ?? null
+      : null;
 
     // Build context summary from check-in history (last 5 entries) — passed as
     // system-prompt context, separate from chat history. When the Coach is
@@ -76,24 +98,40 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
 
     // Pass the last 10 chat messages so Claude has multi-turn memory.
     // Drop index 0 (hardcoded welcome message — never sent to the model).
-    // messagesRef holds state captured at handleSend call time — does NOT
-    // include the new userMsg yet, which is fine: the service appends it
-    // as the final user turn before sending.
     const chatHistory = messagesRef.current.slice(1).slice(-10);
 
-    const response = await getCoachResponse(userMsg, recentHistory, chatHistory);
-
-    const assistantMsg: ChatMessage = { role: 'assistant', content: response };
-
-    // Update UI — pure state update, no side effects inside updater
-    setMessages(prev => [...prev, assistantMsg]);
+    const result = await getCoachResponse(userMsg, recentHistory, chatHistory);
     setIsLoading(false);
 
+    // 402 → flip into quota-locked state. The chat history we already
+    // appended stays — the user sees their own message, then the banner
+    // replaces the input area.
+    if (result.kind === 'quota_exceeded') {
+      setQuotaEndsAt(result.periodEndsAt);
+      return;
+    }
+
+    const assistantText =
+      result.kind === 'text' ? result.text
+      : result.kind === 'auth_error' ? FALLBACK_COPY.coach.auth
+      : result.message === 'rate_limit' ? FALLBACK_COPY.coach.rateLimit
+      : result.message === 'empty' ? FALLBACK_COPY.coach.empty
+      : FALLBACK_COPY.coach.server;
+    const assistantMsg: ChatMessage = { role: 'assistant', content: assistantText };
+    setMessages(prev => [...prev, assistantMsg]);
+
     // Persist to Supabase — fire-and-forget, never blocks UI.
-    // Reconstruct the full conversation from the closure: messages (captured at
-    // handleSend call time, excludes userMsg) + userMsg + assistantMsg.
+    // Reconstruct the full conversation from the closure: messages (captured
+    // at handleSend call time, excludes userMsg) + userMsg + assistantMsg.
     // Slice off index 0 (hardcoded welcome message — never stored in DB).
-    if (supabase) {
+    // Only persist real Claude responses; don't write fallback strings to DB.
+    //
+    // Two race-condition guards (peer review):
+    //   1. chatGenRef bumped on reset — skip persist if the chat was reset
+    //      while this response was in flight.
+    //   2. user.id must match the id captured at handleSend start — skip
+    //      persist if the user logged out / a different user signed in.
+    if (supabase && result.kind === 'text') {
       const toStore: ChatMessage[] = [
         ...messagesRef.current,
         { role: 'user' as const, content: userMsg },
@@ -101,8 +139,9 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
       ].slice(1);
 
       (async () => {
+        if (chatGenRef.current !== startGen) return;
         const { data: { user } } = await supabase!.auth.getUser();
-        if (!user) return;
+        if (!user || user.id !== startUserId) return;
         await supabase!.from('coach_messages').upsert(
           { user_id: user.id, messages: toStore, updated_at: new Date().toISOString() },
           { onConflict: 'user_id' }
@@ -112,7 +151,6 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   };
 
   const formatMessage = (content: string) => {
-    // Split by bold markers (**text**)
     return content.split(/(\*\*.*?\*\*)/).map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
@@ -120,6 +158,26 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
       return <span key={i}>{part}</span>;
     });
   };
+
+  // Reset handler — clears chat back to the welcome message after a successful
+  // /api/coach-reset call. Quota-on-reset is handled inside the modal which
+  // calls onQuotaExceeded → we lock the input here too.
+  // Bumping chatGenRef invalidates any in-flight handleSend's persist closure
+  // (peer-review MEDIUM #1) so a stale response can't resurrect the wiped row.
+  const handleResetComplete = () => {
+    chatGenRef.current += 1;
+    setMessages([COACH_WELCOME_MESSAGE]);
+  };
+
+  // ── Derived UI flags ──────────────────────────────────────────────────
+  const isEmpty = messages.length === 1; // only the welcome message
+  const lastMessage = messages[messages.length - 1];
+  const showQuickReplies =
+    !isEmpty
+    && !isLoading
+    && !quotaEndsAt
+    && lastMessage?.role === 'assistant'
+    && !input.trim();
 
   return (
     <div className="flex flex-col h-full bg-purple-50">
@@ -141,55 +199,159 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
         )}
 
         <div className={`px-4 space-y-4 max-w-4xl mx-auto ${compact ? 'pt-2' : ''}`}>
+          {/* Reset chat button — small, right-aligned, above the messages.
+              Visible in both Coach-tab and CoachModal modes; only shown
+              once there's at least one real message worth resetting. */}
+          {!isEmpty && (
+            <div className="flex justify-end -mb-2">
+              <button
+                onClick={() => setShowResetModal(true)}
+                disabled={isLoading}
+                aria-label="Start a new conversation"
+                className="flex items-center gap-1.5 text-xs text-purple-700/80 hover:text-purple-900
+                           hover:bg-purple-100 px-2.5 py-1.5 rounded-lg transition-colors
+                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >
+                <RotateCcw size={13} />
+                <span>New conversation</span>
+              </button>
+            </div>
+          )}
+
           {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-gray-200 text-gray-600' : 'bg-purple-600 text-white'}`}>
-                {m.role === 'user' ? <UserIcon size={16} /> : <Brain size={16} />}
-              </div>
-              <div className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                m.role === 'user' 
-                  ? 'bg-white border border-gray-200 text-gray-900 rounded-tr-none' 
-                  : 'bg-purple-700 text-white rounded-tl-none shadow-sm'
-              }`}>
-                {formatMessage(m.content)}
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-gray-200 text-gray-600' : 'bg-purple-600 text-white'}`}>
+                  {m.role === 'user' ? <UserIcon size={16} /> : <Brain size={16} />}
+                </div>
+                <div className={`p-4 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                  m.role === 'user'
+                    ? 'bg-white border border-gray-200 text-gray-900 rounded-tr-none'
+                    : 'bg-purple-700 text-white rounded-tl-none shadow-sm'
+                }`}>
+                  {formatMessage(m.content)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-        {isLoading && (
+          ))}
+
+          {isLoading && (
             <div className="flex justify-start">
-                 <div className="flex gap-3 max-w-[80%]">
-                    <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center">
-                        <Brain size={16} />
-                    </div>
-                    <div className="p-4 bg-purple-700 rounded-2xl rounded-tl-none flex items-center">
-                        <Loader2 className="animate-spin text-purple-200" size={16} />
-                    </div>
-                 </div>
+              <div className="flex gap-3 max-w-[80%]">
+                <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center">
+                  <Brain size={16} />
+                </div>
+                <div className="p-4 bg-purple-700 rounded-2xl rounded-tl-none">
+                  <TypingDots />
+                </div>
+              </div>
             </div>
-        )}
+          )}
+
+          {/* Empty-state starter prompts — three buttons under the welcome
+              message that pre-fill and send a starter question. Disappear
+              after the user sends their first message. */}
+          {isEmpty && !quotaEndsAt && (
+            <div className="flex flex-wrap gap-2 justify-center pt-2 pb-4">
+              {COACH_STARTER_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  onClick={() => handleSend(prompt)}
+                  className="text-xs md:text-sm px-3.5 py-2 rounded-full bg-white border border-purple-200
+                             text-purple-800 hover:bg-purple-100 hover:border-purple-300 transition-colors
+                             shadow-sm"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Quick-reply chips under the latest assistant message. Hidden the
+              moment the user starts typing so the keyboard doesn't compete
+              with chips for attention. */}
+          {showQuickReplies && (
+            <div className="flex flex-wrap gap-2 pl-11">
+              {COACH_QUICK_REPLIES.map((reply) => (
+                <button
+                  key={reply}
+                  onClick={() => handleSend(reply)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-white border border-purple-200
+                             text-purple-700 hover:bg-purple-100 hover:border-purple-300 transition-colors"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="p-4 bg-white border-t border-purple-100">
-        <div className="flex gap-2 max-w-4xl mx-auto">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type your thought..."
-            className="flex-1 p-3 bg-stone-100 rounded-xl border-none focus:ring-2 focus:ring-emerald-200 outline-none text-emerald-900 placeholder-stone-400"
-          />
-          <button 
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="p-3 bg-purple-700 text-white rounded-xl hover:bg-emerald-900 disabled:opacity-50 transition-colors"
-          >
-            <Send size={20} />
-          </button>
-        </div>
+      {/* Input area OR quota banner. We swap the entire footer so a blocked
+          user sees no input affordance at all — explicit, no false hope. */}
+      {quotaEndsAt
+        ? <QuotaBanner periodEndsAt={quotaEndsAt} />
+        : (
+          <div className="p-4 bg-white border-t border-purple-100">
+            <div className="flex gap-2 max-w-4xl mx-auto">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Type your thought..."
+                className="flex-1 p-3 bg-stone-100 rounded-xl border-none focus:ring-2 focus:ring-emerald-200 outline-none text-emerald-900 placeholder-stone-400"
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={!input.trim() || isLoading}
+                className="p-3 bg-purple-700 text-white rounded-xl hover:bg-emerald-900 disabled:opacity-50 transition-colors"
+              >
+                <Send size={20} />
+              </button>
+            </div>
+          </div>
+        )
+      }
+
+      <ResetChatModal
+        open={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        // Strip the hardcoded welcome — server only needs real turns.
+        messagesToSave={messages.slice(1)}
+        onResetComplete={handleResetComplete}
+        onQuotaExceeded={(endsAt) => setQuotaEndsAt(endsAt)}
+      />
+    </div>
+  );
+};
+
+// ── Subcomponents ──────────────────────────────────────────────────────
+
+/** Three-dot typing indicator. Stagger via inline animationDelay so we don't
+ *  need a Tailwind config change for keyframes. */
+const TypingDots: React.FC = () => (
+  <div className="flex items-center gap-1.5" aria-label="Coach is typing">
+    {[0, 1, 2].map((i) => (
+      <span
+        key={i}
+        className="w-1.5 h-1.5 rounded-full bg-purple-200 animate-pulse"
+        style={{ animationDelay: `${i * 180}ms`, animationDuration: '1.2s' }}
+      />
+    ))}
+  </div>
+);
+
+/** Quota-reached banner that replaces the input footer (Issue #54, Scope 4). */
+const QuotaBanner: React.FC<{ periodEndsAt: string | null }> = ({ periodEndsAt }) => {
+  const resetCopy = periodEndsAt
+    ? `Resets on ${new Date(periodEndsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}.`
+    : 'Resets next cycle.';
+  return (
+    <div className="p-4 bg-purple-100 border-t border-purple-200" role="status">
+      <div className="max-w-4xl mx-auto text-center">
+        <p className="text-sm font-semibold text-purple-900">AI quota reached</p>
+        <p className="text-xs text-purple-800/80 mt-0.5">{resetCopy}</p>
       </div>
     </div>
   );

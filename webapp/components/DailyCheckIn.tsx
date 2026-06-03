@@ -6,7 +6,7 @@ import {
   FLOW_A_HELPED_OPTIONS, EMOTIONS_POSITIVE, EMOTIONS_NEGATIVE,
   TRIGGERS, TIME_OF_DAY, SLIP_REACTIONS, SLIP_LEARNINGS
 } from '../constants';
-import { generateDailyInsight } from '../services/claudeService';
+import { generateDailyInsight, FALLBACK_COPY } from '../services/claudeService';
 import { Check, X, CheckCircle, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
 
 interface DailyCheckInProps {
@@ -77,9 +77,20 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
       tasksCompleted: payload?.tasksCompleted ?? false,
     };
 
-    // Generate AI Insight
-    const insight = await generateDailyInsight(checkIn);
-    checkIn.aiInsight = insight;
+    // Generate AI Insight — fall back to a friendly stub for any non-success
+    // (auth, quota, server). The check-in itself always saves regardless.
+    const result = await generateDailyInsight(checkIn);
+    if (result.kind === 'text') {
+      checkIn.aiInsight = result.text;
+    } else if (result.kind === 'quota_exceeded') {
+      checkIn.aiInsight = 'Insight skipped — AI quota reached. Resets next cycle.';
+    } else if (result.kind === 'auth_error') {
+      checkIn.aiInsight = FALLBACK_COPY.insight.auth;
+    } else if (result.message === 'rate_limit') {
+      checkIn.aiInsight = FALLBACK_COPY.insight.rateLimit;
+    } else {
+      checkIn.aiInsight = FALLBACK_COPY.insight.server;
+    }
 
     setIsSubmitting(false);
 

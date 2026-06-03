@@ -1,3 +1,29 @@
+import type { ChatMessage } from './types';
+
+// Coach welcome — prepended at chat load and re-applied after a reset.
+// Never persisted to DB; the server-side coach_messages row stores only
+// real user/assistant turns.
+export const COACH_WELCOME_MESSAGE: ChatMessage = {
+  role: 'assistant',
+  content: "Hello. I'm your Mind Compass coach.\n\nI'm here to help you reflect, analyze patterns, and maintain control.\n\nWhat's on your mind today?",
+};
+
+// Three starter prompts shown only when the chat is empty (just the welcome
+// message). Click → fills input and sends. Issue #54, Scope 3.
+export const COACH_STARTER_PROMPTS = [
+  "I'm struggling with an urge",
+  "I want to reflect on yesterday",
+  "What pattern do you see?",
+];
+
+// Static quick-reply chips shown after each assistant turn. Hidden once the
+// user starts typing their own message. Issue #54, Scope 3.
+export const COACH_QUICK_REPLIES = [
+  "Tell me more",
+  "Give me an action",
+  "Different approach",
+];
+
 export const FLOW_A_HELPED_OPTIONS = [
   "I stayed busy",
   "I avoided triggers",
