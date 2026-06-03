@@ -270,10 +270,11 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
 
           {/* Quick-reply chips under the latest assistant message. Hidden the
               moment the user starts typing so the keyboard doesn't compete
-              with chips for attention. Single-row layout; horizontal scroll
-              kicks in on extremely narrow screens so chips never wrap. */}
+              with chips for attention. Center-aligned (no avatar indent) so
+              all three chips fit on one row without a scrollbar at typical
+              mobile widths (375px+). */}
           {showQuickReplies && (
-            <div className="flex flex-nowrap gap-1.5 pl-11 overflow-x-auto">
+            <div className="flex flex-nowrap justify-center gap-1.5">
               {COACH_QUICK_REPLIES.map((reply) => (
                 <button
                   key={reply}
