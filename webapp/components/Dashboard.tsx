@@ -12,6 +12,10 @@ interface DashboardProps {
   celebrationSignal: { type: 'clean' | 'slip'; ts: number } | null;
   onOpenCheckIn?: () => void;
   onChangeView: (view: View) => void;
+  /** When false, the `Urges Surfed` tile becomes a clickable upsell button
+   *  that routes to the Coach tab (which renders ProGate). Paid users see
+   *  the existing static stat tile. */
+  hasUpsellAccess: boolean;
 }
 
 // Rotating CTA phrases shown on the Check-in card before the day's first check-in.
@@ -103,7 +107,7 @@ const Celebration: React.FC<{
   );
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheckedInToday, celebrationSignal, onOpenCheckIn, onChangeView }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheckedInToday, celebrationSignal, onOpenCheckIn, onChangeView, hasUpsellAccess }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [ctaIndex, setCtaIndex] = useState(0);
@@ -296,34 +300,57 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                 styled as a sibling of the Streak tile (purple palette,
                 same icon-badge tint, same stroke weight) so the row reads
                 as one cohesive trio. */}
-            <div className="col-span-2 md:col-span-1 md:self-center relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3">
-                {/* Decorative wave silhouette — "urges rise and fall like
-                    waves" reframe. Stroke weight matches the Streak chart
-                    and Check-in plus for visual consistency across the row. */}
-                <svg
-                   aria-hidden="true"
-                   viewBox="0 0 60 60"
-                   fill="none"
-                   stroke="currentColor"
-                   strokeWidth="6"
-                   strokeLinecap="round"
-                   strokeLinejoin="round"
-                   className="absolute -bottom-2 -right-3 w-16 h-16 text-purple-600/20 pointer-events-none"
+            {/* `Urges Surfed` tile. Paid users see a static stat; free users
+                see a clickable button that routes to the Coach tab (which
+                renders ProGate as the upsell). Hover treatment mirrors the
+                `I'm having an urge — help me` button below — same hover-bg
+                step and `transition-colors` — so the row reads as a
+                consistent affordance family. */}
+            {(() => {
+              const baseClasses = "col-span-2 md:col-span-1 md:self-center relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3";
+              const inner = (
+                <>
+                  {/* Decorative wave silhouette — "urges rise and fall like
+                      waves" reframe. Stroke weight matches the Streak chart
+                      and Check-in plus for visual consistency across the row. */}
+                  <svg
+                     aria-hidden="true"
+                     viewBox="0 0 60 60"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="6"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                     className="absolute -bottom-2 -right-3 w-16 h-16 text-purple-600/20 pointer-events-none"
+                  >
+                     <path d="M2 36 Q12 22 22 36 T42 36 T62 36" />
+                     <path d="M2 46 Q12 32 22 46 T42 46 T62 46" />
+                  </svg>
+                  <div className="flex items-center gap-2 relative">
+                     <div className="bg-purple-300/60 p-1.5 rounded-lg">
+                        <Waves size={16} className="text-purple-700" />
+                     </div>
+                     <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Urges Surfed</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 relative">
+                     <span className="text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight">{urgesSurfed}</span>
+                     <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesSurfed === 1 ? 'surf' : 'surfs'}</span>
+                  </div>
+                </>
+              );
+              return hasUpsellAccess ? (
+                <div className={baseClasses}>{inner}</div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onChangeView(View.AI_COACH)}
+                  className={`${baseClasses} text-left hover:bg-purple-200 transition-colors`}
+                  aria-label="Unlock Urges Surfed — open Coach"
                 >
-                   <path d="M2 36 Q12 22 22 36 T42 36 T62 36" />
-                   <path d="M2 46 Q12 32 22 46 T42 46 T62 46" />
-                </svg>
-                <div className="flex items-center gap-2 relative">
-                   <div className="bg-purple-300/60 p-1.5 rounded-lg">
-                      <Waves size={16} className="text-purple-700" />
-                   </div>
-                   <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Urges Surfed</span>
-                </div>
-                <div className="flex items-baseline gap-1.5 relative">
-                   <span className="text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight">{urgesSurfed}</span>
-                   <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesSurfed === 1 ? 'surf' : 'surfs'}</span>
-                </div>
-            </div>
+                  {inner}
+                </button>
+              );
+            })()}
          </div>
 
          {/* Urge Help — utility row; rose accent to telegraph "this is the

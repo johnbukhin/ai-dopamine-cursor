@@ -13,6 +13,44 @@ interface LocateStageProps {
 /** Exit animation duration — must match `.animate-sheet-down` in index.css. */
 const SHEET_EXIT_MS = 240;
 
+/** Smooth HSL transition duration for intensity-driven shading. */
+const TONE_TRANSITION = 'background-color 300ms ease, border-color 300ms ease, color 300ms ease, accent-color 300ms ease';
+
+/** A single HSL anchor — `[hue, saturation%, lightness%]`. */
+type HSLAnchor = readonly [number, number, number];
+
+/** Linearly interpolate a single tone (3 anchors: v=1, v=5, v=10) for any
+ *  integer intensity v ∈ [1, 10]. v=5 reproduces today's baseline colour
+ *  exactly so the sheet's "untouched" look matches the slider default. */
+function interpolateHSL(v: number, a: HSLAnchor, b: HSLAnchor, c: HSLAnchor): string {
+  const t = v <= 5 ? (v - 1) / 4 : (v - 5) / 5;
+  const [from, to] = v <= 5 ? [a, b] : [b, c];
+  const lerp = (x: number, y: number) => x + (y - x) * t;
+  return `hsl(${lerp(from[0], to[0]).toFixed(1)}, ${lerp(from[1], to[1]).toFixed(1)}%, ${lerp(from[2], to[2]).toFixed(1)}%)`;
+}
+
+/** Map intensity 1–10 (or null → 5) to the rose-family tones that modulate
+ *  the Locate sheet's interior. Hue stays in the rose band; only lightness
+ *  and saturation shift, so the sheet always reads as rose-themed but visibly
+ *  deepens with intensity. v=5 anchors reproduce today's Tailwind rose-* shades
+ *  (rose-50, rose-100, rose-200, rose-700, rose-800) so the baseline is
+ *  identical pre- and post-touch.
+ *
+ *  IMPORTANT: every tone's 3 hue anchors stay within the narrow 345°–356°
+ *  band — `interpolateHSL` does plain linear lerp, NOT shortest-arc, so any
+ *  anchor pair that crosses 0°/360° would visibly sweep through yellow →
+ *  green → blue → purple before landing on rose. Keep all three values close. */
+function intensityTones(intensity: number | null) {
+  const v = intensity ?? 5;
+  return {
+    cardBg:       interpolateHSL(v, [355, 100, 99], [355, 100, 97], [355, 90, 92]),
+    cardBorder:   interpolateHSL(v, [356, 100, 97], [356, 100, 95], [355, 96, 85]),
+    handle:       interpolateHSL(v, [355, 96, 94],  [355, 96, 89],  [355, 90, 80]),
+    sliderAccent: interpolateHSL(v, [347, 70, 60],  [347, 83, 41],  [345, 90, 30]),
+    numberColor:  interpolateHSL(v, [345, 70, 50],  [345, 82, 35],  [345, 90, 22]),
+  };
+}
+
 /**
  * Stage 2 — Locate.
  *
@@ -104,6 +142,11 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
     onComplete(selected, intensity);
   };
 
+  // Intensity-driven shading for the sheet interior. Recomputed every render
+  // — the math is trivial (10 linear interpolations) and the alternative
+  // (useMemo) would add boilerplate without measurable benefit.
+  const tones = intensityTones(intensity);
+
   return (
     <div className="flex-1 flex flex-col min-h-0 relative animate-in fade-in duration-300">
       {/* Scrollable feelings grid. Padding is static now that the sheet is
@@ -177,9 +220,13 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
               paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)',
             }}
           >
-            {/* Drag-handle visual cue (non-functional — just signals "sheet"). */}
+            {/* Drag-handle visual cue (non-functional — just signals "sheet").
+                Tone shifts with intensity. */}
             <div className="flex justify-center mb-2" aria-hidden="true">
-              <div className="w-10 h-1.5 rounded-full bg-rose-200" />
+              <div
+                className="w-10 h-1.5 rounded-full"
+                style={{ backgroundColor: tones.handle, transition: TONE_TRANSITION }}
+              />
             </div>
 
             {/* Header row with selected feeling + close-to-deselect button. */}
@@ -202,10 +249,18 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
             </div>
 
             {/* Intensity slider — the optional input that gives the log
-                richer signal without blocking progress. */}
+                richer signal without blocking progress. Card background +
+                border + slider accent + value number shift in rose tone as
+                intensity changes; sheet outer chrome stays constant so the
+                modulation reads as interior depth, not a wholesale repaint. */}
             <section
               aria-label="How intense is this urge"
-              className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-4"
+              className="border rounded-2xl p-4 mb-4"
+              style={{
+                backgroundColor: tones.cardBg,
+                borderColor: tones.cardBorder,
+                transition: TONE_TRANSITION,
+              }}
             >
               <div className="flex items-baseline justify-between mb-2">
                 <h3 className="text-sm font-semibold text-rose-900">How strong is it?</h3>
@@ -219,18 +274,21 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
                 step={1}
                 value={intensity ?? 5}
                 onChange={(e) => setIntensity(parseInt(e.target.value, 10))}
-                className="w-full accent-rose-700"
+                className="w-full"
+                style={{ accentColor: tones.sliderAccent, transition: TONE_TRANSITION }}
                 aria-label="Urge intensity from 1 to 10"
               />
 
               <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-rose-700/50 mt-1">
                 <span>Mild</span>
+                {/* Always rendered at the larger weight so the sheet height
+                    is identical before and after the first slider touch —
+                    only the content swaps (`·` placeholder ↔ number). Colour
+                    also tracks intensity so null → 5 → 10 transitions are
+                    smooth in both dimensions. */}
                 <span
-                  className={
-                    intensity !== null
-                      ? 'text-rose-800 text-base font-bold normal-case tracking-normal'
-                      : ''
-                  }
+                  className="text-base font-bold normal-case tracking-normal"
+                  style={{ color: tones.numberColor, transition: TONE_TRANSITION }}
                 >
                   {intensity !== null ? intensity : '·'}
                 </span>

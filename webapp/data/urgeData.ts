@@ -147,33 +147,52 @@ export const URGE_ACTION_BY_ID: Record<UrgeActionId, UrgeAction> = Object.fromEn
   URGE_ACTIONS.map((a) => [a.id, a]),
 ) as Record<UrgeActionId, UrgeAction>;
 
-/** Category metadata for headers and subtle tints in the Act grid. */
+/** Category metadata for headers and subtle tints in the Act grid.
+ *  `tint`/`accent` colour the section header + icon badge; `titleClass`/
+ *  `descriptionClass` colour the body of each action card so a whole bucket
+ *  reads as one tonal family. All values are static literals so Tailwind JIT
+ *  can find them at build time. */
 export const URGE_CATEGORY_META: Record<
   UrgeAction['category'],
-  { label: string; subtitle: string; tint: string; accent: string }
+  {
+    label: string;
+    subtitle: string;
+    tint: string;
+    accent: string;
+    titleClass: string;
+    descriptionClass: string;
+  }
 > = {
   reset: {
     label: 'Reset',
     subtitle: 'Calm the body',
     tint: 'bg-emerald-100/60 border-emerald-200',
     accent: 'text-emerald-700',
+    titleClass: 'text-emerald-900',
+    descriptionClass: 'text-emerald-700/70',
   },
   ground: {
     label: 'Ground',
     subtitle: 'Come back to now',
     tint: 'bg-teal-100/60 border-teal-200',
     accent: 'text-teal-700',
+    titleClass: 'text-teal-900',
+    descriptionClass: 'text-teal-700/70',
   },
   protect: {
     label: 'Protect',
     subtitle: 'Change your environment',
     tint: 'bg-sky-100/60 border-sky-200',
     accent: 'text-sky-700',
+    titleClass: 'text-sky-900',
+    descriptionClass: 'text-sky-700/70',
   },
   reframe: {
     label: 'Reframe',
     subtitle: 'Shift the story',
     tint: 'bg-indigo-100/60 border-indigo-200',
     accent: 'text-indigo-700',
+    titleClass: 'text-indigo-900',
+    descriptionClass: 'text-indigo-700/70',
   },
 };
