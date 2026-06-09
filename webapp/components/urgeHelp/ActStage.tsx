@@ -82,10 +82,7 @@ export const ActStage: React.FC<ActStageProps> = ({ feeling, triedActionIds, onP
   return (
     <div className="flex-1 overflow-y-auto pb-28 md:pb-8 animate-in fade-in duration-300">
       <div className="px-4 md:px-6 max-w-3xl mx-auto">
-        <header className="text-center mt-6 md:mt-8 mb-6 md:mb-8">
-          <p className="text-[10px] font-semibold text-rose-700/60 uppercase tracking-widest mb-2">
-            Stage 3 of 4
-          </p>
+        <header className="text-center mt-12 md:mt-14 mb-6 md:mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-rose-900 mb-2">
             Pick one action.
           </h2>
@@ -107,7 +104,9 @@ export const ActStage: React.FC<ActStageProps> = ({ feeling, triedActionIds, onP
                   <h3 className={`text-xs font-bold uppercase tracking-wider ${meta.accent}`}>
                     {meta.label}
                   </h3>
-                  <p className="text-xs text-rose-700/60">{meta.subtitle}</p>
+                  {/* Subtitle inherits the category accent so the header reads as
+                      one coloured unit per bucket. */}
+                  <p className={`text-xs ${meta.accent} opacity-70`}>{meta.subtitle}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
