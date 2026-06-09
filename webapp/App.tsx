@@ -485,6 +485,7 @@ export default function App() {
             celebrationSignal={celebrationSignal}
             onOpenCheckIn={() => handleOpenCheckIn({ tasksCompleted: false })}
             onChangeView={changeView}
+            hasUpsellAccess={hasUpsellAccess}
           />
         )}
 

@@ -165,10 +165,10 @@ export const ActStage: React.FC<ActStageProps> = ({ feeling, triedActionIds, onP
                           <Icon size={20} />
                         </div>
 
-                        <div className="font-semibold text-rose-900 text-sm leading-tight mb-1">
+                        <div className={`font-semibold ${meta.titleClass} text-sm leading-tight mb-1`}>
                           {action.title}
                         </div>
-                        <p className="text-[11px] md:text-xs text-rose-700/70 leading-snug">
+                        <p className={`text-[11px] md:text-xs ${meta.descriptionClass} leading-snug`}>
                           {action.whyItWorks}
                         </p>
                       </button>
