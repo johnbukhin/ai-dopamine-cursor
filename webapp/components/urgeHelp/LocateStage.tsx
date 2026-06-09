@@ -282,17 +282,17 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
               <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-rose-700/50 mt-1">
                 <span>Mild</span>
                 {/* Always rendered at the larger weight so the sheet height
-                    is identical before and after the first slider touch.
-                    Shows `5` by default (matches the slider knob's resting
-                    position at `value={intensity ?? 5}`) so the visible
-                    value and the knob agree before the user interacts.
-                    Colour tracks intensity so null → 5 → 10 transitions
-                    are smooth in both dimensions. */}
+                    is identical before and after the first slider touch —
+                    only the content swaps (`·` placeholder ↔ number). The
+                    dot signals "no value chosen yet" so a skipped intensity
+                    stays distinguishable from an explicit pick of 5. Colour
+                    tracks intensity so null → 5 → 10 transitions are smooth
+                    in both dimensions. */}
                 <span
                   className="text-base font-bold normal-case tracking-normal"
                   style={{ color: tones.numberColor, transition: TONE_TRANSITION }}
                 >
-                  {intensity ?? 5}
+                  {intensity !== null ? intensity : '·'}
                 </span>
                 <span>Crushing</span>
               </div>
