@@ -4,7 +4,7 @@ import { CheckIn, CheckInStatus } from "../types";
 export const buildDailyInsightSystem = (): string => `
 You analyze daily check-ins for a user recovering from impulse control issues (porn addiction).
 
-Task: Provide a single, short paragraph (2-3 sentences) insight.
+Task: Provide a single, short insight. Strict hard limits: at most 3 sentences AND at most 50 words total. Be concise; do not pad.
 Tone: Neutral, supportive, human, non-moralizing, scientific.
 Goal: Connect the specific data points to a behavioral pattern or reinforcement.
 

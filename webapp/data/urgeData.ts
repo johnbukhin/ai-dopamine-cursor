@@ -155,25 +155,25 @@ export const URGE_CATEGORY_META: Record<
   reset: {
     label: 'Reset',
     subtitle: 'Calm the body',
-    tint: 'bg-rose-100/60 border-rose-200',
-    accent: 'text-rose-700',
+    tint: 'bg-emerald-100/60 border-emerald-200',
+    accent: 'text-emerald-700',
   },
   ground: {
     label: 'Ground',
     subtitle: 'Come back to now',
-    tint: 'bg-amber-100/60 border-amber-200',
-    accent: 'text-amber-800',
+    tint: 'bg-teal-100/60 border-teal-200',
+    accent: 'text-teal-700',
   },
   protect: {
     label: 'Protect',
     subtitle: 'Change your environment',
-    tint: 'bg-purple-100/60 border-purple-200',
-    accent: 'text-purple-800',
+    tint: 'bg-sky-100/60 border-sky-200',
+    accent: 'text-sky-700',
   },
   reframe: {
     label: 'Reframe',
     subtitle: 'Shift the story',
-    tint: 'bg-emerald-100/60 border-emerald-200',
-    accent: 'text-emerald-800',
+    tint: 'bg-indigo-100/60 border-indigo-200',
+    accent: 'text-indigo-700',
   },
 };

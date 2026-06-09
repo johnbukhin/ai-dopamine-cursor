@@ -22,11 +22,11 @@ const SHEET_EXIT_MS = 240;
  * stage is more than a picker: every feeling carries a one-line context
  * line so the user *understands* what they're feeling, not just labels it.
  *
- * The intensity slider rises as a bottom sheet (matching the lesson sheet
- * pattern from PlanLessonContent) the moment a feeling is picked. This
- * pulls the user's eye down to the next decision without crowding the
- * grid above. The sheet has a Close affordance so users can deselect and
- * pick a different feeling.
+ * Once a feeling is picked, the intensity slider rises in a modal bottom
+ * sheet (same pattern as LessonBottomSheet: backdrop dim + blur, click-
+ * outside-to-dismiss, body scroll lock). The dimmed backdrop creates a
+ * clear focus shift away from the feelings grid; the X button or backdrop
+ * tap deselects so the user can pick a different feeling.
  */
 export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComplete }) => {
   const [selected, setSelected] = useState<FeelingId | null>(initialFeeling ?? null);
@@ -39,34 +39,35 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
   const [sheetClosing, setSheetClosing] = useState(false);
   const exitTimerRef = useRef<number | null>(null);
 
-  // Live measurement of the sheet's rendered height. Drives the grid's
-  // bottom padding so the last row of cards is always reachable above the
-  // sheet — no magic numbers, no clipping when localized copy is longer.
-  const sheetRef = useRef<HTMLDivElement | null>(null);
-  const [sheetHeight, setSheetHeight] = useState(0);
-
-  useEffect(() => {
-    if (!sheetVisible || !sheetRef.current) {
-      setSheetHeight(0);
-      return;
-    }
-    const node = sheetRef.current;
-    // Read initial size synchronously, then re-read on any resize
-    // (orientation change, on-screen keyboard, dynamic content).
-    setSheetHeight(node.offsetHeight);
-    const obs = new ResizeObserver((entries) => {
-      const h = entries[0]?.contentRect?.height ?? node.offsetHeight;
-      setSheetHeight(h);
-    });
-    obs.observe(node);
-    return () => obs.disconnect();
-  }, [sheetVisible]);
-
   useEffect(() => {
     return () => {
       if (exitTimerRef.current !== null) window.clearTimeout(exitTimerRef.current);
     };
   }, []);
+
+  // Body scroll lock while the modal sheet is open — matches the standard
+  // modal pattern used by LessonBottomSheet / DailyCheckIn so the page
+  // beneath the dimmed backdrop doesn't scroll under the user's finger.
+  useEffect(() => {
+    if (!sheetVisible) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [sheetVisible]);
+
+  // Escape dismisses the modal on desktop — WAI-ARIA dialog contract.
+  // Listener is bound only while the sheet is open.
+  useEffect(() => {
+    if (!sheetVisible) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') deselect();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetVisible]);
 
   /** Deselect with a slide-down — used by the close affordance and by
    *  tapping the same feeling twice. Holds the closing state for one
@@ -105,23 +106,12 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
 
   return (
     <div className="flex-1 flex flex-col min-h-0 relative animate-in fade-in duration-300">
-      {/* Scrollable feelings grid. Bottom padding tracks the live sheet
-          height so the last row of cards is always reachable, regardless
-          of localized copy or device chrome. Animation duration matches
-          the sheet slide-up keyframe in index.css for synced motion. */}
-      <div
-        className="flex-1 overflow-y-auto transition-[padding] duration-[320ms]"
-        style={{
-          // +24px breathing room above the sheet edge; +32px when no sheet
-          // for normal scroll bottom space.
-          paddingBottom: sheetVisible ? sheetHeight + 24 : 32,
-        }}
-      >
+      {/* Scrollable feelings grid. Padding is static now that the sheet is
+          a fixed-overlay modal (no longer in-flow), so the grid no longer
+          needs to react to the sheet's rendered height. */}
+      <div className="flex-1 overflow-y-auto pb-8">
         <div className="px-4 md:px-6 max-w-2xl mx-auto">
-          <header className="text-center mt-6 md:mt-8 mb-6 md:mb-8">
-            <p className="text-[10px] font-semibold text-rose-700/60 uppercase tracking-widest mb-2">
-              Stage 2 of 4
-            </p>
+          <header className="text-center mt-12 md:mt-14 mb-6 md:mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-rose-900 mb-2">
               What are you feeling?
             </h2>
@@ -159,18 +149,30 @@ export const LocateStage: React.FC<LocateStageProps> = ({ initialFeeling, onComp
         </div>
       </div>
 
-      {/* Bottom sheet — slides up from the bottom of the stage container.
-          Anchored absolutely so it floats above the scrollable grid; mobile
-          bottom-nav offset clears the fixed nav (h-4.5rem). */}
+      {/* Modal bottom sheet — same overlay pattern as LessonBottomSheet:
+          fixed full-screen container, dimmed/blurred backdrop on a separate
+          element (so its fade timing is independent of the sheet's slide),
+          click-outside-to-dismiss, sheet anchored to the bottom on mobile
+          and centered on desktop. */}
       {sheetVisible && (
         <div
-          ref={sheetRef}
-          className={`absolute inset-x-0 bottom-0 mx-auto max-w-2xl pointer-events-auto
-                      ${sheetClosing ? 'animate-sheet-down' : 'animate-sheet-up'}`}
+          className="fixed inset-0 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Set the intensity of the feeling"
         >
           <div
-            className="bg-white border-t border-rose-200 rounded-t-3xl shadow-2xl
-                       px-4 md:px-6 pt-3"
+            className={`absolute inset-0 bg-stone-900/40 backdrop-blur-sm ${
+              sheetClosing ? 'animate-backdrop-out' : 'animate-backdrop-in'
+            }`}
+            onClick={deselect}
+          />
+
+          <div
+            className={`absolute inset-x-0 bottom-0 mx-auto max-w-2xl
+                        bg-white border-t border-rose-200 rounded-t-3xl shadow-2xl
+                        px-4 md:px-6 pt-3
+                        ${sheetClosing ? 'animate-sheet-down' : 'animate-sheet-up'}`}
             style={{
               paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)',
             }}

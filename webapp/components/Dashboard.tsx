@@ -417,7 +417,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                         return (
                             <div className="space-y-6">
                                 {/* Overall Status Banner */}
-                                <div className={`p-4 rounded-xl border ${isDayClean ? 'bg-emerald-50 border-emerald-100 text-purple-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
+                                <div className={`p-4 rounded-xl border ${isDayClean ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
                                     <span className="font-bold block text-lg mb-1">{isDayClean ? "Clean Day" : "Slip Day"}</span>
                                     <span className="text-sm opacity-80">{isDayClean ? "A day of control." : "A learning day."}</span>
                                 </div>
@@ -440,19 +440,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                                         
                                         const statusTextClass = isClean ? 'text-emerald-700' : 'text-rose-700';
                                         
-                                        const labelClass = isClean ? "text-purple-600/70" : "text-rose-600/70";
-                                        const valueClass = isClean ? "text-purple-900" : "text-rose-900";
-                                        
-                                        const tagClass = isClean 
-                                            ? "bg-white border-emerald-100 text-purple-800" 
+                                        const labelClass = isClean ? "text-emerald-700/70" : "text-rose-600/70";
+                                        const valueClass = isClean ? "text-emerald-900" : "text-rose-900";
+
+                                        const tagClass = isClean
+                                            ? "bg-white border-emerald-100 text-emerald-800"
                                             : "bg-white border-rose-100 text-rose-800";
-                                        
+
                                         const noteClass = isClean
-                                            ? "text-purple-800 border-emerald-200"
+                                            ? "text-emerald-800 border-emerald-200"
                                             : "text-rose-800 border-rose-200";
-                                            
+
                                         const aiBoxClass = isClean
-                                            ? "bg-emerald-100/50 border-emerald-100 text-purple-900"
+                                            ? "bg-emerald-100/50 border-emerald-100 text-emerald-900"
                                             : "bg-rose-100/50 border-rose-100 text-rose-900";
 
                                         return (
@@ -495,7 +495,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                                                 {/* Individual AI Insight */}
                                                 {detail.aiInsight && (
                                                     <div className={`mt-3 text-xs p-2 rounded border ${aiBoxClass}`}>
-                                                        <span className="font-semibold mr-1">AI:</span> {detail.aiInsight}
+                                                        <span className="font-semibold">Observation.</span> {detail.aiInsight}
                                                     </div>
                                                 )}
                                             </div>

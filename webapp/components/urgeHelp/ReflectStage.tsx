@@ -36,10 +36,7 @@ export const ReflectStage: React.FC<ReflectStageProps> = ({ totalSurfsAfterThisO
   return (
     <div className="flex-1 overflow-y-auto pb-28 md:pb-8 animate-in fade-in duration-300">
       <div className="px-4 md:px-6 max-w-md mx-auto">
-        <header className="text-center mt-6 md:mt-8 mb-6 md:mb-8">
-          <p className="text-[10px] font-semibold text-rose-700/60 uppercase tracking-widest mb-2">
-            Stage 4 of 4
-          </p>
+        <header className="text-center mt-12 md:mt-14 mb-6 md:mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-rose-900 mb-2">
             How are you now?
           </h2>
