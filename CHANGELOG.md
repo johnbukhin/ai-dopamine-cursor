@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added (Issue #56)
+- **`creatives/mind-compass-brand-context.ts`** — new static reference library (124 lines, `as const` TypeScript) for ad creative generation tooling (e.g. NanoBanana). Three sections currently populated: `meta` (company, EUR pricing tiers €10.50 / €19.99 / €34.99, payment methods, format definitions for hook/punchline/script), `compliance` (Meta/Google/TikTok platform rules, `forbidden_terms` list — `porn`/`pornography`/`masturbation`/`addiction` as direct medical claim/etc., `euphemism_dictionary` of drop-in swaps, `safe_framing_patterns`, `avoid_framing_patterns`), `positioning` (one-liner, differentiators around CBT + licensed mental-health review). Not imported by `funnel/` or `webapp/` — purely a reference asset for external creative-gen workflows; zero runtime impact. Verified via `tsc --noEmit` (exit 0) and `grep -r mind-compass-brand-context` returns nothing in app code.
+
 ### Added (Issue #54)
 - **`/api/coach-reset` endpoint** (`webapp/api/coach-reset.js`) — "New conversation" flow. Two paths: `save=true` summarizes prior chat (folding any existing memory note in so summaries don't stack) into a ≤300-token note via Haiku 4.5, upserts `coach_memory`, then wipes `coach_messages`; `save=false` wipes both tables, no LLM call. Race-safe: both wipe helpers propagate Supabase errors so partial-success never returns 200.
 - **`coach_memory` table** (`supabase/migrations/20260603_coach_memory.sql`) — one overwritable summary per user (`user_id` PK, `summary text`, `updated_at`). Same RLS pattern as `coach_messages` (`auth.uid() = user_id` FOR ALL). Injected into Coach system prompt as `PRIOR CONVERSATION SUMMARY` block by `claudeService.getMemoryNote()` (cached 30 min, invalidated on logout/reset).
