@@ -216,7 +216,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
         <ProgressPeak />
         <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
           <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
-            Today
+            Hey
           </span>
           <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
             {greeting}
