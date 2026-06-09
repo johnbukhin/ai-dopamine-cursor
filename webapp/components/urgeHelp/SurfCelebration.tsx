@@ -9,25 +9,36 @@ interface SurfCelebrationProps {
   onDone: () => void;
 }
 
-/** Total time the celebration is on screen (ms). Long enough to read,
- *  short enough that the user doesn't wait around for the next surf. */
-const VISIBLE_MS = 2400;
+/** Total time the celebration is on screen (ms). Matches the
+ *  `sparkle-float` keyframe duration in `index.css` so the sparkles
+ *  complete their full lifecycle (entrance → drift → exit) before the
+ *  orchestrator resets to Pause. */
+const VISIBLE_MS = 5000;
 
 /**
  * Celebrates a completed urge surf. Distinct from the Dashboard streak
- * celebration: this is a quieter, faster overlay since urges happen often
- * and we don't want to over-celebrate one of many. Sparkles, not confetti.
+ * celebration: this is a quieter overlay since urges happen often and we
+ * don't want to over-celebrate one of many. Sparkles, not confetti — but
+ * the sparkles drift gently around their starting point over the 5s
+ * lifecycle so the screen feels alive rather than static.
  */
 export const SurfCelebration: React.FC<SurfCelebrationProps> = ({ total, onDone }) => {
-  // Pre-generate a few sparkle positions so re-renders don't reshuffle.
+  // Pre-generate sparkle positions + drift vectors so re-renders don't
+  // reshuffle them mid-animation. Each sparkle gets its own random target
+  // offset (--tx/--ty) and rotation amount (--rot); the shared CSS
+  // keyframe `sparkle-float` reads them via custom properties.
   const sparkles = useMemo(
     () =>
       Array.from({ length: 14 }, (_, i) => ({
         id: i,
         left: 5 + Math.random() * 90,
         top: 10 + Math.random() * 80,
-        delay: Math.random() * 1.2,
         size: 12 + Math.random() * 14,
+        // Drift vector — modest range so sparkles look like they're floating,
+        // not flung. Signed so half drift up-left, half drift down-right, etc.
+        tx: (Math.random() - 0.5) * 60,   // ±30px
+        ty: (Math.random() - 0.5) * 60,   // ±30px
+        rot: (Math.random() - 0.5) * 90,  // ±45deg
       })),
     [],
   );
@@ -44,18 +55,22 @@ export const SurfCelebration: React.FC<SurfCelebrationProps> = ({ total, onDone 
       className="absolute inset-0 z-40 flex items-center justify-center bg-rose-50/95
                  backdrop-blur-sm animate-in fade-in duration-300 pointer-events-none"
     >
-      {/* Decorative sparkle field */}
+      {/* Decorative sparkle field — single keyframe, per-particle randomness
+          supplied via CSS custom properties on the inline style. */}
       {sparkles.map((s) => (
         <Sparkles
           key={s.id}
           size={s.size}
           aria-hidden="true"
-          className="absolute text-rose-500 animate-in fade-in zoom-in-50 duration-700"
+          className="absolute text-rose-500 animate-sparkle-float"
           style={{
             left: `${s.left}%`,
             top: `${s.top}%`,
-            animationDelay: `${s.delay}s`,
-            animationFillMode: 'backwards',
+            // Custom props consumed by the `sparkle-float` keyframe.
+            // React's CSSProperties type doesn't model these natively.
+            ['--tx' as any]: `${s.tx}px`,
+            ['--ty' as any]: `${s.ty}px`,
+            ['--rot' as any]: `${s.rot}deg`,
           }}
         />
       ))}

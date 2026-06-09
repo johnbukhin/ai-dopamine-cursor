@@ -149,6 +149,24 @@ body {
 .animate-backdrop-in  { animation: backdrop-fade-in  280ms ease-out; }
 .animate-backdrop-out { animation: backdrop-fade-out 240ms ease-in forwards; }
 
+/* SurfCelebration sparkle field: one full 5s lifecycle per sparkle —
+   entrance fade-in + scale-up, gentle drift around a random target offset,
+   exit fade-out. Per-particle randomness is supplied via CSS custom props
+   (--tx, --ty, --rot) set inline on each sparkle so a single keyframe
+   serves every sparkle without React re-rendering them.
+   Defaults make the rule safe to apply without inline props. */
+@keyframes sparkle-float {
+  0%   { transform: translate(0, 0)                                                       scale(0.4) rotate(0deg);                       opacity: 0;    }
+  12%  { transform: translate(calc(var(--tx, 0px) * 0.3),  calc(var(--ty, 0px) * 0.3))    scale(1.05) rotate(calc(var(--rot, 0deg) * 0.3));  opacity: 1;    }
+  50%  { transform: translate(var(--tx, 0px), var(--ty, 0px))                             scale(1.1)  rotate(var(--rot, 0deg));            opacity: 0.85; }
+  88%  { transform: translate(calc(var(--tx, 0px) * -0.4), calc(var(--ty, 0px) * -0.4))   scale(1)    rotate(calc(var(--rot, 0deg) * -0.4)); opacity: 1;    }
+  100% { transform: translate(0, 0)                                                       scale(0.4) rotate(0deg);                       opacity: 0;    }
+}
+.animate-sparkle-float {
+  animation: sparkle-float 5s cubic-bezier(0.4, 0, 0.6, 1);
+  animation-fill-mode: both;
+}
+
 /* HelpTree canopy: slow wind sway. Used in PauseStage (Help tab) where the
    user is breathing through an urge — the visual rhythm reinforces the pace.
    transform-box: fill-box puts the pivot at the element's own bounding box,
@@ -275,7 +293,8 @@ body {
   .animate-sheet-up,
   .animate-sheet-down,
   .animate-backdrop-in,
-  .animate-backdrop-out {
+  .animate-backdrop-out,
+  .animate-sparkle-float {
     animation-duration: 0.01ms !important;
   }
 }
