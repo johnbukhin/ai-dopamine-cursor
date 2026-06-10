@@ -330,11 +330,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                      <div className="bg-purple-300/60 p-1.5 rounded-lg">
                         <Waves size={16} className="text-purple-700" />
                      </div>
-                     <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Urges Surfed</span>
+                     <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Urges Faced</span>
                   </div>
                   <div className="flex items-baseline gap-1.5 relative">
                      <span className="text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight">{urgesSurfed}</span>
-                     <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesSurfed === 1 ? 'surf' : 'surfs'}</span>
+                     <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesSurfed === 1 ? 'time' : 'times'}</span>
                   </div>
                 </>
               );
@@ -345,7 +345,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                   type="button"
                   onClick={() => onChangeView(View.AI_COACH)}
                   className={`${baseClasses} text-left hover:bg-purple-200 transition-colors`}
-                  aria-label="Unlock Urges Surfed — open Coach"
+                  aria-label="Unlock Urges Faced — open Coach"
                 >
                   {inner}
                 </button>
