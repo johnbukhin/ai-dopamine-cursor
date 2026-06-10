@@ -250,7 +250,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setSelectedTrigger, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${selectedTrigger === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${selectedTrigger === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
@@ -267,7 +267,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setTimeOfDay, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${timeOfDay === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${timeOfDay === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
@@ -284,7 +284,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setReaction, opt)}
-                  className={`w-full p-3 text-sm text-left rounded-lg border transition-all ${reaction === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                  className={`w-full p-3 text-sm text-left rounded-lg border transition-all ${reaction === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
@@ -318,7 +318,7 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ onComplete, onClose,
                 <button
                   key={opt}
                   onClick={() => selectAndAdvance(setEmotion, opt)}
-                  className={`p-3 text-sm rounded-lg border transition-all ${emotion === opt ? 'bg-gray-200 border-gray-400 ring-1 ring-gray-400' : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                  className={`p-3 text-sm rounded-lg border transition-all ${emotion === opt ? 'bg-purple-100 border-purple-300 ring-1 ring-purple-300' : 'bg-white border-gray-200 hover:border-purple-200'}`}
                 >
                   {opt}
                 </button>
