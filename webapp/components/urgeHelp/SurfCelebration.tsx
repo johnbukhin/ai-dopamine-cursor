@@ -78,10 +78,10 @@ export const SurfCelebration: React.FC<SurfCelebrationProps> = ({ total, onDone 
       {/* Centered message */}
       <div className="relative text-center max-w-xs animate-in fade-in zoom-in-95 duration-500">
         <p className="text-3xl md:text-4xl font-bold text-rose-900 mb-2">
-          You surfed it.
+          You faced it.
         </p>
         <p className="text-sm md:text-base text-rose-700">
-          Surf #{total} on your record.
+          #{total} on your record.
         </p>
       </div>
     </div>
