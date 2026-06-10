@@ -56,7 +56,7 @@ export const ReflectStage: React.FC<ReflectStageProps> = ({ totalSurfsAfterThisO
             <div>
               <div className="font-bold text-base md:text-lg">Yes, it passed</div>
               <div className="text-xs text-rose-100">
-                You'll be #{totalSurfsAfterThisOne} on your record.
+                That's #{totalSurfsAfterThisOne} on your record.
               </div>
             </div>
           </button>
