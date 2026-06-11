@@ -167,8 +167,17 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onEscalateToCoach }) => {
 
   // Background tint stays rose throughout — the emergency context is the
   // single visual constant binding the four stages together.
+  //
+  // `min-h-0` on the outer wrapper is critical: without it, a `flex-1` flex
+  // child won't shrink below its content's intrinsic height, so when a stage
+  // grows taller than viewport (e.g. Act grid on short desktops) the wrapper
+  // overflows its parent and `overflow-hidden` clips the bottom instead of
+  // letting the inner `overflow-y-auto` scroll. Other tabs avoid this by
+  // using `h-full` directly; Help inherits height through the flex chain
+  // because each stage has its own scroll shell, so the chain must allow
+  // shrinking at every level.
   return (
-    <div className="flex-1 flex flex-col bg-rose-50 relative overflow-hidden">
+    <div className="flex-1 flex flex-col min-h-0 bg-rose-50 relative overflow-hidden">
       <div className="flex-1 flex flex-col min-h-0">
         {stage === 'pause' && <PauseStage onComplete={goToLocate} />}
 

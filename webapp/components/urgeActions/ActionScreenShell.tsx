@@ -50,8 +50,10 @@ export const ActionScreenShell: React.FC<ActionScreenShellProps> = ({
   return (
     // Animation keeps the entrance direction consistent across all 10
     // screens so the user perceives "going deeper" into a single flow,
-    // not jumping into separate features.
-    <div className="flex-1 flex flex-col bg-rose-50 animate-in fade-in slide-in-from-right-4 duration-300">
+    // not jumping into separate features. `min-h-0` lets the middle
+    // overflow-y-auto area shrink below content height so it scrolls
+    // instead of pushing the footer off-screen on short viewports.
+    <div className="flex-1 flex flex-col min-h-0 bg-rose-50 animate-in fade-in slide-in-from-right-4 duration-300">
       {/* Header */}
       <header className="px-4 md:px-6 pt-4 md:pt-6 pb-2">
         <button
