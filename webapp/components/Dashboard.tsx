@@ -224,7 +224,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
         </div>
       </div>
       
-      {/* Top Section: Streak + Check-in (top row), Urge Help (utility row below) */}
+      {/* Top Section: Streak + Check-in (top row), Urges Faced + Urge Help
+          stacked in the right column on desktop (single grid handles both
+          rows). On mobile, Urges Faced and Urge Help both `col-span-2` —
+          full-width rows below Streak + Check-in, preserving the original
+          vertical stack. */}
       <div className="max-w-4xl mx-auto w-full px-4 md:px-8 relative z-10 -mt-8 mb-8 flex flex-col gap-3 md:gap-4">
          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {/* Streak — light purple sibling of Check-in; same internal structure */}
@@ -351,19 +355,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                 </button>
               );
             })()}
-         </div>
 
-         {/* Urge Help — utility row; rose accent to telegraph "this is the
-             panic button" without drowning the dashboard's purple palette. */}
-         <button
-            onClick={() => onChangeView(View.URGE_HELP)}
-            className="bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
-         >
-             <div className="bg-rose-200/70 p-1 rounded-md">
-                <Anchor size={14} className="text-rose-700" />
-             </div>
-             <span>I'm having an urge — help me</span>
-         </button>
+            {/* Urge Help — rose accent telegraphs "panic button". On mobile
+                it spans the full row beneath Urges Faced (col-span-2). On
+                desktop `md:col-start-3` pins it to the right column directly
+                under Urges Faced, freeing the dashboard's left two columns
+                so the calendar below isn't shoved down by an extra row. */}
+            <button
+               onClick={() => onChangeView(View.URGE_HELP)}
+               className="col-span-2 md:col-span-1 md:col-start-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
+            >
+                <div className="bg-rose-200/70 p-1 rounded-md">
+                   <Anchor size={14} className="text-rose-700" />
+                </div>
+                <span>I'm having an urge — help me</span>
+            </button>
+         </div>
       </div>
 
       <div className="px-4 md:px-8 mt-4 md:mt-8">
