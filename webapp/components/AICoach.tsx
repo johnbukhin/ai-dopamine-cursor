@@ -193,12 +193,28 @@ export const AICoach: React.FC<AICoachProps> = ({
     }
   };
 
+  // Process **bold** first, then *italic* inside each segment so a bold
+  // span containing nested italics ("**foo *bar* baz**") renders correctly.
+  // Both regexes are line-scoped (`.` excludes \n, italic uses [^*\n]+) so
+  // emphasis can't accidentally span paragraph breaks if the model emits
+  // an unclosed marker — bounds the damage to one line.
   const formatMessage = (content: string) => {
-    return content.split(/(\*\*.*?\*\*)/).map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
+    const renderItalic = (text: string, base: string) =>
+      text.split(/(\*[^*\n]+\*)/g).map((part, i) => {
+        if (part.length > 2 && part.startsWith('*') && part.endsWith('*')) {
+          return <em key={`${base}-${i}`} className="italic">{part.slice(1, -1)}</em>;
+        }
+        return <React.Fragment key={`${base}-${i}`}>{part}</React.Fragment>;
+      });
+    return content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+      if (part.length > 4 && part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={`b${i}`} className="font-bold">
+            {renderItalic(part.slice(2, -2), `b${i}`)}
+          </strong>
+        );
       }
-      return <span key={i}>{part}</span>;
+      return <React.Fragment key={`s${i}`}>{renderItalic(part, `s${i}`)}</React.Fragment>;
     });
   };
 
