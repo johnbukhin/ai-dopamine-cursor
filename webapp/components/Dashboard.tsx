@@ -231,8 +231,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
           vertical stack. */}
       <div className="max-w-4xl mx-auto w-full px-4 md:px-8 relative z-10 -mt-8 mb-8 flex flex-col gap-3 md:gap-4">
          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {/* Streak — light purple sibling of Check-in; same internal structure */}
-            <div className="relative overflow-hidden bg-purple-100 p-5 md:p-6 rounded-2xl border border-purple-200 flex flex-col justify-between min-h-[126px] md:min-h-[144px]">
+            {/* Streak — light purple sibling of Check-in; same internal structure.
+                `md:row-span-2` makes it tall enough that its bottom aligns with the
+                Urge Help button in column 3 row 2 (right column = Urges Faced top +
+                Urge Help bottom). On mobile the row-span no-ops (single column-pair flow). */}
+            <div className="md:row-span-2 relative overflow-hidden bg-purple-100 p-5 md:p-6 rounded-2xl border border-purple-200 flex flex-col justify-between min-h-[126px] md:min-h-[144px]">
                 {/* Decorative upward line-chart silhouette (📈), bottom-right, low contrast */}
                 <svg
                    aria-hidden="true"
@@ -263,7 +266,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
             {onOpenCheckIn ? (
                <button
                   onClick={onOpenCheckIn}
-                  className="relative overflow-hidden bg-purple-600 hover:bg-purple-700 p-5 md:p-6 rounded-2xl shadow-md flex flex-col justify-between text-left min-h-[126px] md:min-h-[144px] transition-colors"
+                  className="md:row-span-2 relative overflow-hidden bg-purple-600 hover:bg-purple-700 p-5 md:p-6 rounded-2xl shadow-md flex flex-col justify-between text-left min-h-[126px] md:min-h-[144px] transition-colors"
                >
                    {/* Decorative plus silhouette (➕), bottom-right, matches Streak's chart in size/position/stroke.
                        Pulses in sync with the rotating CTA phrase (3s cycle); static once the day has been checked in. */}
@@ -311,7 +314,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                 step and `transition-colors` — so the row reads as a
                 consistent affordance family. */}
             {(() => {
-              const baseClasses = "col-span-2 md:col-span-1 md:self-center relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3";
+              // `md:self-start` pins the tile to the top of its grid cell so
+              // its top edge aligns with the row-span-2 Streak / Check-in
+              // tiles. `md:col-start-3` keeps it in column 3 even with the
+              // adjacent items spanning extra rows.
+              const baseClasses = "col-span-2 md:col-span-1 md:col-start-3 md:self-start relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3";
               const inner = (
                 <>
                   {/* Decorative wave silhouette — "urges rise and fall like
@@ -359,11 +366,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
             {/* Urge Help — rose accent telegraphs "panic button". On mobile
                 it spans the full row beneath Urges Faced (col-span-2). On
                 desktop `md:col-start-3` pins it to the right column directly
-                under Urges Faced, freeing the dashboard's left two columns
-                so the calendar below isn't shoved down by an extra row. */}
+                under Urges Faced; `md:self-end` pushes it to the bottom of
+                its grid cell so its bottom edge aligns with the row-span-2
+                Streak / Check-in tiles to the left. */}
             <button
                onClick={() => onChangeView(View.URGE_HELP)}
-               className="col-span-2 md:col-span-1 md:col-start-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
+               className="col-span-2 md:col-span-1 md:col-start-3 md:self-end bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
             >
                 <div className="bg-rose-200/70 p-1 rounded-md">
                    <Anchor size={14} className="text-rose-700" />
