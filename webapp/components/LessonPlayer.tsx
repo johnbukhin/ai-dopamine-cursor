@@ -17,24 +17,31 @@ interface LessonPlayerProps {
 // Text rendering helpers
 // ---------------------------------------------------------------------------
 
-/** Renders a single line of text with **bold** markdown support. */
+/** Renders a single line of text with **bold** and *italic* markdown
+ *  support. The bold alternative is matched first in the regex so a
+ *  `**bold**` token is captured intact instead of being mis-parsed as
+ *  `*<em>bold</em>*`. */
 function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   if (parts.length === 1) return text;
   return (
     <>
-      {parts.map((part, i) =>
-        part.startsWith('**') && part.endsWith('**')
-          ? <strong key={i}>{part.slice(2, -2)}</strong>
-          : <React.Fragment key={i}>{part}</React.Fragment>
-      )}
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i}>{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith('*') && part.endsWith('*')) {
+          return <em key={i}>{part.slice(1, -1)}</em>;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
     </>
   );
 }
 
 /**
  * Renders body text with paragraph breaks (\n\n), blockquotes ("> "),
- * numbered lists ("1. "), and **bold** inline markdown.
+ * numbered lists ("1. "), and **bold** / *italic* inline markdown.
  */
 const BodyText = ({ text, className = '' }: { text: string; className?: string }) => {
   const paragraphs = text.split('\n\n').filter(Boolean);
