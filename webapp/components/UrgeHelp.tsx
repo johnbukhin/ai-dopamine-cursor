@@ -9,6 +9,7 @@ import { SurfCelebration } from './urgeHelp/SurfCelebration';
 import { CoachModal } from './urgeHelp/CoachModal';
 import { URGE_ACTION_SCREENS } from './urgeActions';
 import { appendEntry, count as readUrgeCount } from '../src/lib/urgeLog';
+import { buildUrgeAutoMessage } from '../src/lib/urgeAutoMessage';
 
 interface UrgeHelpProps {
   // Coach state lifted from App so the modal session stays continuous with
@@ -48,6 +49,11 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({
    *  context for its full lifetime, regardless of any background state
    *  changes in the orchestrator. */
   const [coachSeed, setCoachSeed] = useState<UrgeContextSeed | null>(null);
+  /** Auto-message text computed at openCoach time and sent into the Coach
+   *  the moment the modal mounts. Captured imperatively alongside the seed
+   *  so the message reflects exactly the state the user saw when they
+   *  pressed "I want to talk it through". */
+  const [coachAutoMessage, setCoachAutoMessage] = useState<string | null>(null);
   /** Number of completed surfs in the log. Read once per session reset so
    *  the Reflect copy ("Surf #N on your record") is accurate without
    *  re-reading localStorage on every keystroke. */
@@ -117,21 +123,25 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({
 
   /** Open the Coach modal with a fresh snapshot of the current urge state.
    *  Captured imperatively at this single point so the modal's seed never
-   *  drifts while it's open, and we don't have to ignore exhaustive-deps. */
+   *  drifts while it's open, and we don't have to ignore exhaustive-deps.
+   *  Also builds the auto-message at the same moment so the visible chat
+   *  text matches the system-prompt context exactly. */
   const openCoach = useCallback(() => {
     setCoachSeed({
       stage,
       feeling,
       intensity,
-      actionAttempted: actionsTried[actionsTried.length - 1] ?? null,
+      actionsTried,
       elapsedSec: Math.floor((Date.now() - openedAtRef.current) / 1000),
     });
+    setCoachAutoMessage(buildUrgeAutoMessage(feeling, intensity, actionsTried));
     setCoachOpen(true);
   }, [stage, feeling, intensity, actionsTried]);
 
   const closeCoach = useCallback(() => {
     setCoachOpen(false);
     setCoachSeed(null);
+    setCoachAutoMessage(null);
   }, []);
 
   /** Reflect-stage handler. Logs only on terminal outcomes (`passed` /
@@ -237,6 +247,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({
         open={coachOpen}
         onClose={closeCoach}
         seed={coachSeed}
+        autoMessage={coachAutoMessage}
         checkInHistory={checkInHistory}
         messages={chatHistory}
         setMessages={setChatHistory}

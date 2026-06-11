@@ -35,10 +35,15 @@ export const ResetChatModal: React.FC<ResetChatModalProps> = ({
 
   if (!open) return null;
 
+  // UI-only dividers (Issue #61) must never reach the server — the
+  // summarizer round-trips messages through Anthropic, which rejects any
+  // role other than 'user'/'assistant'.
+  const sendable = messagesToSave.filter((m) => m.role !== 'divider');
+
   const handleReset = async (save: boolean) => {
     setError(null);
     setBusy(save ? 'save' : 'discard');
-    const result = await resetCoachChat(messagesToSave, save);
+    const result = await resetCoachChat(sendable, save);
     setBusy(null);
 
     if (result.kind === 'text') {
@@ -92,7 +97,7 @@ export const ResetChatModal: React.FC<ResetChatModalProps> = ({
 
           <button
             onClick={() => handleReset(true)}
-            disabled={busy !== null || messagesToSave.length === 0}
+            disabled={busy !== null || sendable.length === 0}
             className="w-full flex items-start gap-3 p-4 border border-purple-200 rounded-xl
                        hover:bg-purple-50 hover:border-purple-300 transition-colors
                        text-left disabled:opacity-50 disabled:cursor-not-allowed"
