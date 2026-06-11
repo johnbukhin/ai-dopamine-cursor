@@ -22,15 +22,32 @@ interface LessonPlayerProps {
  *  `**bold**` token is captured intact instead of being mis-parsed as
  *  `*<em>bold</em>*`.
  *
- *  Emphasis styling is unified across all parent contexts:
- *  `<em className="italic font-bold">` so a marked phrase always reads as
- *  bold italic — regardless of whether the parent is regular body text,
- *  a bold heading, a white-on-purple response card, or an already-italic
- *  blockquote/quote. The explicit `italic` class overrides the user-agent
- *  default for nested-italic (which would otherwise flip back to roman),
- *  and the bold weight adds a second axis of differentiation so the
- *  emphasis pops even inside bold parents. Colour inherits from the
- *  parent so the marked phrase never clashes with the surface it sits on. */
+ *  Emphasis styling: `<em className="italic font-bold">`. The real
+ *  differentiator across all parent contexts is `font-bold` — modern
+ *  browsers (Chrome, Firefox, Safari) do NOT auto-flip nested `<em>`
+ *  to roman, so an italic-inside-italic parent would render identically
+ *  to the surrounding text without a weight bump. Adding `font-bold`
+ *  gives a second axis of differentiation that pops regardless of parent
+ *  weight or style. The `italic` className is redundant with the UA
+ *  default for `<em>` but kept as defensive insurance (in case the UA
+ *  default or a global CSS rule ever strips italic from `<em>`). Colour
+ *  inherits from the parent so a marked phrase never clashes with the
+ *  surface it sits on (gray body, bold purple h2, white-on-purple-900
+ *  response card all work).
+ *
+ *  Regex limitations (LATENT — not triggered by current lesson data):
+ *  - No nested markdown: `**bold *with italic* inside**` would mis-parse
+ *    into `*` + `<em>bold </em>` + `with italic` + `<em> inside</em>` + `*`
+ *    because `[^*]+` forbids interior asterisks. Lesson content currently
+ *    has zero such cases — verified via grep. If future copy introduces
+ *    nested emphasis, switch to a proper markdown parser or extend the
+ *    regex to handle the bold-with-nested-italic case.
+ *  - Multi-line italics `*foo\nbar*` match as a single `<em>` spanning
+ *    the newline. Lesson paragraphs are split on `\n\n` before reaching
+ *    this function, so the only way to trigger is a soft `\n` inside one
+ *    paragraph. Currently zero such cases in lesson data; would render
+ *    as inline italic with the newline collapsed to whitespace — not
+ *    broken, just unexpected. */
 function renderInline(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   if (parts.length === 1) return text;
