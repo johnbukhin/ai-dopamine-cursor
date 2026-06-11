@@ -13,18 +13,20 @@ interface AICoachProps {
     checkInHistory: CheckIn[];
     messages: ChatMessage[];
     setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
-    /** When present, the Coach is being invoked from inside the Help flow.
-     *  We augment the system context with the live urge state so Claude's
-     *  first response is targeted instead of generic. */
+    /** When set, the Coach was navigated to via "I want to talk it through".
+     *  Drives the system-prompt urge block so Claude's first response is
+     *  targeted. Cleared by App via `onAutoMessageConsumed` right after the
+     *  auto-send fires — subsequent manual turns get the normal system prompt. */
     currentUrgeContext?: UrgeContextSeed | null;
-    /** When set (Help-flow auto-send path), AICoach injects this as the first
-     *  user message on mount — preceded by a divider if the chat is non-empty.
-     *  Captured by reference once at mount; later prop changes do nothing.
-     *  See Issue #61. */
+    /** When set, AICoach injects this as the first user message on mount —
+     *  preceded by a divider if the chat is non-empty. Captured once via
+     *  autoSentRef so any prop change after the initial fire is ignored. */
     autoMessage?: string | null;
-    /** When true, render in compact "embedded" mode (no edge-to-edge header
-     *  image, less vertical chrome). Used by the Help-tab CoachModal. */
-    compact?: boolean;
+    /** Called by AICoach right after the auto-send fires, so App can clear
+     *  both `currentUrgeContext` and `autoMessage` from its state. Without
+     *  this, navigating away from Coach and back would re-fire the same
+     *  message on remount (fresh `autoSentRef`, same props). */
+    onAutoMessageConsumed?: () => void;
 }
 
 /** Format the urge context seed into a compact block the Claude system
@@ -36,7 +38,7 @@ function formatUrgeContext(seed: UrgeContextSeed | null | undefined): string {
         .map((id) => URGE_ACTION_BY_ID[id]?.title)
         .filter(Boolean);
     const lines = [
-        'ACTIVE URGE SESSION (user opened the Help tab and is currently mid-flow):',
+        'ACTIVE URGE SESSION (user just came in from the Help tab):',
         `- Stage: ${seed.stage}`,
         seed.feeling ? `- Named feeling: ${seed.feeling}` : '- Named feeling: (none yet)',
         seed.intensity != null ? `- Self-reported intensity: ${seed.intensity}/10` : null,
@@ -55,7 +57,14 @@ function withoutDividers(msgs: ChatMessage[]): ChatMessage[] {
     return msgs.filter((m) => m.role !== 'divider');
 }
 
-export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setMessages, currentUrgeContext, autoMessage, compact = false }) => {
+export const AICoach: React.FC<AICoachProps> = ({
+  checkInHistory,
+  messages,
+  setMessages,
+  currentUrgeContext,
+  autoMessage,
+  onAutoMessageConsumed,
+}) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -204,19 +213,21 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   };
 
   // ── Urge auto-send (Issue #61) ────────────────────────────────────────
-  // When opened from "I want to talk it through", the parent passes the
-  // pre-built auto-message. We fire it exactly once per mount:
-  //   - skip the welcome (compact mode hides it via skipWelcome below)
-  //   - if chat is non-empty, insert a session divider before the user message
-  //   - then call handleSend, which handles loading, API, persist, fallback
+  // When the user pressed "I want to talk it through" in Help, App seeded
+  // `autoMessage` and navigated us here. Fire exactly once per mount, then
+  // notify App so the props get cleared — otherwise navigating away and
+  // back would re-fire on the next mount.
   useEffect(() => {
     if (!autoMessage || autoSentRef.current) return;
     autoSentRef.current = true;
-    // Count NON-welcome, NON-divider real turns. The chat starts with the
-    // hardcoded welcome at index 0; everything past that is real history.
     const realTurnCount = withoutDividers(messagesRef.current.slice(1)).length;
     const divider = realTurnCount > 0 ? createDividerMessage() : undefined;
     handleSend(autoMessage, divider);
+    // Call BEFORE the async handleSend awaits resolve — the urge context
+    // closure inside handleSend already has the seed it needs, and clearing
+    // it now means a re-mount triggered before the response arrives won't
+    // try to fire again.
+    onAutoMessageConsumed?.();
     // handleSend isn't in deps on purpose: it's recreated every render, and
     // adding it would re-fire this effect on every parent state change while
     // the auto-send was still in flight. autoSentRef + the autoMessage gate
@@ -225,24 +236,13 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   }, [autoMessage]);
 
   // ── Derived UI flags ──────────────────────────────────────────────────
-  // In the compact + autoMessage path, suppress the welcome bubble — the
-  // user came in from the Help flow and the very first thing they should
-  // see is their own context message + Coach's urge-mode reply.
-  const skipWelcome = compact && autoMessage != null;
-  // "Empty" = only the welcome turn present. Dividers are UI-only and never
-  // appear without a user/assistant pair around them, so we can ignore them
-  // here without an extra filter.
-  const isEmpty = !skipWelcome && messages.length === 1;
-  // In the modal auto-send path, the useEffect fires after the first paint,
-  // so for one frame the chat is just [welcome] with the welcome hidden —
-  // "isEmpty" reads false (because skipWelcome inverts it) and Reset +
-  // QuickReplies would flash visible. Suppress them until handleSend has
-  // appended the user message.
-  const awaitingAutoSend = skipWelcome && messages.length === 1;
+  // "Empty" = only the hardcoded welcome present. Dividers are UI-only and
+  // never appear without a user/assistant pair around them, so we can
+  // ignore them here without an extra filter.
+  const isEmpty = messages.length === 1;
   const lastMessage = messages[messages.length - 1];
   const showQuickReplies =
     !isEmpty
-    && !awaitingAutoSend
     && !isLoading
     && !quotaEndsAt
     && lastMessage?.role === 'assistant'
@@ -250,29 +250,24 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
 
   return (
     <div className="flex flex-col h-full bg-purple-50">
-      <div className={`flex-1 overflow-y-auto ${compact ? 'pb-4' : 'pb-28 md:pb-4'}`} ref={scrollRef}>
-        {/* Hand-drawn SVG hero — shares the cross-tab HeroVariants visual style.
-            Hidden in compact (modal) mode where the host provides its chrome. */}
-        {!compact && (
-          <div className="w-full relative mb-6">
-            <CoachLighthouse />
-            <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
-              <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
-                Mentor
-              </span>
-              <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
-                Your AI Coach
-              </h2>
-            </div>
+      <div className="flex-1 overflow-y-auto pb-28 md:pb-4" ref={scrollRef}>
+        {/* Hand-drawn SVG hero — shares the cross-tab HeroVariants visual style. */}
+        <div className="w-full relative mb-6">
+          <CoachLighthouse />
+          <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
+            <span className="text-xs md:text-sm font-bold text-purple-700/80 uppercase tracking-wider">
+              Mentor
+            </span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-purple-900 mt-1 drop-shadow-sm">
+              Your AI Coach
+            </h2>
           </div>
-        )}
+        </div>
 
-        <div className={`px-4 space-y-4 max-w-4xl mx-auto ${compact ? 'pt-2' : ''}`}>
-          {/* Reset chat button — small, right-aligned, above the messages.
-              Visible in both Coach-tab and CoachModal modes; only shown
-              once there's at least one real message worth resetting.
-              Suppressed during the brief auto-send-pending frame. */}
-          {!isEmpty && !awaitingAutoSend && (
+        <div className="px-4 space-y-4 max-w-4xl mx-auto">
+          {/* Reset chat button — small, centered, above the messages.
+              Only shown once there's at least one real message worth resetting. */}
+          {!isEmpty && (
             <div className="flex justify-center -mt-10 mb-2">
               <button
                 onClick={() => setShowResetModal(true)}
@@ -290,9 +285,6 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
           )}
 
           {messages.map((m, i) => {
-            // Hide the welcome bubble in the Help-modal auto-send flow so the
-            // user lands on their own context message, not a generic greeting.
-            if (skipWelcome && i === 0) return null;
             if (m.role === 'divider') {
               return (
                 <div

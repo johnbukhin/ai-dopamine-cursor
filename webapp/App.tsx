@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, CheckIn, CheckInStatus, ChatMessage } from './types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, CheckIn, CheckInStatus, ChatMessage, UrgeContextSeed } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Login } from './components/Login';
 import { DailyCheckIn } from './components/DailyCheckIn';
@@ -52,6 +52,22 @@ export default function App() {
   // Active plan cycle start — used to scope plan_progress queries/writes.
   const [planStartedAt, setPlanStartedAt] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  // ── Urge → Coach handoff (Issue #61 follow-up) ──────────────────────────
+  // Held at App level (not inside UrgeHelp) so the seed + auto-message
+  // survive the View change when the user escalates from Help → Coach tab.
+  // Cleared by AICoach via the consume callback right after auto-send fires,
+  // so navigating away and back to Coach doesn't re-fire the same message.
+  const [coachSeed, setCoachSeed] = useState<UrgeContextSeed | null>(null);
+  const [coachAutoMessage, setCoachAutoMessage] = useState<string | null>(null);
+  const escalateToCoach = useCallback((seed: UrgeContextSeed, autoMessage: string) => {
+    setCoachSeed(seed);
+    setCoachAutoMessage(autoMessage);
+    changeView(View.AI_COACH);
+  }, []);
+  const consumeCoachAutoMessage = useCallback(() => {
+    setCoachSeed(null);
+    setCoachAutoMessage(null);
+  }, []);
   const [hasUpsellAccess, setHasUpsellAccess] = useState(
     () => localStorage.getItem('mc_has_upsell') === '1'
   );
@@ -495,6 +511,9 @@ export default function App() {
               checkInHistory={checkIns}
               messages={chatHistory}
               setMessages={setChatHistory}
+              currentUrgeContext={coachSeed}
+              autoMessage={coachAutoMessage}
+              onAutoMessageConsumed={consumeCoachAutoMessage}
             />
           ) : (
             <ProGate
@@ -508,11 +527,7 @@ export default function App() {
 
         {currentView === View.URGE_HELP && (
           hasUpsellAccess ? (
-            <UrgeHelp
-              checkInHistory={checkIns}
-              chatHistory={chatHistory}
-              setChatHistory={setChatHistory}
-            />
+            <UrgeHelp onEscalateToCoach={escalateToCoach} />
           ) : (
             <ProGate
               featureName="Urge Help"
