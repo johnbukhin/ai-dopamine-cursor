@@ -20,7 +20,17 @@ interface LessonPlayerProps {
 /** Renders a single line of text with **bold** and *italic* markdown
  *  support. The bold alternative is matched first in the regex so a
  *  `**bold**` token is captured intact instead of being mis-parsed as
- *  `*<em>bold</em>*`. */
+ *  `*<em>bold</em>*`.
+ *
+ *  Emphasis styling is unified across all parent contexts:
+ *  `<em className="italic font-bold">` so a marked phrase always reads as
+ *  bold italic — regardless of whether the parent is regular body text,
+ *  a bold heading, a white-on-purple response card, or an already-italic
+ *  blockquote/quote. The explicit `italic` class overrides the user-agent
+ *  default for nested-italic (which would otherwise flip back to roman),
+ *  and the bold weight adds a second axis of differentiation so the
+ *  emphasis pops even inside bold parents. Colour inherits from the
+ *  parent so the marked phrase never clashes with the surface it sits on. */
 function renderInline(text: string): React.ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   if (parts.length === 1) return text;
@@ -31,7 +41,7 @@ function renderInline(text: string): React.ReactNode {
           return <strong key={i}>{part.slice(2, -2)}</strong>;
         }
         if (part.startsWith('*') && part.endsWith('*')) {
-          return <em key={i}>{part.slice(1, -1)}</em>;
+          return <em key={i} className="italic font-bold">{part.slice(1, -1)}</em>;
         }
         return <React.Fragment key={i}>{part}</React.Fragment>;
       })}
@@ -87,7 +97,7 @@ const BodyText = ({ text, className = '' }: { text: string; className?: string }
 /** Intro section — title, body, optional bullets + closing. */
 const IntroSection = ({ section }: { section: LessonSection }) => (
   <div className="space-y-6">
-    <h1 className="text-2xl font-bold text-purple-900">{section.title}</h1>
+    <h1 className="text-2xl font-bold text-purple-900">{section.title && renderInline(section.title)}</h1>
     {section.body && <BodyText text={section.body} />}
     {section.bullets && (
       <ul className="space-y-2">
@@ -100,7 +110,7 @@ const IntroSection = ({ section }: { section: LessonSection }) => (
       </ul>
     )}
     {section.closing && (
-      <p className="text-stone-600 leading-relaxed italic">{section.closing}</p>
+      <p className="text-stone-600 leading-relaxed italic">{renderInline(section.closing)}</p>
     )}
   </div>
 );
@@ -109,14 +119,14 @@ const IntroSection = ({ section }: { section: LessonSection }) => (
 const ContentSection = ({ section }: { section: LessonSection }) => (
   <div className="space-y-5">
     {section.title && (
-      <h2 className="text-xl font-bold text-purple-900">{section.title}</h2>
+      <h2 className="text-xl font-bold text-purple-900">{renderInline(section.title)}</h2>
     )}
     {section.body && <BodyText text={section.body} />}
     {section.subsections && section.subsections.length > 0 && (
       <div className="space-y-4 mt-2">
         {section.subsections.map((sub, i) => (
           <div key={i} className="bg-purple-50 rounded-xl p-4 border border-purple-100">
-            <h3 className="font-bold text-purple-900 mb-1">{sub.heading}</h3>
+            <h3 className="font-bold text-purple-900 mb-1">{renderInline(sub.heading)}</h3>
             <p className="text-stone-700 text-sm leading-relaxed">{renderInline(sub.body)}</p>
           </div>
         ))}
@@ -151,7 +161,7 @@ const QuestionSection = ({
         Self-discovery
       </p>
       {section.question && (
-        <h2 className="text-xl font-bold text-purple-900 leading-snug">{section.question}</h2>
+        <h2 className="text-xl font-bold text-purple-900 leading-snug">{renderInline(section.question)}</h2>
       )}
       <div className="space-y-3 mt-2">
         {section.options?.map(option => (
@@ -170,7 +180,7 @@ const QuestionSection = ({
       </div>
       {selectedOption && (
         <div className="bg-purple-900 text-white rounded-2xl p-5 mt-2 animate-in fade-in duration-300">
-          <p className="text-sm leading-relaxed">{selectedOption.responseCard}</p>
+          <p className="text-sm leading-relaxed">{renderInline(selectedOption.responseCard)}</p>
         </div>
       )}
     </div>
@@ -183,11 +193,11 @@ const QuoteSection = ({ section }: { section: LessonSection }) => (
     <Quote size={32} className="text-purple-300" />
     {section.quote && (
       <p className="text-2xl font-bold text-purple-900 leading-snug italic">
-        {section.quote}
+        {renderInline(section.quote)}
       </p>
     )}
     {section.quoteFollowUp && (
-      <p className="text-stone-500 leading-relaxed max-w-xs">{section.quoteFollowUp}</p>
+      <p className="text-stone-500 leading-relaxed max-w-xs">{renderInline(section.quoteFollowUp)}</p>
     )}
   </div>
 );
@@ -200,7 +210,7 @@ const ProTipSection = ({ section }: { section: LessonSection }) => (
       <span className="text-xs font-bold text-amber-700 uppercase tracking-widest">Pro Tip</span>
     </div>
     {section.title && (
-      <h3 className="font-bold text-amber-900 mb-2">{section.title}</h3>
+      <h3 className="font-bold text-amber-900 mb-2">{renderInline(section.title)}</h3>
     )}
     {section.body && (
       <BodyText text={section.body} className="text-amber-800 text-sm" />
@@ -212,7 +222,7 @@ const ProTipSection = ({ section }: { section: LessonSection }) => (
 const SummarySection = ({ section }: { section: LessonSection }) => (
   <div className="space-y-5">
     {section.title && (
-      <h2 className="text-xl font-bold text-purple-900">{section.title}</h2>
+      <h2 className="text-xl font-bold text-purple-900">{renderInline(section.title)}</h2>
     )}
     {section.body && <BodyText text={section.body} />}
     {section.bullets && (
@@ -227,7 +237,7 @@ const SummarySection = ({ section }: { section: LessonSection }) => (
     )}
     {section.closing && (
       <p className="text-stone-600 leading-relaxed italic border-t border-stone-100 pt-4">
-        {section.closing}
+        {renderInline(section.closing)}
       </p>
     )}
   </div>
@@ -244,14 +254,14 @@ const CompleteSection = ({ section }: { section: LessonSection }) => {
         <CheckCircle2 size={40} className="text-emerald-500" />
       </div>
       {section.title && (
-        <h2 className="text-2xl font-bold text-purple-900">{section.title}</h2>
+        <h2 className="text-2xl font-bold text-purple-900">{renderInline(section.title)}</h2>
       )}
       {section.body && (
-        <p className="text-stone-600 leading-relaxed max-w-xs">{section.body}</p>
+        <p className="text-stone-600 leading-relaxed max-w-xs">{renderInline(section.body)}</p>
       )}
       {section.closing && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-stone-500">{section.closing}</p>
+          <p className="text-sm font-medium text-stone-500">{renderInline(section.closing)}</p>
           <div className="flex gap-2 justify-center">
             {[1, 2, 3, 4, 5].map(star => (
               <button
