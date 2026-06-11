@@ -35,7 +35,11 @@ export interface User {
 }
 
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  /** 'divider' is a UI-only marker that breaks the chat into distinct urge
+   *  sessions. Content holds an ISO timestamp so the renderer can format
+   *  "── New urge session · 2:34 PM ──" (or include the date if >24h ago).
+   *  Filtered out of Anthropic API payloads and coach-reset summarization. */
+  role: 'user' | 'assistant' | 'divider';
   content: string;
 }
 
@@ -116,8 +120,10 @@ export interface UrgeContextSeed {
   stage: 'pause' | 'locate' | 'act' | 'reflect';
   feeling: FeelingId | null;
   intensity: number | null;
-  /** Most recent action the user opened (if any). */
-  actionAttempted: UrgeActionId | null;
+  /** Every action the user opened during this session, in click order (deduped).
+   *  Drives both the system-prompt context block and the auto-message template
+   *  so Claude sees the full coping chain instead of just the last try. */
+  actionsTried: UrgeActionId[];
   /** Seconds since the user landed on the Help tab. */
   elapsedSec: number;
 }

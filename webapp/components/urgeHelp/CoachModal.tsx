@@ -7,8 +7,12 @@ interface CoachModalProps {
   open: boolean;
   onClose: () => void;
   /** Live urge state passed through to AICoach so the system prompt is
-   *  seeded with feeling/intensity/action/elapsed. */
+   *  seeded with feeling/intensity/actions/elapsed. */
   seed: UrgeContextSeed | null;
+  /** When set, AICoach auto-sends this message on mount so the user doesn't
+   *  have to type while in urge state. The text is built once at modal-open
+   *  time so it stays stable for the modal's lifetime. */
+  autoMessage: string | null;
   // Same coach state the App owns — keeps the modal session continuous
   // with the dedicated Coach view (no parallel conversations).
   checkInHistory: CheckIn[];
@@ -30,6 +34,7 @@ export const CoachModal: React.FC<CoachModalProps> = ({
   open,
   onClose,
   seed,
+  autoMessage,
   checkInHistory,
   messages,
   setMessages,
@@ -48,8 +53,11 @@ export const CoachModal: React.FC<CoachModalProps> = ({
       <div
         // Stop click propagation so taps inside the sheet don't dismiss it.
         onClick={(e) => e.stopPropagation()}
+        // dvh (dynamic viewport) instead of vh so mobile-keyboard open/close
+        // doesn't push the input area below the visible viewport. Also keeps
+        // min-h-0 on the AICoach wrapper so its inner flex column can size.
         className="bg-purple-50 w-full md:max-w-2xl md:rounded-2xl rounded-t-3xl
-                   max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden shadow-2xl
+                   max-h-[90dvh] md:max-h-[85dvh] flex flex-col overflow-hidden shadow-2xl
                    animate-in slide-in-from-bottom-8 md:zoom-in-95 duration-300"
       >
         {/* Compact header — matches the AICoach palette so it doesn't feel
@@ -81,6 +89,7 @@ export const CoachModal: React.FC<CoachModalProps> = ({
             messages={messages}
             setMessages={setMessages}
             currentUrgeContext={seed}
+            autoMessage={autoMessage}
             compact
           />
         </div>
