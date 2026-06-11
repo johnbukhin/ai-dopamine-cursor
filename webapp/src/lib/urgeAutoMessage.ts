@@ -21,7 +21,9 @@ export function buildUrgeAutoMessage(
   const lines: string[] = ["I'm in the middle of an urge."];
 
   if (feeling) {
-    const label = FEELING_LABEL_BY_ID[feeling].toLowerCase();
+    // Fall back to the raw id if the FEELINGS array drifts out of sync with
+    // the FeelingId enum — better to surface "sexual_tension" than to throw.
+    const label = (FEELING_LABEL_BY_ID[feeling] ?? feeling).toLowerCase();
     lines.push(
       intensity != null ? `Feeling: ${label} (${intensity}/10).` : `Feeling: ${label}.`,
     );

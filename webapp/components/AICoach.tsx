@@ -214,13 +214,13 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
     autoSentRef.current = true;
     // Count NON-welcome, NON-divider real turns. The chat starts with the
     // hardcoded welcome at index 0; everything past that is real history.
-    const realTurnCount = messagesRef.current
-      .slice(1)
-      .filter((m) => m.role !== 'divider').length;
+    const realTurnCount = withoutDividers(messagesRef.current.slice(1)).length;
     const divider = realTurnCount > 0 ? createDividerMessage() : undefined;
     handleSend(autoMessage, divider);
-    // handleSend is stable enough for this purpose and listing it as a dep
-    // would cause re-fires when checkInHistory / messages change mid-flight.
+    // handleSend isn't in deps on purpose: it's recreated every render, and
+    // adding it would re-fire this effect on every parent state change while
+    // the auto-send was still in flight. autoSentRef + the autoMessage gate
+    // are the real guards; the closure capture of handleSend is intentional.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoMessage]);
 
