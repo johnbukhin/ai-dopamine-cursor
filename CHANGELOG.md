@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Changed
+- **Dashboard right column tiles grow to share 144px column height equally on desktop** (`webapp/components/Dashboard.tsx`). Previously Urges Faced + Urge Help kept their natural (compact) heights while Streak / Check-in spanned both rows at 144px — the gap between the two right tiles ballooned to whatever the row-distribution math wanted, larger than the 16px Streak ↔ Check-in gap. Added `md:min-h-[64px]` to both right tiles so each consumes exactly half of `(144 - 16 px gap) = 128 px`, making the inter-tile gap byte-identical to the Streak ↔ Check-in horizontal gap. Mobile keeps natural-content heights (no `md:` prefix means no mobile change). Refs #61.
+
+### Changed
 - **Dashboard right column tops + bottoms align with Streak / Check-in on desktop** (`webapp/components/Dashboard.tsx`). Added `md:row-span-2` to Streak and Check-in so they fill both grid rows; Urges Faced gets `md:self-start` (top-aligned with Streak/Check-in tops) and Urge Help gets `md:self-end` (bottom-aligned with their bottoms). On mobile the row-span no-ops (the col-span-2 items wrap naturally) so the existing vertical stack is unchanged. Refs #61.
 - **Dashboard `I'm having an urge — help me` button moved into the tile grid on desktop** (`webapp/components/Dashboard.tsx`). Previously rendered as a full-width row below the Streak / Check-in / Urges Faced grid on every viewport; on desktop that gave it more visual weight than necessary and pushed the calendar further down the page. Moved INTO the grid as a fourth item with `col-span-2 md:col-span-1 md:col-start-3` — on mobile still spans the full width (same visual stack as before), on desktop slots directly under Urges Faced in column 3. Mobile behaviour byte-identical; desktop calendar moves up by one row. Refs #61.
 

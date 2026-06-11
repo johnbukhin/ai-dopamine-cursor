@@ -317,8 +317,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
               // `md:self-start` pins the tile to the top of its grid cell so
               // its top edge aligns with the row-span-2 Streak / Check-in
               // tiles. `md:col-start-3` keeps it in column 3 even with the
-              // adjacent items spanning extra rows.
-              const baseClasses = "col-span-2 md:col-span-1 md:col-start-3 md:self-start relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3";
+              // adjacent items spanning extra rows. `md:min-h-[64px]` makes
+              // it tall enough that Urges Faced + gap(16) + Urge Help (64) =
+              // 144px, matching Streak / Check-in `md:min-h-[144px]` so the
+              // gap between the two right tiles stays identical to the gap
+              // between Streak ↔ Check-in. Mobile keeps its natural height.
+              const baseClasses = "col-span-2 md:col-span-1 md:col-start-3 md:self-start md:min-h-[64px] relative overflow-hidden bg-purple-100 px-4 py-3 md:py-4 rounded-2xl border border-purple-200 flex items-center justify-between gap-3";
               const inner = (
                 <>
                   {/* Decorative wave silhouette — "urges rise and fall like
@@ -368,10 +372,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                 desktop `md:col-start-3` pins it to the right column directly
                 under Urges Faced; `md:self-end` pushes it to the bottom of
                 its grid cell so its bottom edge aligns with the row-span-2
-                Streak / Check-in tiles to the left. */}
+                Streak / Check-in tiles. `md:min-h-[64px]` matches Urges
+                Faced so the two right tiles split the 144px column height
+                evenly with the same 16px gap as Streak ↔ Check-in. */}
             <button
                onClick={() => onChangeView(View.URGE_HELP)}
-               className="col-span-2 md:col-span-1 md:col-start-3 md:self-end bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
+               className="col-span-2 md:col-span-1 md:col-start-3 md:self-end md:min-h-[64px] bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 text-rose-800 text-sm font-medium transition-colors"
             >
                 <div className="bg-rose-200/70 p-1 rounded-md">
                    <Anchor size={14} className="text-rose-700" />
