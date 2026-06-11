@@ -233,9 +233,16 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
   // appear without a user/assistant pair around them, so we can ignore them
   // here without an extra filter.
   const isEmpty = !skipWelcome && messages.length === 1;
+  // In the modal auto-send path, the useEffect fires after the first paint,
+  // so for one frame the chat is just [welcome] with the welcome hidden —
+  // "isEmpty" reads false (because skipWelcome inverts it) and Reset +
+  // QuickReplies would flash visible. Suppress them until handleSend has
+  // appended the user message.
+  const awaitingAutoSend = skipWelcome && messages.length === 1;
   const lastMessage = messages[messages.length - 1];
   const showQuickReplies =
     !isEmpty
+    && !awaitingAutoSend
     && !isLoading
     && !quotaEndsAt
     && lastMessage?.role === 'assistant'
@@ -263,8 +270,9 @@ export const AICoach: React.FC<AICoachProps> = ({ checkInHistory, messages, setM
         <div className={`px-4 space-y-4 max-w-4xl mx-auto ${compact ? 'pt-2' : ''}`}>
           {/* Reset chat button — small, right-aligned, above the messages.
               Visible in both Coach-tab and CoachModal modes; only shown
-              once there's at least one real message worth resetting. */}
-          {!isEmpty && (
+              once there's at least one real message worth resetting.
+              Suppressed during the brief auto-send-pending frame. */}
+          {!isEmpty && !awaitingAutoSend && (
             <div className="flex justify-center -mt-10 mb-2">
               <button
                 onClick={() => setShowResetModal(true)}
