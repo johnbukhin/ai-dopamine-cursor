@@ -56,27 +56,35 @@ export const PauseStage: React.FC<PauseStageProps> = ({ onComplete }) => {
   const seconds = timeLeft % 60;
   const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
+  // Outer wrapper is scrollable so the timer + skip button stay reachable on
+  // short / wide desktop viewports where the `w-full` HelpTree hero (3:4
+  // aspect ratio) takes ~75% of main-pane width as its height and would
+  // otherwise push everything below it off-screen with nothing to scroll.
+  // The inner `min-h-full flex flex-col` keeps the centering UX when content
+  // fits, and lets the content stack + scroll when it doesn't.
   return (
-    <div className="flex-1 flex flex-col animate-in fade-in duration-500 min-h-0">
-      {/* Hand-drawn SVG hero — flows at the top so it never overlaps the
-          timer copy. The SVG's own bottom alpha mask blends into the rose-50
-          page background, so no extra colour overlay is needed. */}
-      <div className="relative flex-shrink-0">
-        <HelpTree />
-        <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
-          <span className="text-xs md:text-sm font-bold text-rose-700/80 uppercase tracking-wider">
-            Pause and breathe
-          </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-rose-900 mt-1 drop-shadow-sm leading-tight whitespace-nowrap">
-            3 minutes is enough
-            <br />
-            to weaken the urge
-          </h2>
+    <div className="flex-1 overflow-y-auto animate-in fade-in duration-500">
+      <div className="min-h-full flex flex-col">
+        {/* Hand-drawn SVG hero — flows at the top so it never overlaps the
+            timer copy. The SVG's own bottom alpha mask blends into the rose-50
+            page background, so no extra colour overlay is needed. */}
+        <div className="relative flex-shrink-0">
+          <HelpTree />
+          <div className="absolute top-[41px] md:top-[57px] left-4 md:left-8 pointer-events-none">
+            <span className="text-xs md:text-sm font-bold text-rose-700/80 uppercase tracking-wider">
+              Pause and breathe
+            </span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-rose-900 mt-1 drop-shadow-sm leading-tight whitespace-nowrap">
+              3 minutes is enough
+              <br />
+              to weaken the urge
+            </h2>
+          </div>
         </div>
-      </div>
 
-      {/* Content — centered in the remaining vertical space below the hero. */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8 min-h-0">
+        {/* Content — centered in the remaining vertical space below the hero
+            when it fits, top-stacked + scrollable when it doesn't. */}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
         <div className="relative w-[17.1rem] h-[17.1rem] mb-10">
           <svg
             className="w-full h-full -rotate-90"
@@ -126,6 +134,7 @@ export const PauseStage: React.FC<PauseStageProps> = ({ onComplete }) => {
         <p className="mt-2 text-xs text-stone-400 text-center max-w-xs font-normal">
           Urges rise and fall like waves. This one will too.
         </p>
+        </div>
       </div>
     </div>
   );
