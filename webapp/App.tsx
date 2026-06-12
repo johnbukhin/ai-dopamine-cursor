@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, CheckIn, CheckInStatus, ChatMessage, UrgeContextSeed } from './types';
+import { View, CheckIn, CheckInStatus, ChatMessage, UrgeContextSeed, UrgeLogEntry } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Login } from './components/Login';
 import { DailyCheckIn } from './components/DailyCheckIn';
@@ -14,6 +14,13 @@ import { supabase } from './src/lib/supabase';
 import { planData, getRequiredTaskKeys, DayCompletion } from './data/planData';
 import { lessonsData } from './data/lessonsData';
 import { invalidateMemoryCache } from './services/claudeService';
+import {
+  fetchLog as fetchUrgeLog,
+  insertEntry as insertUrgeEntry,
+  readLocalLog as readLocalUrgeLog,
+  clearLocalLog as clearLocalUrgeLog,
+  uploadLocalLog as uploadLocalUrgeLog,
+} from './src/lib/urgeLog';
 import { COACH_WELCOME_MESSAGE as WELCOME_MESSAGE } from './constants';
 
 // Dev-only: skip the login screen when VITE_DEV_BYPASS_AUTH=true in .env.local.
@@ -84,6 +91,34 @@ export default function App() {
   // all_tasks_completed_at : when lesson + all tasks were done (drives same-day green).
   const [dayCompletions, setDayCompletions] = useState<Record<number, DayCompletion>>({});
 
+  // Completed urge-surf sessions (Issue #64). Owned at App level so the
+  // Dashboard tile count and UrgeHelp's `priorSurfCount` read from a single
+  // source of truth and stay in sync across cross-device fetches and
+  // optimistic appends.
+  const [urgeLogEntries, setUrgeLogEntries] = useState<UrgeLogEntry[]>([]);
+
+  // Append a completed urge-surf session. Optimistically updates local state
+  // so the Dashboard tile + UrgeHelp celebration reflect the new total without
+  // waiting on the network, then fires the Supabase insert best-effort
+  // (matching the DailyCheckIn → check_ins pattern). Returns the freshly-
+  // incremented count so the caller can drive the celebration overlay without
+  // a second state read.
+  const handleAppendUrge = useCallback(
+    (entry: UrgeLogEntry): number => {
+      const newTotal = urgeLogEntries.length + 1;
+      setUrgeLogEntries((prev) => [...prev, entry]);
+      if (supabase) {
+        (async () => {
+          const { data: { user } } = await supabase!.auth.getUser();
+          if (!user) return;
+          await insertUrgeEntry(user.id, entry);
+        })();
+      }
+      return newTotal;
+    },
+    [urgeLogEntries.length],
+  );
+
   // ── Load all persisted data after authentication ──────────────────────────
   useEffect(() => {
     if (!isAuthenticated || !supabase) return;
@@ -97,7 +132,7 @@ export default function App() {
       interface SubRow { plan_label: string; current_period_end: string | null; }
 
       // Run all data fetches in parallel for speed
-      const [checkInsResult, appStateResult, coachResult, subsResult] = await Promise.all([
+      const [checkInsResult, appStateResult, coachResult, subsResult, urgeLogServer] = await Promise.all([
         // Check-ins: all rows for this user, oldest first so streak calc is correct
         supabase!
           .from('check_ins')
@@ -125,6 +160,10 @@ export default function App() {
           .select('plan_label, current_period_end')
           .eq('user_email', user.email ?? '')
           .order('paid_at', { ascending: false }),
+
+        // Urge log: all completed urge-surf sessions for this user (Issue #64).
+        // Helper lives in src/lib/urgeLog so the column shape stays in one place.
+        fetchUrgeLog(user.id),
       ]);
 
       // ── Check-ins ──────────────────────────────────────────────────────────
@@ -144,6 +183,26 @@ export default function App() {
         }));
         setCheckIns(loaded);
       }
+
+      // ── Urge log + one-shot localStorage → Supabase migration ─────────────
+      // Anyone on a pre-#64 build accumulated entries in `mc.urge_log.v1`.
+      // Bulk-upsert those into the server, then drop the local key. The
+      // composite (user_id, id) PK makes the upsert idempotent, so this is
+      // safe to re-run if cleanup ever fails partway.
+      const localPending = readLocalUrgeLog();
+      let mergedLog: UrgeLogEntry[] = urgeLogServer;
+      if (localPending.length > 0) {
+        const uploaded = await uploadLocalUrgeLog(user.id, localPending);
+        if (uploaded) {
+          clearLocalUrgeLog();
+          const seen = new Set(urgeLogServer.map((e) => e.id));
+          const fresh = localPending.filter((e) => !seen.has(e.id));
+          mergedLog = [...urgeLogServer, ...fresh].sort((a, b) =>
+            a.endedAt.localeCompare(b.endedAt),
+          );
+        }
+      }
+      setUrgeLogEntries(mergedLog);
 
       // ── Plan progress ──────────────────────────────────────────────────────
       let activePlanStartedAt: string;
@@ -294,6 +353,7 @@ export default function App() {
     setDayCompletions({});
     setPlanStartedAt(null);
     setChatHistory([WELCOME_MESSAGE]);
+    setUrgeLogEntries([]);
     setUpsellAccess(false);
     setUserEmail('');
     setIsAuthenticated(false);
@@ -497,6 +557,7 @@ export default function App() {
           <Dashboard
             checkIns={checkIns}
             streak={streak}
+            urgesCount={urgeLogEntries.length}
             hasCheckedInToday={hasCheckedInToday}
             celebrationSignal={celebrationSignal}
             onOpenCheckIn={() => handleOpenCheckIn({ tasksCompleted: false })}
@@ -527,7 +588,11 @@ export default function App() {
 
         {currentView === View.URGE_HELP && (
           hasUpsellAccess ? (
-            <UrgeHelp onEscalateToCoach={escalateToCoach} />
+            <UrgeHelp
+              priorSurfCount={urgeLogEntries.length}
+              onAppendUrge={handleAppendUrge}
+              onEscalateToCoach={escalateToCoach}
+            />
           ) : (
             <ProGate
               featureName="Urge Help"

@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { FeelingId, UrgeActionId, UrgeContextSeed, UrgeOutcome } from '../types';
+import { FeelingId, UrgeActionId, UrgeContextSeed, UrgeLogEntry, UrgeOutcome } from '../types';
 import { type Stage } from './urgeHelp/StageProgress';
 import { PauseStage } from './urgeHelp/PauseStage';
 import { LocateStage } from './urgeHelp/LocateStage';
@@ -7,10 +7,17 @@ import { ActStage } from './urgeHelp/ActStage';
 import { ReflectStage } from './urgeHelp/ReflectStage';
 import { SurfCelebration } from './urgeHelp/SurfCelebration';
 import { URGE_ACTION_SCREENS } from './urgeActions';
-import { appendEntry, count as readUrgeCount } from '../src/lib/urgeLog';
 import { buildUrgeAutoMessage } from '../src/lib/urgeAutoMessage';
 
 interface UrgeHelpProps {
+  /** Number of urge sessions this user has already completed (passed +
+   *  escalated). Owned by App.tsx from the `urge_log` Supabase table
+   *  (Issue #64) so it stays correct across devices. */
+  priorSurfCount: number;
+  /** Append a freshly-completed urge entry to App-level state and persist
+   *  it to Supabase. Returns the freshly-incremented total so the caller
+   *  can drive the celebration overlay without re-reading state. */
+  onAppendUrge: (entry: UrgeLogEntry) => number;
   /** Called when the user picks "I want to talk it through" on Reflect.
    *  Parent (App) seeds Coach state and navigates to the Coach tab — the
    *  modal that used to live here was unscrollable on mobile, so the whole
@@ -30,17 +37,13 @@ interface UrgeHelpProps {
  * pattern (the legacy UrgeHelp also reset on remount) and matches user
  * expectation — an urge is a discrete moment, not a resumable workflow.
  */
-export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onEscalateToCoach }) => {
+export const UrgeHelp: React.FC<UrgeHelpProps> = ({ priorSurfCount, onAppendUrge, onEscalateToCoach }) => {
   // ── Session state ─────────────────────────────────────────────────────────
   const [stage, setStage] = useState<Stage>('pause');
   const [feeling, setFeeling] = useState<FeelingId | null>(null);
   const [intensity, setIntensity] = useState<number | null>(null);
   const [actionsTried, setActionsTried] = useState<UrgeActionId[]>([]);
   const [activeActionId, setActiveActionId] = useState<UrgeActionId | null>(null);
-  /** Number of completed surfs in the log. Read once per session reset so
-   *  the Reflect copy ("Surf #N on your record") is accurate without
-   *  re-reading localStorage on every keystroke. */
-  const [priorSurfCount, setPriorSurfCount] = useState<number>(() => readUrgeCount());
   /** When non-null, we're showing the post-"passed" celebration overlay.
    *  Carries the freshly-incremented total so the overlay renders without
    *  a second storage read. */
@@ -112,7 +115,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onEscalateToCoach }) => {
       switch (outcome) {
         case 'passed': {
           const now = Date.now();
-          appendEntry({
+          const newTotal = onAppendUrge({
             id: now,
             endedAt: new Date(now).toISOString(),
             feeling,
@@ -120,15 +123,13 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onEscalateToCoach }) => {
             actionsTried,
             outcome,
           });
-          const newTotal = priorSurfCount + 1;
-          setPriorSurfCount(newTotal);
           // Surface the celebration; resetSession runs after it auto-dismisses.
           setCelebrationCount(newTotal);
           break;
         }
         case 'escalated': {
           const now = Date.now();
-          appendEntry({
+          onAppendUrge({
             id: now,
             endedAt: new Date(now).toISOString(),
             feeling,
@@ -136,7 +137,6 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onEscalateToCoach }) => {
             actionsTried,
             outcome,
           });
-          setPriorSurfCount((c) => c + 1);
           // Hand the urge context off to App, which seeds the Coach tab
           // and navigates there. We stay mounted just long enough for the
           // view transition to flip; the next time the user lands on Help,
@@ -159,7 +159,7 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ onEscalateToCoach }) => {
           break;
       }
     },
-    [stage, feeling, intensity, actionsTried, priorSurfCount, onEscalateToCoach],
+    [stage, feeling, intensity, actionsTried, onAppendUrge, onEscalateToCoach],
   );
 
 
