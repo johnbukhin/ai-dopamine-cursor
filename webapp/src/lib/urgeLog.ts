@@ -1,51 +1,117 @@
-// localStorage helpers for the redesigned Help tab (Issue #34).
+// Storage helpers for the redesigned Help tab (Issue #34).
 //
-// Persistence rationale: see issue #34 exploration comment. We chose
-// localStorage-first so the feature can ship and iterate without a Supabase
-// schema migration. Keys are versioned (`.v1`) so a future migration to the
-// backend can read and clear old data cleanly.
+// The urge LOG migrated to Supabase in Issue #64 — see `urge_log` table and
+// the `fetchLog` / `insertEntry` helpers below. The Letter and Journal
+// sections remain on localStorage for now; #65 and #66 will migrate them.
 
-import type { UrgeLogEntry } from '../../types';
+import type { UrgeLogEntry, UrgeOutcome } from '../../types';
+import { supabase } from './supabase';
 import { logger } from './logger';
 
 const LOG_KEY = 'mc.urge_log.v1';
 const LETTER_KEY = 'mc.future_self_letter.v1';
 const JOURNAL_KEY = 'mc.urge_journal.v1';
 
-// ─── Urge log ──────────────────────────────────────────────────────────────
+// ─── Urge log (Supabase-backed) ─────────────────────────────────────────────
 
-/** Read the full urge log. Returns [] if storage is unavailable or corrupt. */
-export function readLog(): UrgeLogEntry[] {
+/** DB-row shape for `urge_log`. snake_case to match the Supabase column names. */
+interface UrgeLogRow {
+  id: number;
+  ended_at: string;
+  feeling: string | null;
+  intensity: number | null;
+  actions_tried: string[] | null;
+  outcome: UrgeOutcome;
+}
+
+function rowToEntry(row: UrgeLogRow): UrgeLogEntry {
+  return {
+    id: row.id,
+    endedAt: row.ended_at,
+    feeling: (row.feeling ?? null) as UrgeLogEntry['feeling'],
+    intensity: row.intensity,
+    actionsTried: (row.actions_tried ?? []) as UrgeLogEntry['actionsTried'],
+    outcome: row.outcome,
+  };
+}
+
+function entryToRow(userId: string, entry: UrgeLogEntry) {
+  return {
+    id: entry.id,
+    user_id: userId,
+    ended_at: entry.endedAt,
+    feeling: entry.feeling,
+    intensity: entry.intensity,
+    actions_tried: entry.actionsTried,
+    outcome: entry.outcome,
+  };
+}
+
+/** Fetch the full log for a user, oldest first. Returns [] on any failure
+ *  so callers don't have to defensively try/catch around the read. */
+export async function fetchLog(userId: string): Promise<UrgeLogEntry[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('urge_log')
+    .select('id, ended_at, feeling, intensity, actions_tried, outcome')
+    .eq('user_id', userId)
+    .order('ended_at', { ascending: true });
+  if (error) {
+    logger.warn('urge_log fetch failed', { error });
+    return [];
+  }
+  return (data ?? []).map((row) => rowToEntry(row as UrgeLogRow));
+}
+
+/** Insert a single entry. Best-effort — errors are logged, not thrown,
+ *  because the urge UX must never block on a network write. */
+export async function insertEntry(userId: string, entry: UrgeLogEntry): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('urge_log').insert(entryToRow(userId, entry));
+  if (error) logger.warn('urge_log insert failed', { error });
+}
+
+// ─── One-shot localStorage → Supabase migration helpers ─────────────────────
+
+/** Read any pending entries written by the pre-#64 localStorage path.
+ *  Returns [] if nothing migratable or the JSON is corrupt. */
+export function readLocalLog(): UrgeLogEntry[] {
   try {
     const raw = localStorage.getItem(LOG_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as UrgeLogEntry[]) : [];
   } catch (err) {
-    // Corrupt JSON or storage disabled — fall back to empty so callers
-    // never have to defensively try/catch around reads. Surface the error
-    // to the logger so dev environments don't silently mask bugs.
-    logger.warn('urgeLog read failed', { error: err });
+    logger.warn('urgeLog local read failed', { error: err });
     return [];
   }
 }
 
-/** Append a single completed entry. Best-effort write; errors are logged
- *  (not thrown) because the urge log is non-critical and we never want a
- *  write failure to interfere with the user's just-finished surf. */
-export function appendEntry(entry: UrgeLogEntry): void {
+/** Drop the pre-#64 localStorage key. Safe to call when the key is absent. */
+export function clearLocalLog(): void {
   try {
-    const existing = readLog();
-    existing.push(entry);
-    localStorage.setItem(LOG_KEY, JSON.stringify(existing));
+    localStorage.removeItem(LOG_KEY);
   } catch (err) {
-    logger.warn('urgeLog write failed', { error: err });
+    logger.warn('urgeLog local clear failed', { error: err });
   }
 }
 
-/** Convenience for the Dashboard tile. */
-export function count(): number {
-  return readLog().length;
+/** Bulk-upsert local entries into Supabase. Idempotent: the (user_id, id)
+ *  composite PK makes re-running this safe. Returns true only when the
+ *  upsert succeeded, so the caller knows it's safe to clear the local key. */
+export async function uploadLocalLog(
+  userId: string,
+  entries: UrgeLogEntry[],
+): Promise<boolean> {
+  if (!supabase || entries.length === 0) return false;
+  const { error } = await supabase
+    .from('urge_log')
+    .upsert(entries.map((e) => entryToRow(userId, e)), { onConflict: 'user_id,id' });
+  if (error) {
+    logger.warn('urge_log bulk upload failed', { error });
+    return false;
+  }
+  return true;
 }
 
 // ─── Urge Journal (separate from urge log) ────────────────────────────────

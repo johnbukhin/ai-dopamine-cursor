@@ -2,12 +2,14 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CheckIn, CheckInStatus, View } from '../types';
 import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays, Waves } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isFuture } from 'date-fns';
-import { count as readUrgeCount } from '../src/lib/urgeLog';
 import { ProgressPeak } from './HeroVariants';
 
 interface DashboardProps {
   checkIns: CheckIn[];
   streak: number;
+  /** Completed urge-surf sessions for this user. Loaded from `urge_log`
+   *  in App.tsx (Issue #64) so the count follows the user across devices. */
+  urgesCount: number;
   hasCheckedInToday: boolean;
   celebrationSignal: { type: 'clean' | 'slip'; ts: number } | null;
   onOpenCheckIn?: () => void;
@@ -107,7 +109,7 @@ const Celebration: React.FC<{
   );
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheckedInToday, celebrationSignal, onOpenCheckIn, onChangeView, hasUpsellAccess }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, urgesCount, hasCheckedInToday, celebrationSignal, onOpenCheckIn, onChangeView, hasUpsellAccess }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [ctaIndex, setCtaIndex] = useState(0);
@@ -120,12 +122,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
   // Tracks the last celebration signal we acted on. Prevents the same `ts`
   // from firing twice (e.g. if Dashboard rerenders while signal is still set).
   const lastSignalTsRef = useRef(0);
-
-  // Urges Surfed tile data (Issue #34). Read once on mount — the urge log is
-  // local-only for v1 and only changes inside the Help tab, so by the time
-  // the user is back on the Dashboard the latest count is what we want to
-  // show. No live subscription needed.
-  const urgesSurfed = useMemo(() => readUrgeCount(), []);
 
   useEffect(() => {
     if (hasCheckedInToday) return;
@@ -348,8 +344,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, hasCheck
                      <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">Urges Faced</span>
                   </div>
                   <div className="flex items-baseline gap-1.5 relative">
-                     <span className="text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight">{urgesSurfed}</span>
-                     <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesSurfed === 1 ? 'time' : 'times'}</span>
+                     <span className="text-[23px] md:text-[27px] font-semibold text-purple-900 leading-tight">{urgesCount}</span>
+                     <span className="text-xl md:text-2xl font-semibold text-purple-700 leading-tight">{urgesCount === 1 ? 'time' : 'times'}</span>
                   </div>
                 </>
               );
