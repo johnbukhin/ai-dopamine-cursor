@@ -66,10 +66,19 @@ async function getAccessToken(): Promise<string | null> {
 
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min
 
-let cachedMemoryNote: string | null | undefined = undefined; // undefined = not yet fetched
+/** Coach memory note + its last-refresh timestamp. The `updatedAt` lets
+ *  `buildCoachSystemPrompt` render a staleness annotation (Issue #71) so
+ *  the coach can deprioritize old references when recent activity
+ *  contradicts the summary. */
+interface CachedMemoryNote {
+  summary: string;
+  updatedAt: string;
+}
+
+let cachedMemoryNote: CachedMemoryNote | null | undefined = undefined; // undefined = not yet fetched
 let cachedAt = 0;
 
-async function getMemoryNote(): Promise<string | null> {
+async function getMemoryNote(): Promise<CachedMemoryNote | null> {
   const fresh = cachedMemoryNote !== undefined && (Date.now() - cachedAt) < CACHE_TTL_MS;
   if (fresh) return cachedMemoryNote ?? null;
 
@@ -86,7 +95,7 @@ async function getMemoryNote(): Promise<string | null> {
   }
   const { data, error } = await supabase
     .from('coach_memory')
-    .select('summary')
+    .select('summary, updated_at')
     .eq('user_id', user.id)
     .maybeSingle();
   if (error) {
@@ -95,7 +104,9 @@ async function getMemoryNote(): Promise<string | null> {
     cachedAt = Date.now();
     return null;
   }
-  cachedMemoryNote = data?.summary ?? null;
+  cachedMemoryNote = data?.summary
+    ? { summary: data.summary, updatedAt: data.updated_at }
+    : null;
   cachedAt = Date.now();
   return cachedMemoryNote;
 }
@@ -167,7 +178,11 @@ export const getCoachResponse = async (
   const memoryNote = await getMemoryNote();
   const messages: ChatMessage[] = [...history, { role: 'user', content: message }];
   const payload = {
-    systemPrompt: buildCoachSystemPrompt(context, memoryNote),
+    systemPrompt: buildCoachSystemPrompt(
+      context,
+      memoryNote?.summary ?? null,
+      memoryNote?.updatedAt ?? null,
+    ),
     messages,
   };
   return callEndpoint(COACH_ENDPOINT, payload, 'Coach');

@@ -9,7 +9,7 @@ import { ResetChatModal } from './ResetChatModal';
 import { COACH_WELCOME_MESSAGE, COACH_STARTER_PROMPTS, COACH_QUICK_REPLIES } from '../constants';
 import { createDividerMessage, formatDividerLabel } from '../src/lib/urgeAutoMessage';
 import { buildCoachContext } from '../src/lib/coachContext';
-import { readJournal } from '../src/lib/urgeLog';
+import { readJournal, type FutureSelfLetter } from '../src/lib/urgeLog';
 
 interface AICoachProps {
     checkInHistory: CheckIn[];
@@ -17,6 +17,17 @@ interface AICoachProps {
      *  recent-activity block built by `buildCoachContext`. Passed from App
      *  rather than re-fetched so the source of truth stays in one place. */
     urgeLogEntries: UrgeLogEntry[];
+    /** Current consecutive-CLEAN-day streak (Issue #71). Surfaced in the
+     *  LIFETIME section of the coach context so the coach can frame momentum. */
+    streak: number;
+    /** Active plan cycle start (Issue #71). Drives the PLAN STATUS section
+     *  (Day N of 28) so the coach knows where the user is in the curriculum. */
+    planStartedAt: string | null;
+    /** User's Future-Self Letter (Issue #65, surfaced to coach in #71).
+     *  Drives the USER'S OWN WORDS section — the user's stated values,
+     *  identity, and message to themselves. Null = no letter yet;
+     *  undefined = still loading. Section is omitted in both cases. */
+    letter: FutureSelfLetter | null | undefined;
     messages: ChatMessage[];
     setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
     /** When set, the Coach was navigated to via "I want to talk it through".
@@ -66,6 +77,9 @@ function withoutDividers(msgs: ChatMessage[]): ChatMessage[] {
 export const AICoach: React.FC<AICoachProps> = ({
   checkInHistory,
   urgeLogEntries,
+  streak,
+  planStartedAt,
+  letter,
   messages,
   setMessages,
   currentUrgeContext,
@@ -137,6 +151,9 @@ export const AICoach: React.FC<AICoachProps> = ({
       checkIns: checkInHistory,
       urgeLog: urgeLogEntries,
       journalEntries: readJournal(),
+      streak,
+      planStartedAt,
+      letter,
     });
     const recentHistory = urgeBlock
         ? `${urgeBlock}\n\n${recentContext}`

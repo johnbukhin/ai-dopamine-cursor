@@ -12,19 +12,44 @@
 //   • ACT — acceptance of urges/feelings, values-aligned action
 //
 // Context inputs:
-//   • `context`     — structured "recent activity" block built by
-//                     src/lib/coachContext.ts (Issue #69): last 7 days of
-//                     check-ins, urge sessions, and journal entries. May
-//                     include a prepended in-flight urge seed when the user
-//                     escalates from Help → Coach mid-session.
-//   • `memoryNote`  — optional compressed summary of prior conversations
-//                     written by /api/coach-reset
+//   • `context`             — structured "recent activity" block built by
+//                             src/lib/coachContext.ts (#69/#71): identity
+//                             (Future-Self Letter), plan status, lifetime
+//                             stats, last 7 days, today, journal. May
+//                             include a prepended in-flight urge seed when
+//                             the user escalates from Help → Coach.
+//   • `memoryNote`          — optional compressed summary of prior
+//                             conversations written by /api/coach-reset.
+//   • `memoryNoteUpdatedAt` — ISO timestamp of last memory-note refresh.
+//                             Used to annotate the memory header with a
+//                             freshness hint when older than 1 day.
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_WEEK_MS = 7 * ONE_DAY_MS;
+
+/** Render a relative "last refreshed N days/weeks ago" string. Returns
+ *  empty when the note was refreshed less than a day ago (no annotation
+ *  needed) or when the timestamp is missing/invalid. */
+function formatStaleness(updatedAt: string | null | undefined, now: Date): string {
+  if (!updatedAt) return '';
+  const updated = new Date(updatedAt);
+  if (Number.isNaN(updated.getTime())) return '';
+  const ageMs = now.getTime() - updated.getTime();
+  if (ageMs < ONE_DAY_MS) return '';
+  if (ageMs < ONE_WEEK_MS) {
+    const days = Math.floor(ageMs / ONE_DAY_MS);
+    return ` (last refreshed ${days} day${days === 1 ? '' : 's'} ago)`;
+  }
+  const weeks = Math.floor(ageMs / ONE_WEEK_MS);
+  return ` (last refreshed ${weeks} week${weeks === 1 ? '' : 's'} ago)`;
+}
+
 export const buildCoachSystemPrompt = (
   context: string,
   memoryNote?: string | null,
+  memoryNoteUpdatedAt?: string | null,
 ): string => {
   const memoryBlock = memoryNote && memoryNote.trim()
-    ? `\nPRIOR CONVERSATION SUMMARY (carry forward, don't repeat back to the user verbatim):\n${memoryNote.trim()}\n`
+    ? `\nPRIOR CONVERSATION SUMMARY${formatStaleness(memoryNoteUpdatedAt, new Date())} (carry forward, don't repeat back to the user verbatim):\n${memoryNote.trim()}\n`
     : '';
 
   return `You are "Mind Compass" — a calm, evidence-based AI coach for someone working to reduce porn addiction and compulsive dopamine-driven behaviors.
@@ -64,6 +89,18 @@ Pick ONE shape per turn:
 - Don't summarize what the user just said back at length.
 - Don't end with motivational fluff ("You've got this!").
 - Don't suggest the same action twice in a session if the user said it didn't help.
+- Don't make absolute pattern claims ("you always X", "you keep doing Y") when the supporting data is fewer than 10 events. Use tentative framing: "From the last week...", "Based on the 4 check-ins I see, one early pattern looks like...". Acknowledge the sample size when it's small.
+
+# How to read context
+The USER CONTEXT block below is segmented by timeframe. Treat each section literally — don't generalize a window into a total:
+- **USER'S OWN WORDS (Future-Self Letter)** — the user's own stated values, identity, and message to themselves. Ground truth for what matters to them. Reference these when relevant; don't paraphrase as if they were your idea.
+- **PLAN STATUS** — where the user is in the 28-day curriculum. Early days = orienting, building habits; mid-plan = depth work (a motivational dip here is common, not a sign of failure); late-plan = consolidating gains; past Day 28 (the 'plan complete' annotation) = maintenance phase.
+- **LIFETIME** — totals since the user joined. Use these for "overall" or "in general" claims.
+- **Check-ins / Urges (last 7 days)** — recent activity window only. NEVER describe these counts as "total" or "all-time".
+- **Recent journal entries** — the 10 most recent entries (any age). User's own raw voice; cite specifics when relevant.
+- **TODAY** — today's activity only (omitted when nothing happened today yet).
+
+When sources conflict: trust **recent activity** over the **PRIOR CONVERSATION SUMMARY** (the summary may be weeks old; recent data is current). Trust **USER'S OWN WORDS** as ground truth for values — don't argue with what the user said matters to them.
 
 # Safety
 If the user mentions self-harm, suicide, or acute crisis: respond calmly, drop the structure, and direct them to local emergency services (988 in the US) or a trusted person. Don't try to coach through it.

@@ -634,6 +634,9 @@ export default function App() {
             <AICoach
               checkInHistory={checkIns}
               urgeLogEntries={urgeLogEntries}
+              streak={streak}
+              planStartedAt={planStartedAt}
+              letter={futureSelfLetter}
               messages={chatHistory}
               setMessages={setChatHistory}
               currentUrgeContext={coachSeed}
