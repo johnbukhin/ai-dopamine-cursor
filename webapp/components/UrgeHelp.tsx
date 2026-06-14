@@ -7,7 +7,9 @@ import { ActStage } from './urgeHelp/ActStage';
 import { ReflectStage } from './urgeHelp/ReflectStage';
 import { SurfCelebration } from './urgeHelp/SurfCelebration';
 import { URGE_ACTION_SCREENS } from './urgeActions';
+import { FutureSelfLetterScreen } from './urgeActions/FutureSelfLetterScreen';
 import { buildUrgeAutoMessage } from '../src/lib/urgeAutoMessage';
+import type { FutureSelfLetter, FutureSelfLetterDraft } from '../src/lib/urgeLog';
 
 interface UrgeHelpProps {
   /** Number of urge sessions this user has already completed (passed +
@@ -18,6 +20,14 @@ interface UrgeHelpProps {
    *  it to Supabase. Returns the freshly-incremented total so the caller
    *  can drive the celebration overlay without re-reading state. */
   onAppendUrge: (entry: UrgeLogEntry) => number;
+  /** Future-Self Letter for this user (Issue #65). `undefined` while the
+   *  initial fetch is in flight — `FutureSelfLetterScreen` shows a spinner
+   *  during that window so a returning user never sees the first-time
+   *  guided write UI flash. `null` once loaded means no letter exists yet. */
+  letter: FutureSelfLetter | null | undefined;
+  /** Persist a Future-Self Letter draft. App stamps `updatedAt`,
+   *  optimistically updates state, and fires the Supabase upsert. */
+  onSaveLetter: (draft: FutureSelfLetterDraft) => void;
   /** Called when the user picks "I want to talk it through" on Reflect.
    *  Parent (App) seeds Coach state and navigates to the Coach tab — the
    *  modal that used to live here was unscrollable on mobile, so the whole
@@ -37,7 +47,7 @@ interface UrgeHelpProps {
  * pattern (the legacy UrgeHelp also reset on remount) and matches user
  * expectation — an urge is a discrete moment, not a resumable workflow.
  */
-export const UrgeHelp: React.FC<UrgeHelpProps> = ({ priorSurfCount, onAppendUrge, onEscalateToCoach }) => {
+export const UrgeHelp: React.FC<UrgeHelpProps> = ({ priorSurfCount, onAppendUrge, letter, onSaveLetter, onEscalateToCoach }) => {
   // ── Session state ─────────────────────────────────────────────────────────
   const [stage, setStage] = useState<Stage>('pause');
   const [feeling, setFeeling] = useState<FeelingId | null>(null);
@@ -193,8 +203,21 @@ export const UrgeHelp: React.FC<UrgeHelpProps> = ({ priorSurfCount, onAppendUrge
           />
         )}
         {stage === 'act' && activeActionId !== null && (() => {
-          // Resolve the screen component from the registry. Wrapped in an
-          // IIFE so we can keep the lookup tight to the render branch.
+          // Future-Self Letter is special-cased because its state lives on
+          // App.tsx (Issue #65) — it needs letter + onSaveLetter props that
+          // the other 9 generic action screens don't take. Everything else
+          // is resolved from the registry. Wrapped in an IIFE so we can keep
+          // the lookup tight to the render branch.
+          if (activeActionId === 'future_self_letter') {
+            return (
+              <FutureSelfLetterScreen
+                letter={letter}
+                onSaveLetter={onSaveLetter}
+                onDone={handleActionDone}
+                onBack={handleActionBack}
+              />
+            );
+          }
           const ActionScreen = URGE_ACTION_SCREENS[activeActionId];
           return <ActionScreen onDone={handleActionDone} onBack={handleActionBack} />;
         })()}

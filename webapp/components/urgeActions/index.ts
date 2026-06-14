@@ -4,6 +4,11 @@
 // active action by id and renders the matching screen with `onDone` and
 // `onBack` callbacks. Keeping the registry here (separate from urgeData.ts)
 // preserves urgeData.ts as a JSX-free pure data module.
+//
+// `future_self_letter` is intentionally absent from this registry (Issue
+// #65): its screen needs letter + onSaveLetter props that come from App-
+// level state, so UrgeHelp imports and renders it directly. The remaining
+// 9 screens have the uniform `(onDone, onBack)` signature and stay here.
 
 import type { UrgeActionId } from '../../types';
 import { BoxBreathingScreen } from './BoxBreathingScreen';
@@ -14,7 +19,6 @@ import { HALTCheckScreen } from './HALTCheckScreen';
 import { LeaveRoomScreen } from './LeaveRoomScreen';
 import { PhoneAwayScreen } from './PhoneAwayScreen';
 import { UrgeJournalScreen } from './UrgeJournalScreen';
-import { FutureSelfLetterScreen } from './FutureSelfLetterScreen';
 import { PlayTheTapeScreen } from './PlayTheTapeScreen';
 
 export interface UrgeActionScreenProps {
@@ -22,8 +26,12 @@ export interface UrgeActionScreenProps {
   onBack: () => void;
 }
 
+/** IDs handled by the generic registry. `future_self_letter` is excluded
+ *  — UrgeHelp renders it directly with letter-specific props. */
+export type GenericUrgeActionId = Exclude<UrgeActionId, 'future_self_letter'>;
+
 export const URGE_ACTION_SCREENS: Record<
-  UrgeActionId,
+  GenericUrgeActionId,
   React.ComponentType<UrgeActionScreenProps>
 > = {
   box_breathing: BoxBreathingScreen,
@@ -34,7 +42,6 @@ export const URGE_ACTION_SCREENS: Record<
   leave_room: LeaveRoomScreen,
   phone_away: PhoneAwayScreen,
   urge_journal: UrgeJournalScreen,
-  future_self_letter: FutureSelfLetterScreen,
   play_the_tape: PlayTheTapeScreen,
 };
 
