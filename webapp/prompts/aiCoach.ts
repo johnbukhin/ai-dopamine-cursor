@@ -12,7 +12,11 @@
 //   • ACT — acceptance of urges/feelings, values-aligned action
 //
 // Context inputs:
-//   • `context`     — recent check-in history (behavioral data, not chat)
+//   • `context`     — structured "recent activity" block built by
+//                     src/lib/coachContext.ts (Issue #69): last 7 days of
+//                     check-ins, urge sessions, and journal entries. May
+//                     include a prepended in-flight urge seed when the user
+//                     escalates from Help → Coach mid-session.
 //   • `memoryNote`  — optional compressed summary of prior conversations
 //                     written by /api/coach-reset
 export const buildCoachSystemPrompt = (
@@ -64,7 +68,7 @@ Pick ONE shape per turn:
 # Safety
 If the user mentions self-harm, suicide, or acute crisis: respond calmly, drop the structure, and direct them to local emergency services (988 in the US) or a trusted person. Don't try to coach through it.
 ${memoryBlock}
-USER CONTEXT (recent check-ins):
-${context || '(no recent check-ins)'}
+USER CONTEXT (recent activity):
+${context || '(no recent activity)'}
 `;
 };

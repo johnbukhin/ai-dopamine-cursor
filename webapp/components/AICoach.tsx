@@ -1,16 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Brain, Send, User as UserIcon, RotateCcw } from 'lucide-react';
 import { getCoachResponse, FALLBACK_COPY } from '../services/claudeService';
-import { CheckIn, ChatMessage, UrgeContextSeed } from '../types';
+import { CheckIn, ChatMessage, UrgeContextSeed, UrgeLogEntry } from '../types';
 import { URGE_ACTION_BY_ID } from '../data/urgeData';
 import { supabase } from '../src/lib/supabase';
 import { CoachLighthouse } from './HeroVariants';
 import { ResetChatModal } from './ResetChatModal';
 import { COACH_WELCOME_MESSAGE, COACH_STARTER_PROMPTS, COACH_QUICK_REPLIES } from '../constants';
 import { createDividerMessage, formatDividerLabel } from '../src/lib/urgeAutoMessage';
+import { buildCoachContext } from '../src/lib/coachContext';
+import { readJournal } from '../src/lib/urgeLog';
 
 interface AICoachProps {
     checkInHistory: CheckIn[];
+    /** Completed urge-surf sessions (Issue #64) — fed into the structured
+     *  recent-activity block built by `buildCoachContext`. Passed from App
+     *  rather than re-fetched so the source of truth stays in one place. */
+    urgeLogEntries: UrgeLogEntry[];
     messages: ChatMessage[];
     setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
     /** When set, the Coach was navigated to via "I want to talk it through".
@@ -59,6 +65,7 @@ function withoutDividers(msgs: ChatMessage[]): ChatMessage[] {
 
 export const AICoach: React.FC<AICoachProps> = ({
   checkInHistory,
+  urgeLogEntries,
   messages,
   setMessages,
   currentUrgeContext,
@@ -120,17 +127,20 @@ export const AICoach: React.FC<AICoachProps> = ({
       ? (await supabase.auth.getUser()).data.user?.id ?? null
       : null;
 
-    // Build context summary from check-in history (last 5 entries) — passed as
-    // system-prompt context, separate from chat history. When the Coach is
-    // invoked from a live urge session, prepend the urge seed so Claude's
-    // first reply is grounded in the actual moment.
-    const checkInBlock = checkInHistory.slice(-5).map(c =>
-        `Date: ${c.date.toDateString()}, Status: ${c.status}, Emotions: ${c.emotions.join(',')}`
-    ).join('; ');
+    // Build the system-prompt context block (Issue #69). The structured
+    // recent-activity block (last 7 days of check-ins, urges, and journal
+    // entries) is produced by buildCoachContext. When the Coach is invoked
+    // mid-urge, we prepend the in-flight urge seed so Claude's first reply
+    // is grounded in the actual moment, then the longer-horizon patterns.
     const urgeBlock = formatUrgeContext(currentUrgeContext);
+    const recentContext = buildCoachContext({
+      checkIns: checkInHistory,
+      urgeLog: urgeLogEntries,
+      journalEntries: readJournal(),
+    });
     const recentHistory = urgeBlock
-        ? `${urgeBlock}\n\nRECENT CHECK-INS:\n${checkInBlock}`
-        : checkInBlock;
+        ? `${urgeBlock}\n\n${recentContext}`
+        : recentContext;
 
     // Pass the last 10 chat messages so Claude has multi-turn memory.
     // Drop index 0 (hardcoded welcome message — never sent to the model).

@@ -633,6 +633,7 @@ export default function App() {
           hasUpsellAccess ? (
             <AICoach
               checkInHistory={checkIns}
+              urgeLogEntries={urgeLogEntries}
               messages={chatHistory}
               setMessages={setChatHistory}
               currentUrgeContext={coachSeed}
