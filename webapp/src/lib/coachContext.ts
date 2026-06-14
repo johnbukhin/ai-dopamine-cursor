@@ -1,69 +1,161 @@
 // Build a structured "USER CONTEXT (recent activity)" block injected into
-// the Coach system prompt on every call (Issue #69).
+// the Coach system prompt on every call (Issue #69, expanded by #71).
 //
-// Replaces the prior one-line `Date / Status / Emotions` summary that
-// AICoach built inline. Pulls from data already loaded on the frontend —
-// no server round-trip needed:
-//   - check-ins  (last 7 days, from App state)
-//   - urge log   (last 7 days, from App state, Issue #64)
-//   - journal    (last 10 entries, read directly from localStorage)
+// Section order (identity-first → trajectory → patterns → right-now):
+//   1. USER'S OWN WORDS (Future-Self Letter)     — user's stated values/identity
+//   2. PLAN STATUS                                — Day N of 28
+//   3. LIFETIME STATS                             — totals + current streak + last slip
+//   4. Check-ins (last 7 days)                    — CLEAN/SLIP counts + slip days
+//   5. Urges surfed (last 7 days)                 — count, top feeling, intensity, escalated
+//   6. Recent journal entries (most recent 10)    — raw trigger/intensity/note
+//   7. TODAY                                      — today's activity summary
 //
-// Pure functions — no side effects. The wrapping `USER CONTEXT
-// (recent activity):` header lives in `prompts/aiCoach.ts`; this helper
-// returns just the body.
+// All sections render conditionally — empty input ⇒ section omitted entirely.
+// When ALL sections are empty (genuinely new user), helper returns the single
+// line `(new user — no activity yet)` so coach gets an explicit signal
+// instead of an ambiguous empty block.
+//
+// Pure functions — no side effects. The wrapping `USER CONTEXT (recent
+// activity):` header lives in `prompts/aiCoach.ts`; this helper returns just
+// the body.
 
+import { differenceInCalendarDays } from 'date-fns';
 import { CheckIn, CheckInStatus, UrgeLogEntry } from '../../types';
-import type { UrgeJournalEntry } from './urgeLog';
+import type { FutureSelfLetter, UrgeJournalEntry } from './urgeLog';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_PER_SECTION = 10;
+const PLAN_LENGTH_DAYS = 28;
 
 interface BuildCoachContextInput {
   checkIns: CheckIn[];
   urgeLog: UrgeLogEntry[];
   journalEntries: UrgeJournalEntry[];
+  /** Current consecutive-CLEAN-day count from App state. Used in the
+   *  Lifetime block so coach can frame momentum. */
+  streak: number;
+  /** Active plan cycle start (ISO string) from `user_app_state`. `null`
+   *  when the user hasn't started a plan yet — Plan Status section is
+   *  omitted in that case. */
+  planStartedAt: string | null;
+  /** User's Future-Self Letter (Issue #65). Null = no letter written yet;
+   *  undefined = still loading. Section is omitted in both cases. */
+  letter: FutureSelfLetter | null | undefined;
 }
 
-/** Produce the body of the `USER CONTEXT (recent activity):` block. Returns
- *  a single line `(new user — no activity yet)` when nothing is logged so
- *  the coach receives an explicit signal instead of an ambiguous empty
- *  section. */
+/** Produce the body of the `USER CONTEXT (recent activity):` block. */
 export function buildCoachContext({
   checkIns,
   urgeLog,
   journalEntries,
+  streak,
+  planStartedAt,
+  letter,
 }: BuildCoachContextInput): string {
-  const now = Date.now();
-  const recentCheckIns = checkIns.filter(
-    (c) => now - c.date.getTime() <= SEVEN_DAYS_MS,
-  );
+  const now = new Date();
+  const nowMs = now.getTime();
+
+  const recentCheckIns = checkIns.filter((c) => nowMs - c.date.getTime() <= SEVEN_DAYS_MS);
   const recentUrges = urgeLog.filter(
-    (u) => now - new Date(u.endedAt).getTime() <= SEVEN_DAYS_MS,
+    (u) => nowMs - new Date(u.endedAt).getTime() <= SEVEN_DAYS_MS,
   );
-  // Journal: take the most recent N entries regardless of age — the
-  // journal is the user's own raw voice and even an older entry can carry
-  // useful context for the coach (vs. the structural counts above which
-  // only make sense as "this week").
+  // Journal: take the N most recent regardless of age (the journal is the
+  // user's own raw voice and even an older entry can carry useful context).
   const recentJournal = journalEntries.slice(-MAX_PER_SECTION);
 
-  if (
-    recentCheckIns.length === 0 &&
-    recentUrges.length === 0 &&
-    recentJournal.length === 0
-  ) {
-    return '(new user — no activity yet)';
-  }
-
-  return [
+  const sections = [
+    formatLetter(letter),
+    formatPlanStatus(planStartedAt, now),
+    formatLifetime(checkIns, urgeLog, streak, now),
     formatCheckIns(recentCheckIns),
     formatUrges(recentUrges),
     formatJournal(recentJournal),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+    formatToday(checkIns, urgeLog, journalEntries, now),
+  ].filter(Boolean);
+
+  if (sections.length === 0) return '(new user — no activity yet)';
+  return sections.join('\n\n');
 }
 
 // ── Section formatters ──────────────────────────────────────────────────────
+
+function formatLetter(letter: FutureSelfLetter | null | undefined): string {
+  if (!letter) return '';
+  // Collapse whitespace in each field (esp. `message`, which is a textarea
+  // and can contain newlines/paragraphs). Keeps each field on a single
+  // structured bullet line and defangs trivial prompt-injection via fake
+  // section headers embedded in the user's own letter. Same pattern as
+  // `formatJournal`.
+  const flatten = (s: string) => s.replace(/\s+/g, ' ').trim();
+  return [
+    "USER'S OWN WORDS (Future-Self Letter):",
+    `  Values: ${flatten(letter.values)}`,
+    `  Identity: ${flatten(letter.identity)}`,
+    `  Message: ${flatten(letter.message)}`,
+  ].join('\n');
+}
+
+function formatPlanStatus(planStartedAt: string | null, now: Date): string {
+  if (!planStartedAt) return '';
+  const start = new Date(planStartedAt);
+  // Calendar-day diff matches the user's mental model (Day 2 = "the next
+  // calendar day after Day 1", regardless of clock time within the day).
+  // Raw millisecond diff would mis-bucket plans started late in the evening.
+  const dayNumber = Math.max(1, differenceInCalendarDays(now, start) + 1);
+  const startDate = start.toISOString().slice(0, 10);
+  // Honest signal past Day 28: tells coach the user is in maintenance phase
+  // rather than active 28-day curriculum.
+  const completeNote = dayNumber > PLAN_LENGTH_DAYS ? ' (plan complete)' : '';
+  return `PLAN STATUS: Day ${dayNumber} of ${PLAN_LENGTH_DAYS} (started ${startDate})${completeNote}`;
+}
+
+function formatLifetime(
+  checkIns: CheckIn[],
+  urgeLog: UrgeLogEntry[],
+  streak: number,
+  now: Date,
+): string {
+  if (checkIns.length === 0) return '';
+
+  const startDate = checkIns[0].date;
+  const startIso = startDate.toISOString().slice(0, 10);
+  const daysSinceStart = Math.max(1, differenceInCalendarDays(now, startDate) + 1);
+
+  const cleanCount = checkIns.filter((c) => c.status === CheckInStatus.CLEAN).length;
+  const slipCount = checkIns.filter((c) => c.status === CheckInStatus.SLIP).length;
+
+  const escalated = urgeLog.filter((u) => u.outcome === 'escalated').length;
+
+  const lines = [
+    `LIFETIME (since ${startIso}, ${daysSinceStart} days):`,
+    `  - Check-ins: ${checkIns.length} total (${cleanCount} CLEAN, ${slipCount} SLIP)`,
+    `  - Urges surfed: ${urgeLog.length} sessions${escalated > 0 ? ` (${escalated} escalated to chat)` : ''}`,
+    `  - Current streak: ${streak} day${streak === 1 ? '' : 's'} CLEAN`,
+  ];
+
+  // Last slip with behavioral context — gives coach momentum framing.
+  // Backward loop avoids copying the (potentially large) check-in array
+  // just to find the most recent SLIP. `checkIns` is sorted ascending in
+  // `loadUserData`, so the latest SLIP is the last one we'll hit.
+  let lastSlip: CheckIn | undefined;
+  for (let i = checkIns.length - 1; i >= 0; i--) {
+    if (checkIns[i].status === CheckInStatus.SLIP) {
+      lastSlip = checkIns[i];
+      break;
+    }
+  }
+  if (lastSlip) {
+    const daysAgo = Math.max(0, differenceInCalendarDays(now, lastSlip.date));
+    const dayLabel = lastSlip.date.toLocaleDateString('en-US', { weekday: 'short' });
+    const time = lastSlip.timeOfDay ? ` ${lastSlip.timeOfDay.toLowerCase()}` : '';
+    const trigger = lastSlip.triggers?.[0];
+    const triggerPart = trigger ? `, trigger: ${trigger.toLowerCase()}` : '';
+    const ago = daysAgo === 0 ? 'today' : daysAgo === 1 ? '1 day ago' : `${daysAgo} days ago`;
+    lines.push(`  - Last slip: ${ago} (${dayLabel}${time}${triggerPart})`);
+  }
+
+  return lines.join('\n');
+}
 
 function formatCheckIns(checkIns: CheckIn[]): string {
   if (checkIns.length === 0) return '';
@@ -82,7 +174,7 @@ function formatCheckIns(checkIns: CheckIn[]): string {
       return `  - ${day}${time}${triggerPart}`;
     });
 
-  const lines = [`Check-ins: ${cleanCount} CLEAN, ${slipCount} SLIP.`];
+  const lines = [`Check-ins (last 7 days): ${cleanCount} CLEAN, ${slipCount} SLIP.`];
   if (slipLines.length > 0) lines.push(...slipLines);
   return lines.join('\n');
 }
@@ -107,7 +199,7 @@ function formatUrges(urgeLog: UrgeLogEntry[]): string {
       ? (intensities.reduce((a, b) => a + b, 0) / intensities.length).toFixed(1)
       : null;
 
-  const lines = [`Urges surfed: ${total} sessions completed.`];
+  const lines = [`Urges surfed (last 7 days): ${total} sessions completed.`];
   if (topFeeling) {
     const feelingLabel = topFeeling[0].replace(/_/g, ' ');
     const intensityPart = avgIntensity ? `, avg intensity ${avgIntensity}/10` : '';
@@ -124,7 +216,7 @@ function formatUrges(urgeLog: UrgeLogEntry[]): string {
 function formatJournal(entries: UrgeJournalEntry[]): string {
   if (entries.length === 0) return '';
 
-  const lines = ['Recent journal entries:'];
+  const lines = ['Recent journal entries (most recent 10):'];
   for (const e of entries) {
     const d = new Date(e.savedAt);
     const day = d.toLocaleDateString('en-US', { weekday: 'short' });
@@ -134,14 +226,55 @@ function formatJournal(entries: UrgeJournalEntry[]): string {
       hour12: false,
     });
     const trigger = e.trigger ?? '(no trigger)';
-    // Collapse newlines/whitespace in the note: keeps the structured
-    // bullet on one line and defangs trivial prompt-injection attempts
-    // (e.g. a note containing fake "SYSTEM:" lines).
+    // Collapse whitespace: keeps the structured bullet on one line and
+    // defangs trivial prompt-injection attempts.
     const note = e.note.replace(/\s+/g, ' ').trim();
     const notePart = note ? ` — "${note}"` : '';
     lines.push(
       `  - ${day} ${time} — trigger: ${trigger}, intensity ${e.intensity}/10${notePart}`,
     );
+  }
+  return lines.join('\n');
+}
+
+function formatToday(
+  checkIns: CheckIn[],
+  urgeLog: UrgeLogEntry[],
+  journalEntries: UrgeJournalEntry[],
+  now: Date,
+): string {
+  const todayKey = now.toDateString();
+  const todayCheckIns = checkIns.filter((c) => c.date.toDateString() === todayKey);
+  const todayUrges = urgeLog.filter(
+    (u) => new Date(u.endedAt).toDateString() === todayKey,
+  );
+  const todayJournal = journalEntries.filter(
+    (j) => new Date(j.savedAt).toDateString() === todayKey,
+  );
+
+  if (todayCheckIns.length + todayUrges.length + todayJournal.length === 0) return '';
+
+  const dateLabel = now.toISOString().slice(0, 10);
+  const lines = [`TODAY (${dateLabel}):`];
+
+  if (todayCheckIns.length > 0) {
+    const clean = todayCheckIns.filter((c) => c.status === CheckInStatus.CLEAN).length;
+    const slip = todayCheckIns.filter((c) => c.status === CheckInStatus.SLIP).length;
+    const parts: string[] = [];
+    if (clean > 0) parts.push(`${clean} CLEAN`);
+    if (slip > 0) parts.push(`${slip} SLIP`);
+    lines.push(`  - ${todayCheckIns.length} check-in${todayCheckIns.length === 1 ? '' : 's'} (${parts.join(', ')})`);
+  }
+  if (todayUrges.length > 0) {
+    const passed = todayUrges.filter((u) => u.outcome === 'passed').length;
+    const escalated = todayUrges.filter((u) => u.outcome === 'escalated').length;
+    const parts: string[] = [];
+    if (passed > 0) parts.push(`${passed} passed`);
+    if (escalated > 0) parts.push(`${escalated} escalated`);
+    lines.push(`  - ${todayUrges.length} urge${todayUrges.length === 1 ? '' : 's'} surfed (${parts.join(', ')})`);
+  }
+  if (todayJournal.length > 0) {
+    lines.push(`  - ${todayJournal.length} journal entr${todayJournal.length === 1 ? 'y' : 'ies'}`);
   }
   return lines.join('\n');
 }
