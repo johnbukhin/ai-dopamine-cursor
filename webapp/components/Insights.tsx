@@ -25,6 +25,13 @@ import {
  * `check_ins`. Achievement-style card grid; inline SVG / CSS for all
  * visualisations so we don't pull in a chart library.
  *
+ * Visual logic (issue #73 follow-up): every card uses one unified palette
+ * (purple) for text/icons/charts and one consistent layout — header → primary
+ * content (metric / list / chart) → mandatory gray subtitle that explains in
+ * one line what the card shows. The only intentional colour exception is the
+ * passed-vs-escalated split bar, which keeps semantic emerald + rose so the
+ * "good outcome / harder outcome" distinction reads at a glance.
+ *
  * All math lives in `insightsCalc.ts` so this file is pure layout. The
  * page is paid-only — App.tsx routes free users to ProGate via the
  * existing Coach/Urge Help gating pattern.
@@ -42,7 +49,8 @@ const MIN_TRIES = 3;
 export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
   // Memoise the full aggregation pass — the page rerenders on every parent
   // tick (App owns urgeLog + checkIns), but the underlying arrays change
-  // rarely. Single useMemo over a stable object keeps all derived data
+  // only when the user records a new urge or check-in (real-time within
+  // session). Single useMemo over a stable object keeps all derived data
   // in lockstep without juggling per-card useMemos. We compute
   // `allActions` once and `slice(0, 3)` for the top card, avoiding the
   // double-pass that calling `topEffectiveActions` would introduce.
@@ -133,36 +141,35 @@ export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
 
 // ─── Shared card scaffold ──────────────────────────────────────────────────
 
-/** All eight insight cards share the same outer shell: rounded white box,
- *  category-tinted icon badge, uppercase label, headline metric block at the
- *  top, optional body (chart / list) below. Stagger the entrance animation
- *  by `index` so the grid fades in row-by-row instead of as one flash. */
+/** Every card has the same three-region layout (header → body → subtitle)
+ *  and the same purple palette. The `subtitle` prop is required — that's
+ *  the gray, smaller-font one-liner under the metric that explains what the
+ *  number / chart means at a glance (issue #73 follow-up). */
 interface CardShellProps {
   index: number;
   Icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
-  /** Tailwind class for the icon badge background (e.g. `bg-emerald-100`). */
-  tintBg: string;
-  /** Tailwind class for the icon colour (e.g. `text-emerald-700`). */
-  tintIcon: string;
+  subtitle: string;
   children: React.ReactNode;
 }
 
-const CardShell: React.FC<CardShellProps> = ({ index, Icon, label, tintBg, tintIcon, children }) => (
+const CardShell: React.FC<CardShellProps> = ({ index, Icon, label, subtitle, children }) => (
   <div
     className="bg-white border border-purple-100 rounded-2xl p-5 md:p-6 shadow-sm
-               animate-in fade-in slide-in-from-bottom-2 duration-500"
+               animate-in fade-in slide-in-from-bottom-2 duration-500
+               flex flex-col"
     style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}
   >
     <div className="flex items-center gap-2 mb-4">
-      <div className={`${tintBg} ${tintIcon} p-1.5 rounded-lg`}>
+      <div className="bg-purple-100 text-purple-700 p-1.5 rounded-lg">
         <Icon size={16} />
       </div>
       <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700">
         {label}
       </span>
     </div>
-    {children}
+    <div className="flex-1">{children}</div>
+    <p className="text-xs text-stone-500 mt-3">{subtitle}</p>
   </div>
 );
 
@@ -171,6 +178,18 @@ const CardShell: React.FC<CardShellProps> = ({ index, Icon, label, tintBg, tintI
  *  state doesn't feel like a different surface. */
 const NeedMore: React.FC<{ hint: string }> = ({ hint }) => (
   <p className="text-sm text-stone-500 leading-relaxed">{hint}</p>
+);
+
+// ─── Shared metric primitives ──────────────────────────────────────────────
+// Single typography hierarchy used by every numeric card so the grid reads
+// as one coherent surface instead of eight slightly-different stat blocks.
+
+/** Big number + small unit on the same baseline. */
+const BigMetric: React.FC<{ value: string; unit?: string }> = ({ value, unit }) => (
+  <div className="flex items-baseline gap-1.5">
+    <span className="text-3xl md:text-4xl font-bold text-purple-900 tabular-nums">{value}</span>
+    {unit && <span className="text-lg font-semibold text-purple-700">{unit}</span>}
+  </div>
 );
 
 // ─── Card 1: Top 3 most-effective techniques ───────────────────────────────
@@ -182,8 +201,7 @@ const TopTechniquesCard: React.FC<{
     index={0}
     Icon={Trophy}
     label="Top techniques"
-    tintBg="bg-emerald-100"
-    tintIcon="text-emerald-700"
+    subtitle="Top 3 actions ranked by how often they helped the urge pass."
   >
     {items.length === 0 ? (
       <NeedMore hint={`Need at least ${MIN_TRIES} tries of any technique to surface a winner.`} />
@@ -192,10 +210,10 @@ const TopTechniquesCard: React.FC<{
         {items.map((a, i) => (
           <li key={a.id} className="flex items-baseline justify-between gap-3">
             <span className="flex items-baseline gap-2 min-w-0">
-              <span className="text-xs font-bold text-emerald-700 tabular-nums">{i + 1}.</span>
-              <span className="text-sm font-semibold text-emerald-900 truncate">{a.title}</span>
+              <span className="text-xs font-bold text-purple-700 tabular-nums">{i + 1}.</span>
+              <span className="text-sm font-semibold text-purple-900 truncate">{a.title}</span>
             </span>
-            <span className="text-sm font-bold text-emerald-900 tabular-nums flex-shrink-0">
+            <span className="text-sm font-bold text-purple-900 tabular-nums flex-shrink-0">
               {Math.round(a.successRate * 100)}%
             </span>
           </li>
@@ -214,18 +232,10 @@ const TotalSurfsCard: React.FC<{ outcomes: ReturnType<typeof outcomeBreakdown> }
     index={1}
     Icon={Waves}
     label="Total surfs"
-    tintBg="bg-purple-100"
-    tintIcon="text-purple-700"
+    subtitle="Urges you've faced, all-time — with how each session resolved."
   >
-    <div className="flex items-baseline gap-1.5 mb-2">
-      <span className="text-3xl md:text-4xl font-bold text-purple-900 tabular-nums">
-        {outcomes.total}
-      </span>
-      <span className="text-lg font-semibold text-purple-700">
-        {outcomes.total === 1 ? 'urge' : 'urges'}
-      </span>
-    </div>
-    <p className="text-xs text-stone-500">
+    <BigMetric value={String(outcomes.total)} unit={outcomes.total === 1 ? 'urge' : 'urges'} />
+    <p className="text-xs text-purple-700/70 mt-1.5 tabular-nums">
       {outcomes.passed} passed · {outcomes.stillHere} re-tried · {outcomes.escalated} escalated
     </p>
   </CardShell>
@@ -238,18 +248,9 @@ const BestStreakCard: React.FC<{ streak: number }> = ({ streak }) => (
     index={2}
     Icon={Award}
     label="Best streak"
-    tintBg="bg-purple-100"
-    tintIcon="text-purple-700"
+    subtitle="Longest stretch of consecutive clean days on record."
   >
-    <div className="flex items-baseline gap-1.5 mb-2">
-      <span className="text-3xl md:text-4xl font-bold text-purple-900 tabular-nums">
-        {streak}
-      </span>
-      <span className="text-lg font-semibold text-purple-700">
-        {streak === 1 ? 'day' : 'days'}
-      </span>
-    </div>
-    <p className="text-xs text-stone-500">Longest consecutive clean run on record.</p>
+    <BigMetric value={String(streak)} unit={streak === 1 ? 'day' : 'days'} />
   </CardShell>
 );
 
@@ -267,28 +268,29 @@ const OutcomeRatioCard: React.FC<{ outcomes: ReturnType<typeof outcomeBreakdown>
     <CardShell
       index={3}
       Icon={Sparkles}
-      label="Passed vs escalated"
-      tintBg="bg-indigo-100"
-      tintIcon="text-indigo-700"
+      label="Resolution rate"
+      subtitle="Share of finished sessions where the urge passed vs. escalated."
     >
       {total === 0 ? (
         <NeedMore hint="Resolve one urge session (passed or escalated) to see this ratio." />
       ) : (
         <>
-          <div className="flex items-baseline gap-1.5 mb-3">
-            <span className="text-3xl md:text-4xl font-bold text-indigo-900 tabular-nums">
-              {Math.round(passedPct)}%
-            </span>
-            <span className="text-sm font-semibold text-indigo-700">passed</span>
-          </div>
-          {/* CSS split bar. `min-w-[2px]` ensures a non-zero segment is still
-              visually present when its share rounds toward zero. */}
-          <div className="flex h-3 rounded-full overflow-hidden bg-stone-100" role="img"
-               aria-label={`${outcomes.passed} passed, ${outcomes.escalated} escalated`}>
+          <BigMetric value={`${Math.round(passedPct)}%`} unit="passed" />
+          {/* Semantic split bar — emerald = good outcome, rose = harder
+              outcome. Kept as a colour-coded exception to the purple
+              palette because passed-vs-escalated is the one place where
+              chart colour carries real meaning. `min-w-[2px]` ensures a
+              non-zero segment is still visually present when its share
+              rounds toward zero. */}
+          <div
+            className="flex h-3 rounded-full overflow-hidden bg-stone-100 mt-3"
+            role="img"
+            aria-label={`${outcomes.passed} passed, ${outcomes.escalated} escalated`}
+          >
             <div className="bg-emerald-500 min-w-[2px]" style={{ width: `${passedPct}%` }} />
             <div className="bg-rose-400 min-w-[2px]" style={{ width: `${escalatedPct}%` }} />
           </div>
-          <p className="text-xs text-stone-500 mt-2">
+          <p className="text-xs text-purple-700/70 mt-2 tabular-nums">
             {outcomes.passed} passed · {outcomes.escalated} escalated
           </p>
         </>
@@ -302,9 +304,8 @@ const OutcomeRatioCard: React.FC<{ outcomes: ReturnType<typeof outcomeBreakdown>
 const TimeOfDayCard: React.FC<{ buckets: ReturnType<typeof timeOfDayBuckets> }> = ({
   buckets,
 }) => {
-  // Render as four side-by-side vertical bars. Scale each bar's height to
-  // the max bucket so the tallest fills the chart area — comparing relative
-  // proportions is more useful than absolute counts here.
+  // Four side-by-side bars scaled to the tallest bucket. Comparing relative
+  // proportions is the goal here — exact counts sit underneath each bar.
   const entries = [
     { key: 'morning', label: 'AM', long: 'Morning', count: buckets.morning },
     { key: 'afternoon', label: 'Noon', long: 'Afternoon', count: buckets.afternoon },
@@ -317,30 +318,32 @@ const TimeOfDayCard: React.FC<{ buckets: ReturnType<typeof timeOfDayBuckets> }> 
     <CardShell
       index={4}
       Icon={Clock}
-      label="Triggers by time of day"
-      tintBg="bg-teal-100"
-      tintIcon="text-teal-700"
+      label="When urges hit"
+      subtitle="Count of urges per daypart bucket (5–12 / 12–17 / 17–22 / 22–5)."
     >
       {total === 0 ? (
         <NeedMore hint="No daypart data yet." />
       ) : (
-        <div className="flex items-end justify-between gap-2 h-24" role="img"
-             aria-label="Urges by time-of-day bucket">
+        <div
+          className="flex items-end justify-between gap-2 h-24"
+          role="img"
+          aria-label="Urges by time-of-day bucket"
+        >
           {entries.map((e) => {
             const pct = (e.count / max) * 100;
             return (
               <div key={e.key} className="flex flex-col items-center flex-1 min-w-0 h-full">
                 <div className="flex-1 w-full flex items-end">
                   <div
-                    className="w-full bg-teal-400 rounded-t-md transition-[height] min-h-[2px]"
+                    className="w-full bg-purple-400 rounded-t-md transition-[height] min-h-[2px]"
                     style={{ height: `${pct}%` }}
                     title={`${e.long}: ${e.count}`}
                   />
                 </div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-800/70 mt-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700/70 mt-1.5">
                   {e.label}
                 </span>
-                <span className="text-[10px] font-bold text-teal-900 tabular-nums">{e.count}</span>
+                <span className="text-[10px] font-bold text-purple-900 tabular-nums">{e.count}</span>
               </div>
             );
           })}
@@ -357,8 +360,7 @@ const TopFeelingsCard: React.FC<{ items: ReturnType<typeof topFeelings> }> = ({ 
     index={5}
     Icon={Heart}
     label="Top trigger feelings"
-    tintBg="bg-sky-100"
-    tintIcon="text-sky-700"
+    subtitle="Feelings you named most often when the urge hit."
   >
     {items.length === 0 ? (
       <NeedMore hint="Name a feeling on the Locate stage to seed this card." />
@@ -367,8 +369,8 @@ const TopFeelingsCard: React.FC<{ items: ReturnType<typeof topFeelings> }> = ({ 
         {items.map((f) => (
           <li key={f.id}>
             <div className="flex items-baseline justify-between gap-3 mb-1">
-              <span className="text-sm font-semibold text-sky-900 truncate">{f.label}</span>
-              <span className="text-xs font-bold text-sky-800 tabular-nums flex-shrink-0">
+              <span className="text-sm font-semibold text-purple-900 truncate">{f.label}</span>
+              <span className="text-xs font-bold text-purple-900 tabular-nums flex-shrink-0">
                 {Math.round(f.pct * 100)}%
               </span>
             </div>
@@ -376,7 +378,7 @@ const TopFeelingsCard: React.FC<{ items: ReturnType<typeof topFeelings> }> = ({ 
                 feelings named" (already normalised in topFeelings). */}
             <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
               <div
-                className="h-full bg-sky-400 rounded-full"
+                className="h-full bg-purple-400 rounded-full"
                 style={{ width: `${Math.max(2, f.pct * 100)}%` }}
               />
             </div>
@@ -400,8 +402,7 @@ const IntensityTrendCard: React.FC<{
         index={6}
         Icon={TrendingUp}
         label="Intensity trend"
-        tintBg="bg-indigo-100"
-        tintIcon="text-indigo-700"
+        subtitle="Average urge intensity per month, on the 1–10 self-report scale."
       >
         <NeedMore hint="Need urges across at least 2 months to draw a trend line." />
       </CardShell>
@@ -428,18 +429,12 @@ const IntensityTrendCard: React.FC<{
       index={6}
       Icon={TrendingUp}
       label="Intensity trend"
-      tintBg="bg-indigo-100"
-      tintIcon="text-indigo-700"
+      subtitle="Average urge intensity per month, on the 1–10 self-report scale."
     >
-      <div className="flex items-baseline gap-1.5 mb-2">
-        <span className="text-3xl md:text-4xl font-bold text-indigo-900 tabular-nums">
-          {latest.avgIntensity.toFixed(1)}
-        </span>
-        <span className="text-sm font-semibold text-indigo-700">/ 10 latest month</span>
-      </div>
+      <BigMetric value={latest.avgIntensity.toFixed(1)} unit="/ 10 latest" />
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        className="w-full h-20"
+        className="w-full h-20 mt-2"
         role="img"
         aria-label="Average urge intensity per month"
       >
@@ -450,23 +445,19 @@ const IntensityTrendCard: React.FC<{
           strokeLinejoin="round"
           strokeLinecap="round"
           points={points}
-          className="text-indigo-500"
+          className="text-purple-500"
         />
         {trend.map((m, i) => {
           const x = PAD + i * xStep;
           const y = VIEW_H - PAD - ((m.avgIntensity - 1) / 9) * (VIEW_H - PAD * 2);
           return (
-            <circle
-              key={m.month}
-              cx={x}
-              cy={y}
-              r={2.5}
-              className="fill-indigo-600"
-            />
+            <circle key={m.month} cx={x} cy={y} r={2.5} className="fill-purple-600" />
           );
         })}
       </svg>
-      <p className="text-xs text-stone-500 mt-1">{trend.length} months of data.</p>
+      <p className="text-xs text-purple-700/70 mt-1 tabular-nums">
+        {trend.length} {trend.length === 1 ? 'month' : 'months'} of data.
+      </p>
     </CardShell>
   );
 };
@@ -480,8 +471,7 @@ const ActionRankingCard: React.FC<{
     index={7}
     Icon={ListOrdered}
     label="All techniques ranked"
-    tintBg="bg-emerald-100"
-    tintIcon="text-emerald-700"
+    subtitle={`Every technique you've tried at least ${MIN_TRIES} times, ranked by success rate.`}
   >
     {items.length === 0 ? (
       <NeedMore hint={`Each technique needs at least ${MIN_TRIES} tries before it appears here.`} />
@@ -492,14 +482,14 @@ const ActionRankingCard: React.FC<{
           return (
             <li key={a.id}>
               <div className="flex items-baseline justify-between gap-3 mb-1">
-                <span className="text-sm font-semibold text-emerald-900 truncate">{a.title}</span>
-                <span className="text-xs text-emerald-700 tabular-nums flex-shrink-0">
+                <span className="text-sm font-semibold text-purple-900 truncate">{a.title}</span>
+                <span className="text-xs text-purple-700 tabular-nums flex-shrink-0">
                   {a.successes}/{a.tries} · {pct}%
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-400 rounded-full"
+                  className="h-full bg-purple-400 rounded-full"
                   style={{ width: `${Math.max(2, pct)}%` }}
                 />
               </div>
