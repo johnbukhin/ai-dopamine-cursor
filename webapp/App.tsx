@@ -20,6 +20,13 @@ import {
   readLocalLog as readLocalUrgeLog,
   clearLocalLog as clearLocalUrgeLog,
   uploadLocalLog as uploadLocalUrgeLog,
+  fetchLetter,
+  upsertLetter,
+  readLocalLetter,
+  clearLocalLetter,
+  uploadLocalLetter,
+  type FutureSelfLetter,
+  type FutureSelfLetterDraft,
 } from './src/lib/urgeLog';
 import { COACH_WELCOME_MESSAGE as WELCOME_MESSAGE } from './constants';
 
@@ -97,6 +104,15 @@ export default function App() {
   // optimistic appends.
   const [urgeLogEntries, setUrgeLogEntries] = useState<UrgeLogEntry[]>([]);
 
+  // Future-Self Letter (Issue #65). Three-state sentinel:
+  //   undefined → not yet loaded — FutureSelfLetterScreen shows a spinner
+  //   null      → loaded, no letter exists — screen shows first-time write
+  //   object    → loaded, letter exists — screen shows display + Edit
+  // The `undefined` state is critical: if we initialized to `null`, the
+  // screen would flash the first-time-write UI before the fetch resolved
+  // and mislead a returning user into thinking their letter was lost.
+  const [futureSelfLetter, setFutureSelfLetter] = useState<FutureSelfLetter | null | undefined>(undefined);
+
   // Append a completed urge-surf session. Optimistically updates local state
   // so the Dashboard tile + UrgeHelp celebration reflect the new total without
   // waiting on the network, then fires the Supabase insert best-effort
@@ -119,6 +135,25 @@ export default function App() {
     [urgeLogEntries.length],
   );
 
+  // Save the Future-Self Letter (Issue #65). Stamps a fresh `updatedAt`,
+  // optimistically updates local state so the screen flips to display mode
+  // immediately, then fires the Supabase upsert best-effort (same pattern
+  // as DailyCheckIn → check_ins).
+  const handleSaveLetter = useCallback(
+    (draft: FutureSelfLetterDraft): void => {
+      const next: FutureSelfLetter = { ...draft, updatedAt: new Date().toISOString() };
+      setFutureSelfLetter(next);
+      if (supabase) {
+        (async () => {
+          const { data: { user } } = await supabase!.auth.getUser();
+          if (!user) return;
+          await upsertLetter(user.id, next);
+        })();
+      }
+    },
+    [],
+  );
+
   // ── Load all persisted data after authentication ──────────────────────────
   useEffect(() => {
     if (!isAuthenticated || !supabase) return;
@@ -132,7 +167,7 @@ export default function App() {
       interface SubRow { plan_label: string; current_period_end: string | null; }
 
       // Run all data fetches in parallel for speed
-      const [checkInsResult, appStateResult, coachResult, subsResult, urgeLogServer] = await Promise.all([
+      const [checkInsResult, appStateResult, coachResult, subsResult, urgeLogServer, letterServer] = await Promise.all([
         // Check-ins: all rows for this user, oldest first so streak calc is correct
         supabase!
           .from('check_ins')
@@ -164,6 +199,11 @@ export default function App() {
         // Urge log: all completed urge-surf sessions for this user (Issue #64).
         // Helper lives in src/lib/urgeLog so the column shape stays in one place.
         fetchUrgeLog(user.id),
+
+        // Future-Self Letter: singleton record per user (Issue #65). Null
+        // when the user has never written one — screen handles by showing
+        // the first-time guided write flow.
+        fetchLetter(user.id),
       ]);
 
       // ── Check-ins ──────────────────────────────────────────────────────────
@@ -203,6 +243,28 @@ export default function App() {
         }
       }
       setUrgeLogEntries(mergedLog);
+
+      // ── Future-Self Letter + one-shot localStorage → Supabase migration ─
+      // Last-write-wins by `updatedAt`. We compare BEFORE uploading so a
+      // stale local letter can never overwrite a newer server one (the
+      // common case when the user wrote on device B after device A was
+      // already migrated).
+      const localLetter = readLocalLetter();
+      let mergedLetter: FutureSelfLetter | null = letterServer;
+      if (localLetter) {
+        const localNewer = !letterServer || localLetter.updatedAt > letterServer.updatedAt;
+        if (localNewer) {
+          const uploaded = await uploadLocalLetter(user.id, localLetter);
+          if (uploaded) {
+            clearLocalLetter();
+            mergedLetter = localLetter;
+          }
+        } else {
+          // Server already has a newer letter — local is stale, drop it.
+          clearLocalLetter();
+        }
+      }
+      setFutureSelfLetter(mergedLetter);
 
       // ── Plan progress ──────────────────────────────────────────────────────
       let activePlanStartedAt: string;
@@ -354,6 +416,7 @@ export default function App() {
     setPlanStartedAt(null);
     setChatHistory([WELCOME_MESSAGE]);
     setUrgeLogEntries([]);
+    setFutureSelfLetter(undefined);
     setUpsellAccess(false);
     setUserEmail('');
     setIsAuthenticated(false);
@@ -591,6 +654,8 @@ export default function App() {
             <UrgeHelp
               priorSurfCount={urgeLogEntries.length}
               onAppendUrge={handleAppendUrge}
+              letter={futureSelfLetter}
+              onSaveLetter={handleSaveLetter}
               onEscalateToCoach={escalateToCoach}
             />
           ) : (

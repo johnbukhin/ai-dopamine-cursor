@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { Mail, Pencil } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Mail, Pencil, Loader2 } from 'lucide-react';
 import { ActionScreenShell } from './ActionScreenShell';
 import { LetterEditor } from './LetterEditor';
 import { URGE_ACTION_BY_ID } from '../../data/urgeData';
-import { readLetter, writeLetter, type FutureSelfLetter } from '../../src/lib/urgeLog';
+import type { FutureSelfLetter, FutureSelfLetterDraft } from '../../src/lib/urgeLog';
 
 interface ScreenProps {
+  /** Letter for the signed-in user (Issue #65). `undefined` during the
+   *  initial fetch — render a spinner so a returning user never sees the
+   *  first-time-write UI flash. `null` means loaded but no letter exists
+   *  yet → first-time guided write. Object means show + offer Edit. */
+  letter: FutureSelfLetter | null | undefined;
+  /** Persist a draft. App stamps `updatedAt` and fires the Supabase upsert
+   *  best-effort; this screen flips back to display mode optimistically. */
+  onSaveLetter: (draft: FutureSelfLetterDraft) => void;
   onDone: () => void;
   onBack: () => void;
 }
@@ -13,25 +21,54 @@ interface ScreenProps {
 /**
  * Future-Self Letter.
  *
- * Two modes:
- *   1. First-time use → guided editor (3 fields). The act of writing it is
- *      already valuable — even if the user doesn't reach Reflect, they've
- *      done the introspective work.
- *   2. Letter exists → display in calm prose with an Edit affordance, plus
+ * Three states drive the UI:
+ *   1. `letter === undefined` → loading spinner (initial fetch in flight).
+ *   2. `letter === null` → first-time guided editor (3 fields). The act of
+ *      writing it is already valuable — even if the user doesn't reach
+ *      Reflect, they've done the introspective work.
+ *   3. letter exists → display in calm prose with an Edit affordance, plus
  *      the standard "I read it" Done CTA from the shell.
  *
- * Persistence is local-only via `urgeLog.ts`. The Settings tab also exposes
- * the same editor so users don't have to re-trigger the action to edit.
+ * Persistence is owned by App.tsx via the `onSaveLetter` callback; this
+ * screen is purely presentational + maintains the local edit-mode toggle.
  */
-export const FutureSelfLetterScreen: React.FC<ScreenProps> = ({ onDone, onBack }) => {
-  const [letter, setLetter] = useState<FutureSelfLetter | null>(() => readLetter());
-  const [editing, setEditing] = useState<boolean>(() => readLetter() === null);
+export const FutureSelfLetterScreen: React.FC<ScreenProps> = ({
+  letter,
+  onSaveLetter,
+  onDone,
+  onBack,
+}) => {
+  // Edit mode is local UI state. Auto-flips to true the first time we see
+  // `letter === null` (first-time write) so the user lands directly in the
+  // editor; the user can still toggle Edit on an existing letter manually.
+  const [editing, setEditing] = useState<boolean>(false);
+  useEffect(() => {
+    if (letter === null) setEditing(true);
+  }, [letter]);
 
-  const handleSave = (next: Pick<FutureSelfLetter, 'values' | 'identity' | 'message'>) => {
-    writeLetter(next);
-    setLetter({ ...next, updatedAt: new Date().toISOString() });
+  const handleSave = (draft: FutureSelfLetterDraft) => {
+    onSaveLetter(draft);
     setEditing(false);
   };
+
+  // ── Loading ────────────────────────────────────────────────────────────
+  if (letter === undefined) {
+    return (
+      <ActionScreenShell
+        action={URGE_ACTION_BY_ID.future_self_letter}
+        icon={Mail}
+        onDone={onDone}
+        onBack={onBack}
+        doneDisabled
+        doneLabel="Loading…"
+        hideDone
+      >
+        <div className="flex items-center justify-center py-16 text-rose-700/60">
+          <Loader2 size={20} className="animate-spin" />
+        </div>
+      </ActionScreenShell>
+    );
+  }
 
   const isShowingLetter = !editing && letter !== null;
 

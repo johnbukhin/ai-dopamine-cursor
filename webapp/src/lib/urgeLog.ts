@@ -1,8 +1,9 @@
 // Storage helpers for the redesigned Help tab (Issue #34).
 //
-// The urge LOG migrated to Supabase in Issue #64 — see `urge_log` table and
-// the `fetchLog` / `insertEntry` helpers below. The Letter and Journal
-// sections remain on localStorage for now; #65 and #66 will migrate them.
+// The urge LOG migrated to Supabase in Issue #64 (`urge_log` table) and the
+// Future-Self LETTER migrated in Issue #65 (`future_self_letter` table). The
+// Journal section is still localStorage-only — #66 will fold it into the
+// coach memory compression path instead of giving it its own table.
 
 import type { UrgeLogEntry, UrgeOutcome } from '../../types';
 import { supabase } from './supabase';
@@ -172,36 +173,115 @@ export interface FutureSelfLetter {
   updatedAt: string;
 }
 
-export function readLetter(): FutureSelfLetter | null {
+/** Draft shape (the three editable fields). `updatedAt` is server-stamped
+ *  on save, never authored by the editor. */
+export type FutureSelfLetterDraft = Pick<FutureSelfLetter, 'values' | 'identity' | 'message'>;
+
+/** DB-row shape for `future_self_letter`. snake_case + `letter_values`
+ *  rename (the bare `values` column name would collide with the SQL
+ *  reserved word). */
+interface FutureSelfLetterRow {
+  letter_values: string;
+  identity: string;
+  message: string;
+  updated_at: string;
+}
+
+function rowToLetter(row: FutureSelfLetterRow): FutureSelfLetter {
+  return {
+    values: row.letter_values,
+    identity: row.identity,
+    message: row.message,
+    updatedAt: row.updated_at,
+  };
+}
+
+function letterToRow(userId: string, letter: FutureSelfLetter) {
+  return {
+    user_id: userId,
+    letter_values: letter.values,
+    identity: letter.identity,
+    message: letter.message,
+    updated_at: letter.updatedAt,
+  };
+}
+
+/** Fetch the user's letter. Returns null when no row exists (first-time
+ *  user) or on any failure — callers don't have to try/catch. */
+export async function fetchLetter(userId: string): Promise<FutureSelfLetter | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('future_self_letter')
+    .select('letter_values, identity, message, updated_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    logger.warn('future_self_letter fetch failed', { error });
+    return null;
+  }
+  return data ? rowToLetter(data as FutureSelfLetterRow) : null;
+}
+
+/** Upsert the user's letter. Best-effort — errors are logged, not thrown,
+ *  because the screen has already shown the optimistic update by the time
+ *  this fires. */
+export async function upsertLetter(userId: string, letter: FutureSelfLetter): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase
+    .from('future_self_letter')
+    .upsert(letterToRow(userId, letter), { onConflict: 'user_id' });
+  if (error) logger.warn('future_self_letter upsert failed', { error });
+}
+
+// ─── One-shot localStorage → Supabase migration helpers ─────────────────────
+
+/** Read any pending letter written by the pre-#65 localStorage path. Validates
+ *  the minimum shape so a partial/legacy record doesn't crash the migration. */
+export function readLocalLetter(): FutureSelfLetter | null {
   try {
     const raw = localStorage.getItem(LETTER_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // Validate the minimum shape so a partial/legacy record doesn't crash
-    // the consumer.
     if (
       parsed &&
       typeof parsed.values === 'string' &&
       typeof parsed.identity === 'string' &&
-      typeof parsed.message === 'string'
+      typeof parsed.message === 'string' &&
+      typeof parsed.updatedAt === 'string'
     ) {
       return parsed as FutureSelfLetter;
     }
     return null;
   } catch (err) {
-    logger.warn('letter read failed', { error: err });
+    logger.warn('letter local read failed', { error: err });
     return null;
   }
 }
 
-export function writeLetter(letter: Omit<FutureSelfLetter, 'updatedAt'>): void {
+/** Drop the pre-#65 localStorage key. Safe to call when the key is absent. */
+export function clearLocalLetter(): void {
   try {
-    const toStore: FutureSelfLetter = {
-      ...letter,
-      updatedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(LETTER_KEY, JSON.stringify(toStore));
+    localStorage.removeItem(LETTER_KEY);
   } catch (err) {
-    logger.warn('letter write failed', { error: err });
+    logger.warn('letter local clear failed', { error: err });
   }
+}
+
+/** Upsert a local letter to Supabase. Returns true only when the upsert
+ *  succeeded, so the caller knows it's safe to clear the local key. The
+ *  last-write-wins comparison happens at the call site (App.tsx) — this
+ *  helper just performs the write. */
+export async function uploadLocalLetter(
+  userId: string,
+  letter: FutureSelfLetter,
+): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase
+    .from('future_self_letter')
+    .upsert(letterToRow(userId, letter), { onConflict: 'user_id' });
+  if (error) {
+    logger.warn('future_self_letter upload failed', { error });
+    return false;
+  }
+  return true;
 }
