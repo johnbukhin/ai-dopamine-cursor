@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CheckIn, CheckInStatus, View } from '../types';
-import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays, Waves } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Trophy, CircleCheck, Anchor, CalendarDays, Waves, BarChart3 } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isFuture } from 'date-fns';
 import { ProgressPeak } from './HeroVariants';
 
@@ -460,10 +460,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, urgesCou
 
                         return (
                             <div className="space-y-6">
-                                {/* Overall Status Banner */}
-                                <div className={`p-4 rounded-xl border ${isDayClean ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
-                                    <span className="font-bold block text-lg mb-1">{isDayClean ? "Clean Day" : "Slip Day"}</span>
-                                    <span className="text-sm opacity-80">{isDayClean ? "A day of control." : "A learning day."}</span>
+                                {/* Overall Status Banner. Headline + body
+                                    column on the left; Insights button pinned
+                                    to the right edge, aligned to the heading's
+                                    optical centre. Click closes the modal and
+                                    routes to Insights (paid) / ProGate (free). */}
+                                <div className={`p-4 rounded-xl border flex items-start justify-between gap-3 ${isDayClean ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
+                                    <div className="min-w-0">
+                                        <span className="font-bold block text-lg mb-1">{isDayClean ? "Clean Day" : "Slip Day"}</span>
+                                        <span className="text-sm opacity-80">{isDayClean ? "A day of control." : "A learning day."}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedDate(null);
+                                            onChangeView(View.INSIGHTS);
+                                        }}
+                                        aria-label="View your patterns and insights"
+                                        className="animate-coach-reset-pulse flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold
+                                                   bg-white border-2 hover:bg-purple-50
+                                                   px-3 py-1.5 rounded-full shadow-sm self-center"
+                                    >
+                                        <BarChart3 size={14} />
+                                        <span>Insights</span>
+                                    </button>
                                 </div>
 
                                 <div className="space-y-4">

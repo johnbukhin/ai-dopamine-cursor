@@ -5,6 +5,9 @@ export enum View {
   PLAN_21 = 'PLAN_21',
   AI_COACH = 'AI_COACH',
   URGE_HELP = 'URGE_HELP',
+  /** Lifetime aggregations over urge_log + check_ins. Paid-only; free users
+   *  hitting this view get the same ProGate as Coach / Urge Help. Issue #73. */
+  INSIGHTS = 'INSIGHTS',
   FUTURE = 'FUTURE',
   SETTINGS = 'SETTINGS',
 }
