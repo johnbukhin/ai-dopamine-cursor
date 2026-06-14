@@ -12,7 +12,6 @@ import {
 import type { CheckIn, UrgeLogEntry } from '../types';
 import { ProgressPeak } from './HeroVariants';
 import {
-  topEffectiveActions,
   actionEffectivenessAll,
   timeOfDayBuckets,
   outcomeBreakdown,
@@ -44,19 +43,21 @@ export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
   // Memoise the full aggregation pass — the page rerenders on every parent
   // tick (App owns urgeLog + checkIns), but the underlying arrays change
   // rarely. Single useMemo over a stable object keeps all derived data
-  // in lockstep without juggling per-card useMemos.
-  const stats = useMemo(
-    () => ({
-      topActions: topEffectiveActions(urgeLog, MIN_TRIES, 3),
-      allActions: actionEffectivenessAll(urgeLog, MIN_TRIES),
+  // in lockstep without juggling per-card useMemos. We compute
+  // `allActions` once and `slice(0, 3)` for the top card, avoiding the
+  // double-pass that calling `topEffectiveActions` would introduce.
+  const stats = useMemo(() => {
+    const allActions = actionEffectivenessAll(urgeLog, MIN_TRIES);
+    return {
+      topActions: allActions.slice(0, 3),
+      allActions,
       buckets: timeOfDayBuckets(urgeLog),
       outcomes: outcomeBreakdown(urgeLog),
       streak: bestStreak(checkIns),
       feelings: topFeelings(urgeLog, 3),
       trend: monthlyIntensityTrend(urgeLog),
-    }),
-    [urgeLog, checkIns],
-  );
+    };
+  }, [urgeLog, checkIns]);
 
   // ── Empty state ─────────────────────────────────────────────────────────
   // First-day users see nothing useful from raw data, so we replace the
@@ -175,7 +176,7 @@ const NeedMore: React.FC<{ hint: string }> = ({ hint }) => (
 // ─── Card 1: Top 3 most-effective techniques ───────────────────────────────
 
 const TopTechniquesCard: React.FC<{
-  items: ReturnType<typeof topEffectiveActions>;
+  items: ReturnType<typeof actionEffectivenessAll>;
 }> = ({ items }) => (
   <CardShell
     index={0}

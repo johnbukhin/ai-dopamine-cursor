@@ -661,7 +661,7 @@ export default function App() {
           ) : (
             <ProGate
               featureName="Insights"
-              featureDescription="See your patterns at a glance — your most effective techniques, when urges hit, what feelings trigger them, and how your streak is trending. All time-tested, drawn straight from your own sessions."
+              featureDescription="See your patterns at a glance — your most effective techniques, when urges hit, what feelings trigger them, and how your streak is trending. Drawn from your full history, lifetime stats updated with every session."
               userEmail={userEmail}
               onUnlocked={grantUpsellAccess}
             />
