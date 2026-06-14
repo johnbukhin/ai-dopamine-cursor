@@ -6,6 +6,7 @@ import { DailyCheckIn } from './components/DailyCheckIn';
 import { Dashboard } from './components/Dashboard';
 import { AICoach } from './components/AICoach';
 import { UrgeHelp } from './components/UrgeHelp';
+import { Insights } from './components/Insights';
 import { isSameDay, subDays } from 'date-fns';
 import { Plan28 } from './components/Plan28';
 import { Settings } from './components/Settings';
@@ -642,11 +643,25 @@ export default function App() {
               currentUrgeContext={coachSeed}
               autoMessage={coachAutoMessage}
               onAutoMessageConsumed={consumeCoachAutoMessage}
+              onChangeView={changeView}
             />
           ) : (
             <ProGate
               featureName="AI Coach"
               featureDescription="Get personalized coaching from your AI companion. Analyze your patterns, reflect on triggers, and build lasting strategies — all tailored to your journey."
+              userEmail={userEmail}
+              onUnlocked={grantUpsellAccess}
+            />
+          )
+        )}
+
+        {currentView === View.INSIGHTS && (
+          hasUpsellAccess ? (
+            <Insights urgeLog={urgeLogEntries} checkIns={checkIns} />
+          ) : (
+            <ProGate
+              featureName="Insights"
+              featureDescription="See your patterns at a glance — your most effective techniques, when urges hit, what feelings trigger them, and how your streak is trending. Drawn from your full history, lifetime stats updated with every session."
               userEmail={userEmail}
               onUnlocked={grantUpsellAccess}
             />

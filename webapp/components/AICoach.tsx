@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Brain, Send, User as UserIcon, RotateCcw } from 'lucide-react';
+import { Brain, Send, User as UserIcon, RotateCcw, BarChart3 } from 'lucide-react';
 import { getCoachResponse, FALLBACK_COPY } from '../services/claudeService';
-import { CheckIn, ChatMessage, UrgeContextSeed, UrgeLogEntry } from '../types';
+import { CheckIn, ChatMessage, UrgeContextSeed, UrgeLogEntry, View } from '../types';
 import { URGE_ACTION_BY_ID } from '../data/urgeData';
 import { supabase } from '../src/lib/supabase';
 import { CoachLighthouse } from './HeroVariants';
@@ -44,6 +44,10 @@ interface AICoachProps {
      *  this, navigating away from Coach and back would re-fire the same
      *  message on remount (fresh `autoSentRef`, same props). */
     onAutoMessageConsumed?: () => void;
+    /** App's `changeView` setter. Used by the `Insights` button (Issue #73)
+     *  to jump to the patterns page; passing it through avoids a separate
+     *  router or context for one button. */
+    onChangeView: (view: View) => void;
 }
 
 /** Format the urge context seed into a compact block the Claude system
@@ -85,6 +89,7 @@ export const AICoach: React.FC<AICoachProps> = ({
   currentUrgeContext,
   autoMessage,
   onAutoMessageConsumed,
+  onChangeView,
 }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -308,10 +313,21 @@ export const AICoach: React.FC<AICoachProps> = ({
         </div>
 
         <div className="px-4 space-y-4 max-w-4xl mx-auto">
-          {/* Reset chat button — small, centered, above the messages.
-              Only shown once there's at least one real message worth resetting. */}
-          {!isEmpty && (
-            <div className="flex justify-center -mt-10 mb-2">
+          {/* Action row — Insights (always visible, left) + New conversation
+              (only when chat has real turns to reset, right). Lifted into one
+              centered flex row so the buttons read as a pair under the hero. */}
+          <div className="flex justify-center items-center gap-2 -mt-10 mb-2">
+            <button
+              onClick={() => onChangeView(View.INSIGHTS)}
+              aria-label="View your patterns and insights"
+              className="animate-coach-reset-pulse flex items-center gap-2 text-sm font-semibold
+                         bg-white border-2 hover:bg-purple-50
+                         px-4 py-2 rounded-full shadow-sm"
+            >
+              <BarChart3 size={16} />
+              <span>Insights</span>
+            </button>
+            {!isEmpty && (
               <button
                 onClick={() => setShowResetModal(true)}
                 disabled={isLoading}
@@ -324,8 +340,8 @@ export const AICoach: React.FC<AICoachProps> = ({
                 <RotateCcw size={16} />
                 <span>New conversation</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {messages.map((m, i) => {
             if (m.role === 'divider') {
