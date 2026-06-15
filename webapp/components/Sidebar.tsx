@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onL
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
         <div className="mb-6">
           <p className="px-4 text-xs font-medium text-purple-700/50 uppercase tracking-wider mb-2">Core Features</p>
-          <NavItem view={View.PLAN_21} icon={Route} label="28-Day Plan" />
+          <NavItem view={View.PLAN_28} icon={Route} label="28-Day Plan" />
           <NavItem view={View.DASHBOARD} icon={CalendarCheck} label="Progress" />
           <NavItem view={View.AI_COACH} icon={Brain} label="AI Coach" />
           <NavItem view={View.URGE_HELP} icon={Anchor} label="Urge Help" />
@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, onL
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <MobileNavItem view={View.PLAN_21} icon={Route} label="Plan" />
+      <MobileNavItem view={View.PLAN_28} icon={Route} label="Plan" />
       <MobileNavItem view={View.DASHBOARD} icon={CalendarCheck} label="Progress" />
       <MobileNavItem view={View.AI_COACH} icon={Brain} label="Coach" />
       <MobileNavItem view={View.URGE_HELP} icon={Anchor} label="Help" />

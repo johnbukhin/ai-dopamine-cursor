@@ -2,7 +2,7 @@ export enum View {
   LOGIN = 'LOGIN',
   CHECK_IN = 'CHECK_IN',
   DASHBOARD = 'DASHBOARD',
-  PLAN_21 = 'PLAN_21',
+  PLAN_28 = 'PLAN_28',
   AI_COACH = 'AI_COACH',
   URGE_HELP = 'URGE_HELP',
   /** Lifetime aggregations over urge_log + check_ins. Paid-only; free users

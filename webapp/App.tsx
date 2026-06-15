@@ -39,7 +39,7 @@ const BYPASS_AUTH = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH 
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(BYPASS_AUTH);
-  const [currentView, setCurrentView] = useState<View>(BYPASS_AUTH ? View.PLAN_21 : View.LOGIN);
+  const [currentView, setCurrentView] = useState<View>(BYPASS_AUTH ? View.PLAN_28 : View.LOGIN);
 
   // Smooth cross-fade between tabs via the View Transitions API. The browser
   // snapshots the old + new view and animates them out/in simultaneously so
@@ -403,7 +403,7 @@ export default function App() {
   // ── Auth handlers ─────────────────────────────────────────────────────────
   const handleLogin = () => {
     setIsAuthenticated(true);
-    setCurrentView(View.PLAN_21);
+    setCurrentView(View.PLAN_28);
   };
 
   const handleLogout = async () => {
@@ -687,7 +687,7 @@ export default function App() {
           )
         )}
 
-        {currentView === View.PLAN_21 && (
+        {currentView === View.PLAN_28 && (
           <Plan28
             onOpenCheckIn={handleOpenCheckIn}
             hasCheckedInToday={hasCheckedInToday}
