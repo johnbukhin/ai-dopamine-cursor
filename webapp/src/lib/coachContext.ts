@@ -1,23 +1,24 @@
-// Build a structured "USER CONTEXT (recent activity)" block injected into
-// the Coach system prompt on every call (Issue #69, expanded by #71).
+// Build a structured "USER CONTEXT" block injected into the Coach system
+// prompt on every call (Issue #69, expanded by #71, locale added in #71
+// follow-up).
 //
-// Section order (identity-first → trajectory → patterns → right-now):
-//   1. USER'S OWN WORDS (Future-Self Letter)     — user's stated values/identity
-//   2. PLAN STATUS                                — Day N of 28
-//   3. LIFETIME STATS                             — totals + current streak + last slip
-//   4. Check-ins (last 7 days)                    — CLEAN/SLIP counts + slip days
-//   5. Urges surfed (last 7 days)                 — count, top feeling, intensity, escalated
-//   6. Recent journal entries (most recent 10)    — raw trigger/intensity/note
-//   7. TODAY                                      — today's activity summary
+// Section order (environment → identity → trajectory → patterns → right-now):
+//   0. USER LOCATION (browser timezone + UI language)  — drives safety geo
+//   1. USER'S OWN WORDS (Future-Self Letter)            — values/identity
+//   2. PLAN STATUS                                      — Day N of 28
+//   3. LIFETIME STATS                                   — totals + streak + last slip
+//   4. Check-ins (last 7 days)                          — CLEAN/SLIP + slip days
+//   5. Urges surfed (last 7 days)                       — count, top feeling, etc
+//   6. Recent journal entries (most recent 10)          — raw trigger/intensity
+//   7. TODAY                                            — today's activity summary
 //
 // All sections render conditionally — empty input ⇒ section omitted entirely.
 // When ALL sections are empty (genuinely new user), helper returns the single
 // line `(new user — no activity yet)` so coach gets an explicit signal
 // instead of an ambiguous empty block.
 //
-// Pure functions — no side effects. The wrapping `USER CONTEXT (recent
-// activity):` header lives in `prompts/aiCoach.ts`; this helper returns just
-// the body.
+// Pure functions — no side effects. The wrapping `USER CONTEXT:` header
+// lives in `prompts/aiCoach.ts`; this helper returns just the body.
 
 import { differenceInCalendarDays } from 'date-fns';
 import { CheckIn, CheckInStatus, UrgeLogEntry } from '../../types';
@@ -41,9 +42,17 @@ interface BuildCoachContextInput {
   /** User's Future-Self Letter (Issue #65). Null = no letter written yet;
    *  undefined = still loading. Section is omitted in both cases. */
   letter: FutureSelfLetter | null | undefined;
+  /** Best-effort browser locale signals (#71 follow-up). Used by the coach's
+   *  `# Safety` section to choose region-appropriate crisis resources.
+   *  Timezone is the primary geo signal (`Intl.DateTimeFormat().resolvedOptions().timeZone`);
+   *  language is the UI preference (`navigator.language`) and may not match
+   *  physical location. Empty strings ⇒ section omitted; the coach's
+   *  "if uncertain → generic" guardrail then prevents fabrication. */
+  locale: string;
+  timezone: string;
 }
 
-/** Produce the body of the `USER CONTEXT (recent activity):` block. */
+/** Produce the body of the `USER CONTEXT:` block. */
 export function buildCoachContext({
   checkIns,
   urgeLog,
@@ -51,6 +60,8 @@ export function buildCoachContext({
   streak,
   planStartedAt,
   letter,
+  locale,
+  timezone,
 }: BuildCoachContextInput): string {
   const now = new Date();
   const nowMs = now.getTime();
@@ -63,7 +74,10 @@ export function buildCoachContext({
   // user's own raw voice and even an older entry can carry useful context).
   const recentJournal = journalEntries.slice(-MAX_PER_SECTION);
 
+  // Location goes FIRST so the # Safety branch in the system prompt can
+  // read it without scanning the whole context block.
   const sections = [
+    formatLocation(locale, timezone),
     formatLetter(letter),
     formatPlanStatus(planStartedAt, now),
     formatLifetime(checkIns, urgeLog, streak, now),
@@ -78,6 +92,31 @@ export function buildCoachContext({
 }
 
 // ── Section formatters ──────────────────────────────────────────────────────
+
+/** Render the USER LOCATION line with inline guidance for the coach.
+ *  Omitted entirely when both signals are empty (e.g. browser-API lockdown).
+ *  Inline guidance — rather than a separate prompt rule — keeps the
+ *  interpretation hint co-located with the data it explains.
+ *
+ *  Defense-in-depth: both values are flattened (whitespace collapsed) and
+ *  length-capped before interpolation. Browser APIs normally return well-
+ *  formed strings, but `Object.defineProperty(navigator, 'language', ...)`
+ *  via DevTools could inject newlines or fake prompt headers. Same defang
+ *  pattern as `formatLetter` and `formatJournal` below. */
+function formatLocation(locale: string, timezone: string): string {
+  const safe = (s: string) => s.replace(/\s+/g, ' ').trim().slice(0, 64);
+  const safeTz = safe(timezone);
+  const safeLocale = safe(locale);
+  if (!safeTz && !safeLocale) return '';
+  const parts: string[] = [];
+  if (safeTz) parts.push(`timezone=${safeTz}`);
+  if (safeLocale) parts.push(`language=${safeLocale}`);
+  return (
+    `USER LOCATION (best-effort browser signal): ${parts.join(', ')}. ` +
+    `Use timezone as primary geo signal; language is the UI preference ` +
+    `and may not match physical location.`
+  );
+}
 
 function formatLetter(letter: FutureSelfLetter | null | undefined): string {
   if (!letter) return '';

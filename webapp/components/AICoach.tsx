@@ -14,7 +14,7 @@ import { readJournal, type FutureSelfLetter } from '../src/lib/urgeLog';
 interface AICoachProps {
     checkInHistory: CheckIn[];
     /** Completed urge-surf sessions (Issue #64) — fed into the structured
-     *  recent-activity block built by `buildCoachContext`. Passed from App
+     *  USER CONTEXT block built by `buildCoachContext`. Passed from App
      *  rather than re-fetched so the source of truth stays in one place. */
     urgeLogEntries: UrgeLogEntry[];
     /** Current consecutive-CLEAN-day streak (Issue #71). Surfaced in the
@@ -151,6 +151,24 @@ export const AICoach: React.FC<AICoachProps> = ({
     // entries) is produced by buildCoachContext. When the Coach is invoked
     // mid-urge, we prepend the in-flight urge seed so Claude's first reply
     // is grounded in the actual moment, then the longer-horizon patterns.
+    //
+    // Browser locale signals (#71 follow-up) — read at call time so a user
+    // who travels (changes timezone) gets locale-appropriate safety
+    // resources on the next turn. Both APIs can throw on locked-down
+    // environments; fall back to empty strings so the coach's
+    // "if uncertain → generic" guardrail handles the absence gracefully.
+    let timezone = '';
+    let locale = '';
+    try {
+      timezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+    } catch {
+      /* leave empty */
+    }
+    try {
+      locale = navigator.language ?? '';
+    } catch {
+      /* leave empty */
+    }
     const urgeBlock = formatUrgeContext(currentUrgeContext);
     const recentContext = buildCoachContext({
       checkIns: checkInHistory,
@@ -159,6 +177,8 @@ export const AICoach: React.FC<AICoachProps> = ({
       streak,
       planStartedAt,
       letter,
+      locale,
+      timezone,
     });
     const recentHistory = urgeBlock
         ? `${urgeBlock}\n\n${recentContext}`
