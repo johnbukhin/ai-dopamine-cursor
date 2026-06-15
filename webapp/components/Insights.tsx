@@ -227,7 +227,12 @@ const CardShell: React.FC<CardShellProps> = ({ index, Icon, label, subtitle, chi
                flex flex-col"
     style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}
   >
-    <div className="flex items-center gap-2 mb-4">
+    {/* Header → subtitle → content. Subtitle sits directly under the
+        label so the reader knows what the card means BEFORE parsing the
+        metric, not after. `text-[11px] leading-snug` is small enough that
+        every shortened subtitle fits on one line at the typical desktop
+        and mobile card widths (~390px / ~340px content area). */}
+    <div className="flex items-center gap-2 mb-1">
       <div className="bg-purple-100 text-purple-700 p-1.5 rounded-lg">
         <Icon size={16} />
       </div>
@@ -235,8 +240,8 @@ const CardShell: React.FC<CardShellProps> = ({ index, Icon, label, subtitle, chi
         {label}
       </span>
     </div>
+    <p className="text-[11px] leading-snug text-stone-500 mb-4 ml-9">{subtitle}</p>
     <div className="flex-1">{children}</div>
-    <p className="text-xs text-stone-500 mt-3">{subtitle}</p>
   </div>
 );
 
@@ -268,7 +273,7 @@ const TopTechniquesCard: React.FC<{
     index={0}
     Icon={Trophy}
     label="Top techniques"
-    subtitle="Top 3 actions ranked by how often they helped the urge pass."
+    subtitle="Ranked by how often they helped the urge pass."
   >
     {items.length === 0 ? (
       <NeedMore hint={`Need at least ${MIN_TRIES} tries of any technique to surface a winner.`} />
@@ -299,7 +304,7 @@ const TotalSurfsCard: React.FC<{ outcomes: ReturnType<typeof outcomeBreakdown> }
     index={1}
     Icon={Waves}
     label="Total surfs"
-    subtitle="Urges you've faced in this range — with how each session resolved."
+    subtitle="Urges in this range, plus how each session resolved."
   >
     <BigMetric value={String(outcomes.total)} unit={outcomes.total === 1 ? 'urge' : 'urges'} />
     <p className="text-xs text-purple-700/70 mt-1.5 tabular-nums">
@@ -315,7 +320,7 @@ const BestStreakCard: React.FC<{ streak: number }> = ({ streak }) => (
     index={2}
     Icon={Award}
     label="Best streak"
-    subtitle="Longest stretch of consecutive clean days on record."
+    subtitle="Longest run of consecutive clean days."
   >
     <BigMetric value={String(streak)} unit={streak === 1 ? 'day' : 'days'} />
   </CardShell>
@@ -336,7 +341,7 @@ const OutcomeRatioCard: React.FC<{ outcomes: ReturnType<typeof outcomeBreakdown>
       index={3}
       Icon={Sparkles}
       label="Resolution rate"
-      subtitle="Share of finished sessions where the urge passed vs. escalated."
+      subtitle="Share of sessions that passed vs. escalated."
     >
       {total === 0 ? (
         <NeedMore hint="Resolve one urge session (passed or escalated) to see this ratio." />
@@ -386,7 +391,7 @@ const TimeOfDayCard: React.FC<{ buckets: ReturnType<typeof timeOfDayBuckets> }> 
       index={4}
       Icon={Clock}
       label="When urges hit"
-      subtitle="Count of urges per daypart bucket (5–12 / 12–17 / 17–22 / 22–5)."
+      subtitle="Urges grouped by morning, noon, evening, late night."
     >
       {total === 0 ? (
         <NeedMore hint="No daypart data yet." />
@@ -427,7 +432,7 @@ const TopFeelingsCard: React.FC<{ items: ReturnType<typeof topFeelings> }> = ({ 
     index={5}
     Icon={Heart}
     label="Top trigger feelings"
-    subtitle="Feelings you named most often when the urge hit."
+    subtitle="Feelings most often behind your urges."
   >
     {items.length === 0 ? (
       <NeedMore hint="Name a feeling on the Locate stage to seed this card." />
@@ -469,7 +474,7 @@ const IntensityTrendCard: React.FC<{
         index={6}
         Icon={TrendingUp}
         label="Intensity trend"
-        subtitle="Average urge intensity per month, on the 1–10 self-report scale."
+        subtitle="Monthly average intensity, 1–10 self-report scale."
       >
         <NeedMore hint="Need urges across at least 2 months to draw a trend line." />
       </CardShell>
@@ -496,7 +501,7 @@ const IntensityTrendCard: React.FC<{
       index={6}
       Icon={TrendingUp}
       label="Intensity trend"
-      subtitle="Average urge intensity per month, on the 1–10 self-report scale."
+      subtitle="Monthly average intensity, 1–10 self-report scale."
     >
       <BigMetric value={latest.avgIntensity.toFixed(1)} unit="/ 10 latest" />
       <svg
@@ -538,7 +543,7 @@ const ActionRankingCard: React.FC<{
     index={7}
     Icon={ListOrdered}
     label="All techniques ranked"
-    subtitle={`Every technique you've tried at least ${MIN_TRIES} times, ranked by success rate.`}
+    subtitle={`Every technique tried ≥${MIN_TRIES} times, by success rate.`}
   >
     {items.length === 0 ? (
       <NeedMore hint={`Each technique needs at least ${MIN_TRIES} tries before it appears here.`} />
