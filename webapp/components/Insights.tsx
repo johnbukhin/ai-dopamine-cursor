@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Trophy,
   Award,
@@ -46,7 +46,46 @@ interface InsightsProps {
  *  empty-state copy can reference the exact threshold. */
 const MIN_TRIES = 3;
 
+/** Time range buckets exposed via the segmented control above the cards.
+ *  All filtering happens in-memory over already-loaded App state — zero
+ *  extra Supabase round-trips when the user switches range. */
+type TimeRange = 'all' | '30d' | '7d';
+
+const RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
+  { value: 'all', label: 'All-time' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: '7d', label: 'Last 7 days' },
+];
+
+/** Days each non-`all` range covers. Used both for the cutoff calc and the
+ *  per-card copy that adapts subtitles to the active window. */
+const RANGE_DAYS: Record<Exclude<TimeRange, 'all'>, number> = { '30d': 30, '7d': 7 };
+
 export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
+  const [range, setRange] = useState<TimeRange>('all');
+
+  // Filter step happens BEFORE aggregations so each card sees only entries
+  // inside the active window. Cutoff is computed once per range change.
+  // Note: we filter the in-memory arrays the App already holds — zero extra
+  // Supabase round-trips. For the practical N (hundreds of entries even on
+  // heavy users), `.filter()` is sub-millisecond.
+  const filtered = useMemo(() => {
+    if (range === 'all') return { urgeLog, checkIns };
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - RANGE_DAYS[range]);
+    const cutoffMs = cutoff.getTime();
+    return {
+      urgeLog: urgeLog.filter((e) => {
+        const t = new Date(e.endedAt).getTime();
+        return !Number.isNaN(t) && t >= cutoffMs;
+      }),
+      checkIns: checkIns.filter((c) => {
+        const t = new Date(c.date).getTime();
+        return !Number.isNaN(t) && t >= cutoffMs;
+      }),
+    };
+  }, [urgeLog, checkIns, range]);
+
   // Memoise the full aggregation pass — the page rerenders on every parent
   // tick (App owns urgeLog + checkIns), but the underlying arrays change
   // only when the user records a new urge or check-in (real-time within
@@ -55,23 +94,24 @@ export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
   // `allActions` once and `slice(0, 3)` for the top card, avoiding the
   // double-pass that calling `topEffectiveActions` would introduce.
   const stats = useMemo(() => {
-    const allActions = actionEffectivenessAll(urgeLog, MIN_TRIES);
+    const allActions = actionEffectivenessAll(filtered.urgeLog, MIN_TRIES);
     return {
       topActions: allActions.slice(0, 3),
       allActions,
-      buckets: timeOfDayBuckets(urgeLog),
-      outcomes: outcomeBreakdown(urgeLog),
-      streak: bestStreak(checkIns),
-      feelings: topFeelings(urgeLog, 3),
-      trend: monthlyIntensityTrend(urgeLog),
+      buckets: timeOfDayBuckets(filtered.urgeLog),
+      outcomes: outcomeBreakdown(filtered.urgeLog),
+      streak: bestStreak(filtered.checkIns),
+      feelings: topFeelings(filtered.urgeLog, 3),
+      trend: monthlyIntensityTrend(filtered.urgeLog),
     };
-  }, [urgeLog, checkIns]);
+  }, [filtered]);
 
   // ── Empty state ─────────────────────────────────────────────────────────
   // First-day users see nothing useful from raw data, so we replace the
   // grid with a motivational hero instead of rendering eight "no data" boxes.
-  // Threshold is "no urge sessions yet" — check-ins alone aren't enough to
-  // make the patterns meaningful.
+  // Gate on the UNFILTERED log — if the user has any history, they're not a
+  // "first-day user" even if the current range happens to be empty. Per-card
+  // "Need more data" placeholders handle the empty-window case below.
   if (urgeLog.length === 0) {
     return (
       <div className="flex-1 h-full overflow-y-auto pb-28 md:pb-8">
@@ -120,6 +160,33 @@ export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-2">
+        {/* Time-range segmented control. Pill-style to echo the Coach
+            "New conversation" / "Insights" buttons. Active segment gets the
+            white pill + shadow; inactive sit on the purple-100 track. */}
+        <div className="flex justify-center mb-5">
+          <div role="tablist" aria-label="Time range" className="inline-flex gap-1 bg-purple-100 p-1 rounded-full">
+            {RANGE_OPTIONS.map((opt) => {
+              const active = range === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setRange(opt.value)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                    active
+                      ? 'bg-white text-purple-900 shadow-sm'
+                      : 'text-purple-700 hover:text-purple-900'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TopTechniquesCard items={stats.topActions} />
           <TotalSurfsCard outcomes={stats.outcomes} />
@@ -232,7 +299,7 @@ const TotalSurfsCard: React.FC<{ outcomes: ReturnType<typeof outcomeBreakdown> }
     index={1}
     Icon={Waves}
     label="Total surfs"
-    subtitle="Urges you've faced, all-time — with how each session resolved."
+    subtitle="Urges you've faced in this range — with how each session resolved."
   >
     <BigMetric value={String(outcomes.total)} unit={outcomes.total === 1 ? 'urge' : 'urges'} />
     <p className="text-xs text-purple-700/70 mt-1.5 tabular-nums">
