@@ -163,7 +163,7 @@ export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
         {/* Time-range segmented control. Pill-style to echo the Coach
             "New conversation" / "Insights" buttons. Active segment gets the
             white pill + shadow; inactive sit on the purple-100 track. */}
-        <div className="flex justify-center mb-5">
+        <div className="flex justify-center mb-2">
           <div role="tablist" aria-label="Time range" className="inline-flex gap-1 bg-purple-100 p-1 rounded-full">
             {RANGE_OPTIONS.map((opt) => {
               const active = range === opt.value;
@@ -186,6 +186,19 @@ export const Insights: React.FC<InsightsProps> = ({ urgeLog, checkIns }) => {
             })}
           </div>
         </div>
+
+        {/* Range scope indicator — "Showing X of Y" makes the filter visible
+            even when the windowed data and the full dataset overlap (common
+            for users whose entries cluster in the last few days). Without
+            this hint, switching ranges and seeing identical numbers reads as
+            "filter broken" when it's actually just data distribution. */}
+        <p className="text-center text-[11px] text-stone-500 mb-5">
+          Showing {filtered.urgeLog.length} of {urgeLog.length}{' '}
+          {urgeLog.length === 1 ? 'urge' : 'urges'}
+          {' · '}
+          {filtered.checkIns.length} of {checkIns.length}{' '}
+          {checkIns.length === 1 ? 'check-in' : 'check-ins'}
+        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TopTechniquesCard items={stats.topActions} />
