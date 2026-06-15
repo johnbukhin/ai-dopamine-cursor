@@ -342,7 +342,7 @@ export const AICoach: React.FC<AICoachProps> = ({
               aria-label="View your patterns and insights"
               className="animate-coach-reset-pulse flex items-center gap-2 text-sm font-semibold
                          bg-white border-2 hover:bg-purple-50
-                         px-4 py-2 rounded-full shadow-sm"
+                         px-4 py-2 rounded-full"
             >
               <BarChart3 size={16} />
               <span>Insights</span>
@@ -354,7 +354,7 @@ export const AICoach: React.FC<AICoachProps> = ({
                 aria-label="Start a new conversation"
                 className="animate-coach-reset-pulse flex items-center gap-2 text-sm font-semibold
                            bg-white border-2 hover:bg-purple-50
-                           px-4 py-2 rounded-full shadow-sm
+                           px-4 py-2 rounded-full
                            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
               >
                 <RotateCcw size={16} />

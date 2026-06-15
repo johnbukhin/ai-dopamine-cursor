@@ -34,33 +34,77 @@ body {
   scrollbar-width: none;
 }
 
-/* Coach "New conversation" button — text + icon smooth-pulse between vibrant
-   purple-600 and emerald-500, bridged through a saturated blue midpoint so
-   the RGB interpolation never collapses to a desaturated grey. The pulse
-   reads as purple → (vibrant blue blend) → green → (vibrant blue blend) →
-   purple, with each main colour held briefly at its peak via the keyframe
-   spans. Uses `color` (cascades to lucide icon via currentColor) and
-   `border-color` so the pill outline follows the same beat. */
+/* Coach action pills ("Insights" + "New conversation") — text + icon +
+   border smooth-pulse between vibrant purple-600 and emerald-500, bridged
+   through a saturated blue midpoint so the RGB interpolation never collapses
+   to a desaturated grey. The pulse reads as purple → (vibrant blue blend) →
+   green → (vibrant blue blend) → purple, with each main colour held briefly
+   at its peak via the keyframe spans.
+   Three layered properties animate together on the same 2.4s beat:
+   - `color` cascades to the lucide icon via `currentColor`.
+   - `border-color` paints the pill outline.
+   - `box-shadow` carries a soft coloured drop-glow below the button + a
+     hairline outline tint just outside the border — gives the pill a halo
+     that "breathes" with the colour cycle without saturating the page.
+   The blue midpoint shadow is intentionally slightly wider + denser than
+   the two endpoints, so the pulse subtly swells at the colour transition
+   instead of reading as a flat 3-step loop. */
 @keyframes coach-reset-pulse {
   0%, 100% {
     color: #9333EA;        /* purple-600 */
     border-color: #A855F7; /* purple-500 */
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(168, 85, 247, 0.10),
+      0 8px 22px -8px rgba(168, 85, 247, 0.45);
   }
   25%, 75% {
     color: #2563EB;        /* blue-600 — saturated bridge */
     border-color: #3B82F6; /* blue-500 */
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(59, 130, 246, 0.12),
+      0 10px 28px -8px rgba(59, 130, 246, 0.50);
   }
   50% {
     color: #10B981;        /* emerald-500 */
     border-color: #34D399; /* emerald-400 */
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(52, 211, 153, 0.10),
+      0 8px 22px -8px rgba(52, 211, 153, 0.45);
   }
 }
 .animate-coach-reset-pulse {
   animation: coach-reset-pulse 2.4s ease-in-out infinite;
+  /* Fallback styling — applied when the animation is paused via
+     `prefers-reduced-motion`. Without these, the pill would render with
+     the browser's default (greyish) border + no glow and lose its identity. */
+  color: #9333EA;
+  border-color: #A855F7;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 6px 18px -8px rgba(168, 85, 247, 0.35);
+  /* Smooth out hover-induced transforms so the press feels springy, not
+     digital. Doesn't conflict with the keyframe animation above because
+     `transition` only governs prop changes from CSS state shifts (hover,
+     active), not keyframe interpolation. */
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.animate-coach-reset-pulse:hover {
+  transform: translateY(-1px);  /* organic lift on hover */
+}
+.animate-coach-reset-pulse:active {
+  transform: translateY(0) scale(0.98);  /* tactile press-down */
+  transition-duration: 80ms;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-coach-reset-pulse {
     animation: none;
+  }
+  .animate-coach-reset-pulse:hover,
+  .animate-coach-reset-pulse:active {
+    transform: none;
   }
 }
 

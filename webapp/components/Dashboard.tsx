@@ -479,7 +479,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ checkIns, streak, urgesCou
                                         aria-label="View your patterns and insights"
                                         className="animate-coach-reset-pulse flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold
                                                    bg-white border-2 hover:bg-purple-50
-                                                   px-3 py-1.5 rounded-full shadow-sm self-center"
+                                                   px-3 py-1.5 rounded-full self-center"
                                     >
                                         <BarChart3 size={14} />
                                         <span>Insights</span>
