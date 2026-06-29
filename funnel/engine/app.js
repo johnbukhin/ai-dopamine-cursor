@@ -36,9 +36,15 @@ const log = {
 // Meta Pixel Event Tracker
 // ========================================
 const MetaPixel = {
-    // Intro prices per tier in USD — used to populate Purchase event value.
-    // Keep in sync with CURRENCY_DISPLAY in api/create-checkout.js.
-    _introPrices: { '7_day': 6.99, '1_month': 14.99, '3_month': 29.99 },
+    // Read the intro price for a tier in the given currency from live Currency.PRICES.
+    // Falls back to the USD amount (or a safe default) if not yet loaded.
+    _getValue(tierId, currency) {
+        const c = (currency || 'usd').toLowerCase();
+        const raw = Currency.PRICES[c]?.[tierId]?.discounted
+            || Currency.PRICES.usd?.[tierId]?.discounted
+            || '';
+        return parseFloat(raw.replace(/[^0-9.]/g, '')) || 14.99;
+    },
 
     track(event, params) {
         if (typeof fbq === 'function') fbq('track', event, params);
@@ -53,21 +59,19 @@ const MetaPixel = {
     },
 
     initiateCheckout(tierId, currency) {
-        const value = this._introPrices[tierId] || 14.99;
         this.track('InitiateCheckout', {
-            value,
-            currency: (currency || 'USD').toUpperCase(),
+            value:       this._getValue(tierId, currency),
+            currency:    (currency || 'USD').toUpperCase(),
             content_ids: [tierId],
-            num_items: 1,
+            num_items:   1,
         });
     },
 
     purchase(tierId, currency) {
-        const value = this._introPrices[tierId] || 14.99;
         this.track('Purchase', {
-            value,
-            currency: (currency || 'USD').toUpperCase(),
-            content_ids: [tierId],
+            value:        this._getValue(tierId, currency),
+            currency:     (currency || 'USD').toUpperCase(),
+            content_ids:  [tierId],
             content_type: 'product',
         });
     },
@@ -114,64 +118,116 @@ const Currency = {
         aud: { symbol: 'A$',   name: 'AUD' },
     },
 
-    // Per-currency pricing for each plan tier on the paywall.
-    // All currencies use X.99 psychological pricing at EUR-equivalent scale.
-    // original  = full regular price (struck through)
-    // discounted = intro/promotional price actually charged
-    // perDay    = discounted ÷ plan days
-    PRICES: {
-        usd: {
-            '7_day':   { original: '$49.99',   discounted: '$9.99',   perDay: '$1.42/day', regularAfter: '$49.99/mo after first week' },
-            '1_month': { original: '$49.99',   discounted: '$19.99',  perDay: '$0.66/day', regularAfter: '$49.99/mo after first month' },
-            '3_month': { original: '$99.99',   discounted: '$34.99',  perDay: '$0.38/day', regularAfter: '$49.99/mo after first 3 months' },
-        },
-        eur: {
-            '7_day':   { original: '€49.99',   discounted: '€9.99',   perDay: '€1.42/day', regularAfter: '€49.99/mo after first week' },
-            '1_month': { original: '€49.99',   discounted: '€19.99',  perDay: '€0.66/day', regularAfter: '€49.99/mo after first month' },
-            '3_month': { original: '€99.99',   discounted: '€34.99',  perDay: '€0.38/day', regularAfter: '€49.99/mo after first 3 months' },
-        },
-        gbp: {
-            '7_day':   { original: '£41.99',   discounted: '£8.99',   perDay: '£1.28/day', regularAfter: '£41.99/mo after first week' },
-            '1_month': { original: '£41.99',   discounted: '£16.99',  perDay: '£0.56/day', regularAfter: '£41.99/mo after first month' },
-            '3_month': { original: '£84.99',   discounted: '£29.99',  perDay: '£0.33/day', regularAfter: '£41.99/mo after first 3 months' },
-        },
-        cad: {
-            '7_day':   { original: 'CA$67.99', discounted: 'CA$13.99', perDay: 'CA$1.99/day', regularAfter: 'CA$67.99/mo after first week' },
-            '1_month': { original: 'CA$67.99', discounted: 'CA$26.99', perDay: 'CA$0.89/day', regularAfter: 'CA$67.99/mo after first month' },
-            '3_month': { original: 'CA$135.99',discounted: 'CA$46.99', perDay: 'CA$0.52/day', regularAfter: 'CA$67.99/mo after first 3 months' },
-        },
-        aud: {
-            '7_day':   { original: 'A$76.99',  discounted: 'A$15.99',  perDay: 'A$2.28/day', regularAfter: 'A$76.99/mo after first week' },
-            '1_month': { original: 'A$76.99',  discounted: 'A$30.99',  perDay: 'A$1.03/day', regularAfter: 'A$76.99/mo after first month' },
-            '3_month': { original: 'A$153.99', discounted: 'A$52.99',  perDay: 'A$0.58/day', regularAfter: 'A$76.99/mo after first 3 months' },
-        },
+    // Populated dynamically by populateLivePrices() after /api/prices fetch.
+    // Shape: { usd: { '7_day': { original, discounted, perDay, regularAfter }, ... }, ... }
+    PRICES: {},
+
+    // Populated dynamically. Shape: { usd: 'By clicking...', ... }
+    DISCLAIMERS: {},
+
+    // Populated dynamically. Shape: { usd: { intro: '$34.99' }, ... }
+    UPSELL_PRICES: {},
+
+    // Whether /api/prices has been fetched and PRICES/DISCLAIMERS/UPSELL_PRICES are ready.
+    _pricesFetched: false,
+    _pricesFetching: null,
+
+    // Format cents → display string using currency symbol from _META.
+    _fmt(cents, currency) {
+        const sym = this._META[currency]?.symbol || currency.toUpperCase();
+        return `${sym}${(cents / 100).toFixed(2)}`;
     },
 
-    // Per-currency legal disclaimer shown at the bottom of the paywall.
-    // References the 1-month plan prices (discounted intro + regular monthly).
-    DISCLAIMERS: {
-        usd: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is $19.99, then $49.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
-        eur: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is €19.99, then €49.99/month (prices incl. VAT). Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
-        gbp: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is £16.99, then £41.99/month (prices incl. VAT). Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
-        cad: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is CA$26.99, then CA$67.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
-        aud: 'By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is A$30.99, then A$76.99/month. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.',
+    // Format cents/day → per-day badge string.
+    _perDayStr(cents, days, currency) {
+        const sym = this._META[currency]?.symbol || '';
+        return `${sym}${(cents / days / 100).toFixed(2)}/day`;
+    },
+
+    // Compute PRICES, DISCLAIMERS, UPSELL_PRICES from raw /api/prices response.
+    populateLivePrices(rawPrices) {
+        const SUPPORTED = ['usd', 'eur', 'gbp', 'cad', 'aud'];
+        const TIERS = [
+            { id: '7_day',   introKey: 'intro_7day',   regularKey: 'regular_monthly',   days: 7,  afterText: 'after first week',        quarterly: false },
+            { id: '1_month', introKey: 'intro_1month', regularKey: 'regular_monthly',   days: 30, afterText: 'after first month',       quarterly: false },
+            { id: '3_month', introKey: 'intro_3month', regularKey: 'regular_quarterly', days: 90, afterText: 'after first 3 months',    quarterly: true  },
+        ];
+
+        const getAmt = (key, currency) => {
+            const p = rawPrices[key];
+            if (!p) return 0;
+            return p.currency_amounts?.[currency] ?? p.currency_amounts?.[p.base_currency] ?? 0;
+        };
+
+        for (const currency of SUPPORTED) {
+            const tierPrices = {};
+            for (const t of TIERS) {
+                const introAmt   = getAmt(t.introKey, currency);
+                const regularAmt = getAmt(t.regularKey, currency);
+                const regularFmt = this._fmt(regularAmt, currency);
+                const regularAfter = t.quarterly
+                    ? `${regularFmt} every 3 months ${t.afterText}`
+                    : `${regularFmt}/mo ${t.afterText}`;
+                tierPrices[t.id] = {
+                    original:    regularFmt,
+                    discounted:  this._fmt(introAmt, currency),
+                    perDay:      this._perDayStr(introAmt, t.days, currency),
+                    regularAfter,
+                };
+            }
+            this.PRICES[currency] = tierPrices;
+
+            // Disclaimer references the 1-month intro price and regular monthly price.
+            const intro1m   = tierPrices['1_month'].discounted;
+            const regular1m = tierPrices['1_month'].original;
+            const vatNote   = ['eur', 'gbp'].includes(currency) ? ' (prices incl. VAT)' : '';
+            this.DISCLAIMERS[currency] = `By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is ${intro1m}, then ${regular1m}/month${vatNote}. Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.`;
+
+            // Upsell is a one-time charge — expose only the actual price.
+            const upsellAmt = getAmt('upsell', currency);
+            this.UPSELL_PRICES[currency] = { intro: this._fmt(upsellAmt, currency) };
+        }
+
+        this._pricesFetched = true;
     },
 
     // Return the disclaimer text for the detected (or given) currency.
     disclaimer(code) {
-        return this.DISCLAIMERS[code || this.detect()] || this.DISCLAIMERS.eur;
+        return this.DISCLAIMERS[code || this.detect()] || this.DISCLAIMERS.eur || '';
     },
 
-    // Upsell bundle pricing per currency.
-    // priceId values are the actual Stripe test price IDs — safe to expose in
-    // frontend code since they are not secret (like the publishable key).
-    // Upsell add-on subscription pricing (intro × 1 month, then regular).
-    UPSELL_PRICES: {
-        usd: { intro: '$19.99', regular: '$69.99/mo' },
-        eur: { intro: '€19.99', regular: '€69.99/mo' },
-        gbp: { intro: '£16.99', regular: '£59.99/mo' },
-        cad: { intro: 'CA$26.99', regular: 'CA$94.99/mo' },
-        aud: { intro: 'A$30.99', regular: 'A$106.99/mo' },
+    // Fetch live prices from /api/prices and populate PRICES/DISCLAIMERS/UPSELL_PRICES.
+    // Caches result in sessionStorage (1-hour TTL) and resolves instantly on hits.
+    fetchPrices() {
+        if (this._pricesFetched) return Promise.resolve();
+        if (this._pricesFetching) return this._pricesFetching;
+
+        // Warm sessionStorage hit
+        try {
+            const raw = sessionStorage.getItem('_mc_prices_v1');
+            if (raw) {
+                const { data, ts } = JSON.parse(raw);
+                if (Date.now() - ts < 3_600_000) {
+                    this.populateLivePrices(data);
+                    return Promise.resolve();
+                }
+            }
+        } catch (_) {}
+
+        this._pricesFetching = fetch('/api/prices')
+            .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+            .then(({ prices }) => {
+                this.populateLivePrices(prices);
+                this._pricesFetching = null;
+                try { sessionStorage.setItem('_mc_prices_v1', JSON.stringify({ data: prices, ts: Date.now() })); } catch (_) {}
+            })
+            .catch(err => {
+                this._pricesFetching = null;
+                log.warn('[Currency] Price fetch failed:', err.message);
+                // Resolve without data — pricingTiers falls back to screens.json defaults
+            });
+
+        return this._pricesFetching;
     },
 
     // Detect currency from browser signals. Cached after first call.
@@ -1753,23 +1809,36 @@ const Components = {
      * @returns {string} HTML string
      */
     pricingTiers(tiers, selectedTierId) {
-        const currencyCode   = Currency.detect();
-        const currencyPrices = Currency.PRICES[currencyCode] || null;
+        const currencyCode = Currency.detect();
 
-        const cardsHtml = tiers.map(tier => {
-            const cp = currencyPrices?.[tier.id];
-            const enrichedTier = cp ? {
+        const buildCards = (cp) => tiers.map(tier => {
+            const enriched = cp?.[tier.id] ? {
                 ...tier,
-                originalPrice:   cp.original,
-                discountedPrice: cp.discounted,
-                pricePerDay:     cp.perDay,
+                originalPrice:   cp[tier.id].original,
+                discountedPrice: cp[tier.id].discounted,
+                pricePerDay:     cp[tier.id].perDay,
             } : tier;
-            return this.pricingCard(enrichedTier, enrichedTier.id === selectedTierId);
+            return this.pricingCard(enriched, enriched.id === selectedTierId);
         }).join('');
 
+        if (!Currency._pricesFetched) {
+            // Prices still loading — render skeleton cards and patch DOM when ready.
+            Currency.fetchPrices().then(() => {
+                const el = document.getElementById('pricing-tiers-live');
+                if (!el) return;
+                el.innerHTML = buildCards(Currency.PRICES[currencyCode] || null);
+            }).catch(() => {});
+
+            return `
+                <div class="pricing-tiers" id="pricing-tiers-live">
+                    ${tiers.map(() => '<div class="pricing-card pricing-card--loading" aria-hidden="true"></div>').join('')}
+                </div>
+            `;
+        }
+
         return `
-            <div class="pricing-tiers">
-                ${cardsHtml}
+            <div class="pricing-tiers" id="pricing-tiers-live">
+                ${buildCards(Currency.PRICES[currencyCode] || null)}
             </div>
         `;
     },
@@ -3763,10 +3832,8 @@ const Screens = {
     upsell(screenData) {
         const safeId        = Security.escapeHtml(screenData.id);
         const currencyCode  = State.data.checkoutCurrency || Currency.detect();
-        const up            = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.eur;
-        const introPrice    = Security.escapeHtml(up.intro);
-        const regularPrice  = Security.escapeHtml(up.regular);
-        const regularAmount = Security.escapeHtml(up.regular.replace('/mo', ''));
+        const up         = Currency.UPSELL_PRICES[currencyCode] || Currency.UPSELL_PRICES.usd || { intro: '' };
+        const introPrice = Security.escapeHtml(up.intro);
 
         const assetBase = 'assets/upsell';
 
@@ -3803,11 +3870,11 @@ const Screens = {
                     <div class="upsell__intro">
                         <p class="upsell__eyebrow">Special one-time offer</p>
                         <h1 class="upsell__headline">Supercharge your recovery with AI</h1>
-                        <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. Only now just at <s class="upsell__intro-strike">${regularAmount}</s> <strong class="upsell__intro-highlight">${introPrice}</strong> a month.</p>
+                        <p class="upsell__intro-subtitle">Add your personal AI Companion and get support exactly when you need it. One-time unlock — yours forever for just <strong class="upsell__intro-highlight">${introPrice}</strong>.</p>
                         <div class="upsell__intro-card">
                             <img src="${assetBase}/hero_v2.png" alt="" loading="lazy">
                         </div>
-                        <p class="upsell__intro-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel.</p>
+                        <p class="upsell__intro-legal">By clicking "Confirm Payment", you authorize a one-time charge of ${introPrice} using your saved payment method.</p>
                     </div>
 
                     <!-- ── Block 4: Feature — AI Coach (dark) ── -->
@@ -3895,7 +3962,7 @@ const Screens = {
                     <!-- ── Block 9: Final showcase + full legal ── -->
                     <div class="upsell__final">
                         <img class="upsell__final-img" src="${assetBase}/final_showcase.png" alt="Mind Compass app" loading="lazy">
-                        <p class="upsell__final-legal">By clicking "Confirm Payment", you agree that if you don't cancel at least 24 hours prior to the end of the 1-st month introductory offer, you'll be automatically charged the full price of ${regularAmount} every month until you cancel. You can cancel subscription anytime from the app settings or by contacting us.</p>
+                        <p class="upsell__final-legal">By clicking "Confirm Payment", you authorize a one-time charge of ${introPrice}. No recurring payments, no subscription — access is yours forever.</p>
                     </div>
 
                     <!-- Spacer so content clears the floating CTA -->
@@ -6082,4 +6149,9 @@ const App = {
 // ========================================
 // Initialize on DOM ready
 // ========================================
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+    // Prefetch live Stripe prices in background so they're ready by the time
+    // the user reaches the paywall (typically several screens away).
+    Currency.fetchPrices().catch(() => {});
+    App.init();
+});
