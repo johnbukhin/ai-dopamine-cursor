@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed (Issue #79 — upsell features locked after funnel purchase)
+- **AI Coach and Urge Help now unlock immediately when a user purchases the AI Companion upsell in the funnel and lands in the webapp for the first time.** Previously, the upsell signal existed only in funnel in-memory state (`State.data.hasUpsell`) and was never forwarded to the webapp at redirect time — the two domains can't share localStorage, so `mc_has_upsell` was always absent on first load and features were gated until the async Supabase `subscriptions` check resolved (or its 8-second retry). Fix: funnel appends `&upsell=1` to the cross-origin URL hash when `hasUpsell` is true; `Login.tsx` reads the flag before stripping the hash and writes `mc_has_upsell` to webapp localStorage; `handleLogin` in `App.tsx` re-reads the flag and calls `setUpsellAccess(true)` synchronously before `loadUserData` completes. No schema changes. Existing Supabase check + 8s retry remain as fallback. Closes #79.
+
 ### Changed (Issue #78 — follow-up: rename `View.PLAN_21` → `View.PLAN_28`)
 - **Internal `View` enum member renamed to match the actual 28-day plan length** (`webapp/types.ts` + `webapp/App.tsx` + `webapp/components/Sidebar.tsx`). Legacy name from when the plan was 21 days — easy to misread for new contributors auditing the codebase against the canonical product surface spec (issue #78). Pure rename, no behavior change: `View` is in-memory React state only — not persisted anywhere (no localStorage, no URL routing, no Supabase column, no Stripe metadata), so zero migration concerns and no risk to users with the app open during deploy (their stale bundle keeps running with the old in-memory symbol, fresh bundle on next reload picks up the new one). 6 occurrences across 3 files updated; `tsc --noEmit` clean; grep for raw `'PLAN_21'` string anywhere in repo returns 0 matches post-rename. Refs #78.
 
