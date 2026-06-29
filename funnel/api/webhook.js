@@ -67,7 +67,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: `Webhook error: ${err.message}` });
     }
 
-    // Only handle the events we care about; acknowledge all others immediately.
+    // Route to the appropriate handler; acknowledge all other events immediately.
+    if (event.type === 'payment_intent.succeeded') {
+        return handleUpsellPayment(event.data.object, res);
+    }
     if (event.type !== 'invoice.payment_succeeded') {
         return res.status(200).json({ received: true });
     }
@@ -145,6 +148,44 @@ export default async function handler(req, res) {
         }
     } catch (err) {
         console.error('[webhook] Unexpected error:', err.message);
+    }
+
+    return res.status(200).json({ received: true });
+}
+
+// ---------------------------------------------------------------------------
+// payment_intent.succeeded — one-time AI Companion upsell purchase
+//
+// Fires when create-upsell.js charges off-session. We upsert into
+// upsell_purchases as a durable backup in case the in-API write failed.
+// ---------------------------------------------------------------------------
+async function handleUpsellPayment(pi, res) {
+    const upsellPriceId = process.env.STRIPE_PRICE_UPSELL;
+    if (!upsellPriceId || pi.metadata?.upsell_price_id !== upsellPriceId) {
+        return res.status(200).json({ received: true });
+    }
+
+    try {
+        const { error } = await supabase.from('upsell_purchases').upsert(
+            {
+                stripe_customer_id:       pi.customer,
+                stripe_payment_intent_id: pi.id,
+                user_email:               pi.metadata?.user_email || null,
+                amount_paid:              pi.amount,
+                currency:                 pi.currency,
+                paid_at:                  new Date(pi.created * 1000).toISOString(),
+                plan_label:               'AI Companion',
+            },
+            { onConflict: 'stripe_payment_intent_id' }
+        );
+
+        if (error) {
+            console.error('[webhook] upsell_purchases upsert error:', error.message, error.code);
+        } else {
+            console.info('[webhook] AI Companion upsell recorded for', pi.metadata?.user_email, pi.id);
+        }
+    } catch (err) {
+        console.error('[webhook] Unexpected error in handleUpsellPayment:', err.message);
     }
 
     return res.status(200).json({ received: true });

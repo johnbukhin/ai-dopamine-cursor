@@ -2,26 +2,19 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 // ---------------------------------------------------------------------------
-// One-Click Upsell Handler — AI Companion Subscription
+// One-Click Upsell Handler — AI Companion One-Time Purchase
 //
 // After a successful subscription checkout the frontend offers an AI Companion
-// add-on. Because the user already entered their card on the checkout screen,
-// Stripe has a saved PaymentMethod on the customer. This endpoint creates a
-// subscription schedule off-session with no additional user interaction.
-//
-// Subscription schedule:
-//   Phase 1 — 1 month at intro price  (STRIPE_PRICE_UPSELL_INTRO)
-//   Phase 2 — recurring monthly       (STRIPE_PRICE_UPSELL_REGULAR)
+// add-on for a one-time charge. Because the user already entered their card on
+// the checkout screen, Stripe has a saved PaymentMethod on the customer. This
+// endpoint charges it off-session immediately — no additional user interaction.
 //
 // Request body:  { email, currency }
 // Responses:
-//   200 { success: true }                  — subscription created
-//   200 { success: false, reason: string } — no PM / customer not found (skip)
+//   200 { success: true }                  — payment collected
+//   200 { success: false, reason: string } — no PM / customer not found / already purchased
 //   400 { error: string }                  — bad request
 //   500 { error: string }                  — unexpected server error
-//
-// All skip-cases are logged to `upsell_errors` for post-hoc investigation.
-// The frontend always redirects to thank_you regardless.
 // ---------------------------------------------------------------------------
 
 const supabase = createClient(
@@ -36,7 +29,7 @@ async function logUpsellError({ email, stripeCustomerId, currency, reason, rawEr
         await supabase.from('upsell_errors').insert({
             user_email:         email,
             stripe_customer_id: stripeCustomerId || null,
-            price_id:           process.env.STRIPE_PRICE_UPSELL_INTRO,
+            price_id:           process.env.STRIPE_PRICE_UPSELL,
             currency,
             reason,
             raw_error:          rawError || null,
@@ -69,23 +62,20 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'email is required' });
     }
 
-    const currency = SUPPORTED_CURRENCIES.includes(rawCurrency?.toLowerCase())
-        ? rawCurrency.toLowerCase()
-        : 'eur';
-
-    const introPriceId   = process.env.STRIPE_PRICE_UPSELL_INTRO;
-    const regularPriceId = process.env.STRIPE_PRICE_UPSELL_REGULAR;
-
-    if (!introPriceId || !regularPriceId) {
-        console.error('[create-upsell] Missing STRIPE_PRICE_UPSELL_INTRO or _REGULAR env vars');
+    const upsellPriceId = process.env.STRIPE_PRICE_UPSELL;
+    if (!upsellPriceId) {
+        console.error('[create-upsell] Missing STRIPE_PRICE_UPSELL env var');
         return res.status(500).json({ error: 'Server misconfiguration' });
     }
+
+    const currency = SUPPORTED_CURRENCIES.includes(rawCurrency?.toLowerCase())
+        ? rawCurrency.toLowerCase()
+        : 'usd';
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
     try {
-        // 1. Find the Stripe customer by email. The checkout step always creates
-        //    one, so this should always succeed for a user who just paid.
+        // 1. Find the Stripe customer by email.
         const customers = await stripe.customers.list({ email, limit: 1 });
         if (!customers.data.length) {
             await logUpsellError({ email, currency, reason: 'customer_not_found' });
@@ -94,31 +84,22 @@ export default async function handler(req, res) {
 
         const customer = customers.data[0];
 
-        // 1b. Guard against duplicate upsell subscriptions. If the customer
-        //     already has an active subscription on either upsell price, return
-        //     success immediately — idempotent for the caller.
-        const activeSubs = await stripe.subscriptions.list({
+        // 2. Guard against duplicate upsell purchases. Check for a prior
+        //    PaymentIntent on this customer for the upsell price ID.
+        const existingPIs = await stripe.paymentIntents.list({
             customer: customer.id,
-            status: 'active',
-            limit: 10,
+            limit: 20,
         });
-        const alreadySubscribed = activeSubs.data.some(sub =>
-            sub.items.data.some(item =>
-                item.price.id === introPriceId || item.price.id === regularPriceId
-            )
+        const alreadyPurchased = existingPIs.data.some(pi =>
+            pi.status === 'succeeded' &&
+            pi.metadata?.upsell_price_id === upsellPriceId
         );
-        if (alreadySubscribed) {
-            console.info('[create-upsell] Customer already has active upsell subscription', customer.id);
+        if (alreadyPurchased) {
+            console.info('[create-upsell] Customer already purchased upsell', customer.id);
             return res.status(200).json({ success: true, alreadyExists: true });
         }
 
-        // Use the currency from the customer's existing subscription to avoid
-        // "cannot combine currencies on a single customer" — Stripe rejects
-        // mixing currencies. The frontend-detected currency may differ from
-        // the price currency used at checkout.
-        const effectiveCurrency = activeSubs.data.find(s => s.currency)?.currency || currency;
-
-        // 2. Retrieve the most recently attached payment method.
+        // 3. Retrieve the most recently attached payment method.
         const pms = await stripe.paymentMethods.list({
             customer: customer.id,
             type: 'card',
@@ -137,80 +118,66 @@ export default async function handler(req, res) {
 
         const pm = pms.data[0];
 
-        // 3. Create a subscription schedule with two phases:
-        //    Phase 1 — intro price for 1 month
-        //    Phase 2 — regular recurring price (no end date)
-        //
-        //    payment_behavior='default_incomplete' + expand latest_invoice lets
-        //    us detect if the first charge requires further action (3DS).
-        const schedule = await stripe.subscriptionSchedules.create({
-            customer: customer.id,
-            start_date: 'now',
-            default_settings: {
-                default_payment_method: pm.id,
-            },
-            phases: [
-                {
-                    items: [{ price: introPriceId, quantity: 1 }],
-                    currency: effectiveCurrency,
-                    iterations: 1,
-                    default_payment_method: pm.id,
-                },
-                {
-                    items: [{ price: regularPriceId, quantity: 1 }],
-                    currency: effectiveCurrency,
-                },
-            ],
-            expand: ['subscription.latest_invoice.payment_intent'],
+        // 4. Look up the price amount for the customer's currency.
+        //    Stripe stores currency_options on the price object.
+        const price = await stripe.prices.retrieve(upsellPriceId, {
+            expand: ['currency_options'],
         });
 
-        const sub = schedule.subscription;
-        const pi  = sub?.latest_invoice?.payment_intent;
+        const priceData = price.currency_options?.[currency] || price.currency_options?.[price.currency];
+        const amount   = priceData?.unit_amount ?? price.unit_amount;
+        const chargeCurrency = priceData ? currency : price.currency;
 
-        // If the first invoice payment intent is in a terminal failed state, log it
-        if (pi && pi.status !== 'succeeded' && pi.status !== 'processing') {
+        // 5. Create and immediately confirm a PaymentIntent off-session.
+        //    'off_session: true' tells Stripe the customer is not present
+        //    and to use the saved card without any UI interaction.
+        const pi = await stripe.paymentIntents.create({
+            amount,
+            currency: chargeCurrency,
+            customer: customer.id,
+            payment_method: pm.id,
+            off_session: true,
+            confirm: true,
+            metadata: {
+                upsell_price_id: upsellPriceId,
+                user_email: email,
+            },
+        });
+
+        if (pi.status !== 'succeeded') {
             await logUpsellError({
                 email,
                 stripeCustomerId: customer.id,
                 currency,
-                reason: 'stripe_error',
-                rawError: `PI status: ${pi.status}`,
+                reason: 'payment_failed',
+                rawError: `PI ${pi.id} status: ${pi.status}`,
             });
-            // Still return success:false but don't cancel — Stripe may retry
-            return res.status(200).json({ success: false, reason: 'requires_action' });
+            return res.status(200).json({ success: false, reason: 'payment_failed' });
         }
 
-        console.info('[create-upsell] Subscription schedule created for', email, schedule.id);
+        console.info('[create-upsell] One-time upsell charged for', email, pi.id);
 
-        // Write immediately to Supabase so the webapp sees the upsell subscription
-        // without waiting for the webhook (which fires 2–10s later).
-        // The webhook will upsert again with the final invoice data — that's fine.
+        // 6. Record the upsell purchase in Supabase immediately so the webapp
+        //    can gate AI Companion access without waiting for the webhook.
+        //    The webhook will upsert again on payment_intent.succeeded — harmless.
         try {
-            const subId = typeof sub === 'string' ? sub : sub?.id;
-            if (subId) {
-                const introPrice = await stripe.prices.retrieve(introPriceId);
-                await supabase.from('subscriptions').upsert(
-                    {
-                        stripe_customer_id:     customer.id,
-                        stripe_subscription_id: subId,
-                        user_email:             email,
-                        status:                 'active',
-                        paid_at:                new Date().toISOString(),
-                        amount_paid:            introPrice.unit_amount,
-                        currency:               effectiveCurrency,
-                        current_period_end:     new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString(),
-                        plan_label:             'AI Companion (Intro Month)',
-                        cancel_at_period_end:   false,
-                    },
-                    { onConflict: 'stripe_subscription_id' }
-                );
-            }
+            await supabase.from('upsell_purchases').upsert(
+                {
+                    stripe_customer_id: customer.id,
+                    stripe_payment_intent_id: pi.id,
+                    user_email: email,
+                    amount_paid: amount,
+                    currency: chargeCurrency,
+                    paid_at: new Date().toISOString(),
+                    plan_label: 'AI Companion',
+                },
+                { onConflict: 'stripe_payment_intent_id' }
+            );
         } catch (dbErr) {
-            // Non-fatal — webhook will write it eventually
             console.error('[create-upsell] Supabase upsert error (non-fatal):', dbErr.message);
         }
 
-        return res.status(200).json({ success: true, scheduleId: schedule.id });
+        return res.status(200).json({ success: true, paymentIntentId: pi.id });
 
     } catch (err) {
         console.error('[create-upsell] Error:', err.message);
