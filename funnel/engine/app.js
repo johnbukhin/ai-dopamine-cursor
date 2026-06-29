@@ -33,6 +33,47 @@ const log = {
 };
 
 // ========================================
+// Meta Pixel Event Tracker
+// ========================================
+const MetaPixel = {
+    // Intro prices per tier in USD — used to populate Purchase event value.
+    // Keep in sync with CURRENCY_DISPLAY in api/create-checkout.js.
+    _introPrices: { '7_day': 6.99, '1_month': 14.99, '3_month': 29.99 },
+
+    track(event, params) {
+        if (typeof fbq === 'function') fbq('track', event, params);
+    },
+
+    viewContent() {
+        this.track('ViewContent', { content_name: 'Paywall', content_type: 'product' });
+    },
+
+    lead(email) {
+        this.track('Lead', email ? { em: email } : undefined);
+    },
+
+    initiateCheckout(tierId, currency) {
+        const value = this._introPrices[tierId] || 14.99;
+        this.track('InitiateCheckout', {
+            value,
+            currency: (currency || 'USD').toUpperCase(),
+            content_ids: [tierId],
+            num_items: 1,
+        });
+    },
+
+    purchase(tierId, currency) {
+        const value = this._introPrices[tierId] || 14.99;
+        this.track('Purchase', {
+            value,
+            currency: (currency || 'USD').toUpperCase(),
+            content_ids: [tierId],
+            content_type: 'product',
+        });
+    },
+};
+
+// ========================================
 // Security Utilities
 // ========================================
 const Security = {
@@ -4776,6 +4817,9 @@ const Events = {
             const formInput = document.querySelector('.form-capture__input');
             if (formInput && formInput.value.trim()) {
                 State.recordAnswer(screenId, formInput.value.trim());
+                if (screenData.screenType === 'email_gate') {
+                    MetaPixel.lead(formInput.value.trim());
+                }
             } else {
                 log.warn(`[Events] Continue clicked but form input empty for ${screenId}`);
                 return;
@@ -5480,6 +5524,7 @@ const App = {
                     // Payment succeeded — store currency so the upsell screen can charge
                     // in the same currency without re-detecting.
                     State.set('checkoutCurrency', currency);
+                    MetaPixel.purchase(State.data.selectedTier, currency);
                     log.info('[Checkout] Payment confirmed — provisioning Supabase account');
 
                     // Fire-and-forget provision: create the auth user + profile immediately
@@ -5927,6 +5972,13 @@ const App = {
         // Bootstrap Stripe Payment Element after DOM is ready for checkout screen
         if ((screenData.screenType || screenData.type) === 'checkout') {
             this.initStripe(screenData);
+            MetaPixel.initiateCheckout(State.data.selectedTier, Currency.detect());
+        }
+
+        // Meta Pixel: fire ViewContent + AddToCart when the paywall first renders
+        if ((screenData.screenType || screenData.type) === 'payment') {
+            MetaPixel.viewContent();
+            MetaPixel.track('AddToCart', { content_type: 'product' });
         }
 
         // Attach direct listeners on upsell buttons — position:fixed elements on
