@@ -17,7 +17,7 @@ const CONFIG = {
     webappUrl: 'https://mind-compass-webapp.vercel.app',
     // Stripe publishable key (safe to expose in frontend code).
     // Production key should be set here before going live.
-    stripePk: 'pk_test_51RGn1FE85qJsu4O7B4vPpGAgvzwq63X3C9vk0IN4oLDBaDpccbctO9gy5I3gjVoNr3ENvISwfVjRbuLUu74Fx8HB00C2nolMtd',
+    stripePk: 'pk_live_51RGn19EIAGyjtjbOlAiSpPQ3NnuzFCSg7ReDs1bE1zYzCuNkmZC1HvdT5tsbLu1vzMOLMwYluxHJy6TBbP38rWML00rdVcYbRg',
     // Cache-busting version for image assets that may have been re-uploaded with the same filename.
     // Bump when replacing assets that browsers/CDN already aggressively cache (max-age=31536000, immutable).
     assetVersion: '2026-05-04-resized'
