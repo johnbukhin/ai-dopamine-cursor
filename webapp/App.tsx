@@ -404,6 +404,11 @@ export default function App() {
   const handleLogin = () => {
     setIsAuthenticated(true);
     setCurrentView(View.PLAN_28);
+    // Re-sync upsell access from localStorage. The lazy useState init ran at
+    // mount before Login.tsx wrote mc_has_upsell (cross-origin funnel redirect
+    // path), so we must explicitly re-read the flag here. The loadUserData
+    // Supabase check remains the authoritative validation fallback.
+    if (localStorage.getItem('mc_has_upsell') === '1') setHasUpsellAccess(true);
   };
 
   const handleLogout = async () => {
