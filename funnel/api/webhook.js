@@ -1,19 +1,18 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 // ---------------------------------------------------------------------------
 // Stripe Webhook Handler
 //
-// Listens for invoice.payment_succeeded and upserts a `subscriptions` row
-// in Supabase so the webapp can gate access and display subscription data.
+// Listens for invoice.payment_succeeded (subscriptions) and
+// payment_intent.succeeded (one-time upsell). Updates Supabase and fires
+// server-side Meta CAPI Purchase events for each confirmed payment.
 //
 // IMPORTANT: body parsing must be disabled (see config export below) so that
 // req.body is the raw string Stripe needs for HMAC signature verification.
-// Vercel's default JSON body parser converts req.body to an object, which
-// causes stripe.webhooks.constructEvent to throw "No signatures found".
 // ---------------------------------------------------------------------------
 
-// Disable Vercel's automatic body parsing for this route.
 export const config = { api: { bodyParser: false } };
 
 const supabase = createClient(
@@ -21,20 +20,70 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Mirror of the plan map in create-checkout.js — used to resolve a human-
-// readable label from a Stripe price ID for display in the webapp Settings.
 const PRICE_LABEL_MAP = {
     [process.env.STRIPE_PRICE_INTRO_7DAY]:        '7-Day Plan',
     [process.env.STRIPE_PRICE_INTRO_1MONTH]:      '1-Month Plan',
     [process.env.STRIPE_PRICE_INTRO_3MONTH]:      '3-Month Plan',
     [process.env.STRIPE_PRICE_REGULAR_MONTHLY]:   'Monthly Plan',
     [process.env.STRIPE_PRICE_REGULAR_QUARTERLY]: 'Quarterly Plan',
-    [process.env.STRIPE_PRICE_UPSELL_INTRO]:       'AI Companion (Intro Month)',
-    [process.env.STRIPE_PRICE_UPSELL_REGULAR]:    'AI Companion (Monthly)',
+    [process.env.STRIPE_PRICE_UPSELL]:            'AI Companion',
 };
 
-// Read the raw request body as a Buffer from the Node.js stream.
-// Required because body parsing is disabled (see config above).
+// ---------------------------------------------------------------------------
+// Meta CAPI — server-side Purchase event
+//
+// Fires after every confirmed payment. Complements the browser pixel Purchase
+// event — deduplication is handled by Meta heuristically (same email hash +
+// event within seconds). Only fires on initial subscription purchases, not
+// renewals, to avoid inflating Meta's purchase count.
+// ---------------------------------------------------------------------------
+async function fireCapiPurchase({ email, amountCents, currency, contentId }) {
+    const pixelId = process.env.META_PIXEL_ID;
+    const token   = process.env.META_CAPI_TOKEN;
+    if (!pixelId || !token) return;
+
+    const hashedEmail = email
+        ? crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex')
+        : null;
+
+    const payload = {
+        data: [{
+            event_name:       'Purchase',
+            event_time:       Math.floor(Date.now() / 1000),
+            action_source:    'website',
+            event_source_url: 'https://ai-dopamine-addict.vercel.app/funnel-v2/',
+            user_data: {
+                ...(hashedEmail && { em: [hashedEmail] }),
+            },
+            custom_data: {
+                value:        amountCents / 100,
+                currency:     currency.toUpperCase(),
+                content_ids:  [contentId],
+                content_type: 'product',
+            },
+        }],
+        access_token: token,
+    };
+
+    try {
+        const resp = await fetch(
+            `https://graph.facebook.com/v19.0/${pixelId}/events`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+        );
+        const result = await resp.json();
+        if (result.error) {
+            console.error('[CAPI] Error:', result.error.message);
+        } else {
+            console.info('[CAPI] Purchase sent, events_received:', result.events_received);
+        }
+    } catch (err) {
+        console.error('[CAPI] Failed to send event:', err.message);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Raw body reader — required because bodyParser: false
+// ---------------------------------------------------------------------------
 async function getRawBody(req) {
     return new Promise((resolve, reject) => {
         const chunks = [];
@@ -54,9 +103,7 @@ export default async function handler(req, res) {
     let event;
     try {
         const rawBody = await getRawBody(req);
-
         if (webhookSecret) {
-            // Verify HMAC signature — rawBody is a Buffer which constructEvent accepts.
             event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
         } else {
             console.warn('[webhook] STRIPE_WEBHOOK_SECRET not set — skipping signature verification.');
@@ -67,7 +114,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: `Webhook error: ${err.message}` });
     }
 
-    // Route to the appropriate handler; acknowledge all other events immediately.
     if (event.type === 'payment_intent.succeeded') {
         return handleUpsellPayment(event.data.object, res);
     }
@@ -76,30 +122,22 @@ export default async function handler(req, res) {
     }
 
     // -----------------------------------------------------------------------
-    // invoice.payment_succeeded — upsert active subscription in Supabase.
-    //
-    // Fires on initial payment AND every renewal, so current_period_end stays
-    // up-to-date automatically without any additional cron/polling.
+    // invoice.payment_succeeded — upsert active subscription in Supabase
+    // and fire CAPI Purchase on the initial payment only.
     // -----------------------------------------------------------------------
     const invoice = event.data.object;
 
-    // Extract period end from the first line item.
-    const firstLine = invoice.lines?.data?.[0];
-    const periodEndUnix = firstLine?.period?.end;
+    const firstLine      = invoice.lines?.data?.[0];
+    const periodEndUnix  = firstLine?.period?.end;
     const currentPeriodEnd = periodEndUnix
         ? new Date(periodEndUnix * 1000).toISOString()
         : null;
 
-    // Resolve plan label from price ID on the line item.
-    const priceId = firstLine?.price?.id
+    const priceId  = firstLine?.price?.id
         || firstLine?.pricing?.price_details?.price
         || null;
     const planLabel = PRICE_LABEL_MAP[priceId] || firstLine?.description || null;
 
-    // Resolve the subscription ID. In older Stripe API versions it is at
-    // invoice.subscription; in 2025-03+ it moved to
-    // invoice.parent.subscription_details.subscription. Fall back to a live
-    // API lookup for any edge case not covered by the two field paths.
     let subscriptionId = invoice.subscription
         || invoice.parent?.subscription_details?.subscription
         || null;
@@ -150,14 +188,22 @@ export default async function handler(req, res) {
         console.error('[webhook] Unexpected error:', err.message);
     }
 
+    // Fire CAPI Purchase only on initial subscription payment, not renewals.
+    const billingReason = invoice.billing_reason;
+    if (billingReason === 'subscription_create' || !billingReason) {
+        await fireCapiPurchase({
+            email:       invoice.customer_email,
+            amountCents: invoice.amount_paid,
+            currency:    invoice.currency,
+            contentId:   planLabel || priceId || 'subscription',
+        });
+    }
+
     return res.status(200).json({ received: true });
 }
 
 // ---------------------------------------------------------------------------
 // payment_intent.succeeded — one-time AI Companion upsell purchase
-//
-// Fires when create-upsell.js charges off-session. We upsert into
-// upsell_purchases as a durable backup in case the in-API write failed.
 // ---------------------------------------------------------------------------
 async function handleUpsellPayment(pi, res) {
     const upsellPriceId = process.env.STRIPE_PRICE_UPSELL;
@@ -187,6 +233,13 @@ async function handleUpsellPayment(pi, res) {
     } catch (err) {
         console.error('[webhook] Unexpected error in handleUpsellPayment:', err.message);
     }
+
+    await fireCapiPurchase({
+        email:       pi.metadata?.user_email,
+        amountCents: pi.amount,
+        currency:    pi.currency,
+        contentId:   'ai_companion',
+    });
 
     return res.status(200).json({ received: true });
 }
