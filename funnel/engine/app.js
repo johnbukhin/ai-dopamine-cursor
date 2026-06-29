@@ -191,9 +191,27 @@ const Currency = {
         this._pricesFetched = true;
     },
 
-    // Return the disclaimer text for the detected (or given) currency.
+    // Return the 1-month disclaimer for the given currency (paywall default / fallback).
     disclaimer(code) {
         return this.DISCLAIMERS[code || this.detect()] || this.DISCLAIMERS.eur || '';
+    },
+
+    // Return a disclaimer string specific to the selected pricing tier.
+    // Updates automatically as the user switches between 7-day / 1-month / 3-month.
+    tierDisclaimer(tierId, code) {
+        const c      = code || this.detect();
+        const cp     = this.PRICES[c] || this.PRICES.eur || {};
+        const t      = cp[tierId];
+        if (!t) return this.disclaimer(code);
+        const vat    = ['eur', 'gbp'].includes(c) ? ' (prices incl. VAT)' : '';
+        const suffix = 'Cancel via the app or email: aicompass.tech@gmail.com. See our Subscription Policy for details.';
+        if (tierId === '7_day') {
+            return `By clicking "GET MY PLAN", you agree to automatic subscription renewal. First week is ${t.discounted}, then ${t.original}/month${vat}. ${suffix}`;
+        }
+        if (tierId === '3_month') {
+            return `By clicking "GET MY PLAN", you agree to automatic subscription renewal. First 3 months are ${t.discounted}, then ${t.original} every 3 months${vat}. ${suffix}`;
+        }
+        return `By clicking "GET MY PLAN", you agree to automatic subscription renewal. First month is ${t.discounted}, then ${t.original}/month${vat}. ${suffix}`;
     },
 
     // Fetch live prices from /api/prices and populate PRICES/DISCLAIMERS/UPSELL_PRICES.
@@ -3737,8 +3755,8 @@ const Screens = {
                         ${Components.ctaButton(ctaText, safeId)}
                     </div>
 
-                    <!-- 8. Legal disclaimer — currency-aware, falls back to screens.json value -->
-                    ${Components.legalDisclaimer(Currency.disclaimer() || screenData.legalDisclaimer || '')}
+                    <!-- 8. Legal disclaimer — tier-aware, updates when user switches plan -->
+                    ${Components.legalDisclaimer(Currency.tierDisclaimer(selectedTierId) || screenData.legalDisclaimer || '')}
 
                     <!-- 9. Payment security + icons -->
                     ${screenData.trustElements?.paymentSecurity ?
@@ -3786,7 +3804,7 @@ const Screens = {
                             Components.personalizedHeadline(screenData.headline),
                             Components.promoTicket(promoCode, initialMins),
                             Components.contextTags(mainChallenge, goal),
-                            Components.legalDisclaimer(Currency.disclaimer() || screenData.legalDisclaimer || ''),
+                            Components.legalDisclaimer(Currency.tierDisclaimer(selectedTierId) || screenData.legalDisclaimer || ''),
                             screenData.trustElements?.paymentSecurity ?
                                 Components.paymentIcons(
                                     screenData.trustElements.paymentSecurity.headline,
@@ -5220,6 +5238,15 @@ const Events = {
             c.classList.toggle('pricing-card--selected', isSelected);
             const radio = c.querySelector('.pricing-card__radio');
             if (radio) radio.classList.toggle('pricing-card__radio--selected', isSelected);
+        });
+
+        // Update all legal disclaimer footers to match the selected tier
+        const disclaimerHtml = Components.legalDisclaimer(Currency.tierDisclaimer(tierId));
+        document.querySelectorAll('footer.legal').forEach(el => {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = disclaimerHtml;
+            const newEl = tmp.firstElementChild;
+            if (newEl) el.replaceWith(newEl);
         });
 
         // Re-prefetch PI for the newly selected tier so checkout stays instant
