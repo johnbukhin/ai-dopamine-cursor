@@ -57,6 +57,11 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
         const params = new URLSearchParams(hash);
         const hashAccessToken = params.get('access_token');
         const hashRefreshToken = params.get('refresh_token');
+        // Upsell flag — set by the funnel when the user purchased the AI Companion
+        // add-on. Written to localStorage here (webapp origin) so App.tsx can
+        // read mc_has_upsell synchronously in handleLogin before loadUserData
+        // completes its async Supabase check.
+        const hashHasUpsell = params.get('upsell') === '1';
 
         // Strip hash from URL immediately — tokens must not linger in browser history.
         // Preserve query params (utm/deep-link context).
@@ -73,6 +78,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             });
 
             if (!sessionError) {
+              if (hashHasUpsell) localStorage.setItem('mc_has_upsell', '1');
               onLogin();
               return;
             }

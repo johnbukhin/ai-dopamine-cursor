@@ -5045,9 +5045,14 @@ const Events = {
                     // Supabase session cross-origin (localStorage is scoped per origin and
                     // cannot be read by a different domain).
                     // The webapp reads, consumes, and strips the hash on mount.
+                    // Include upsell flag when the user purchased the AI Companion
+                    // add-on during this funnel session. The webapp reads &upsell=1
+                    // from the hash and writes mc_has_upsell to its own localStorage
+                    // so features are unlocked immediately on first load.
                     const hash = result.access_token && result.refresh_token
                         ? '#access_token=' + encodeURIComponent(result.access_token) +
-                          '&refresh_token=' + encodeURIComponent(result.refresh_token)
+                          '&refresh_token=' + encodeURIComponent(result.refresh_token) +
+                          (State.data.hasUpsell ? '&upsell=1' : '')
                         : '';
                     window.location.href = CONFIG.webappUrl + hash;
                     return;
