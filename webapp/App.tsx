@@ -408,7 +408,7 @@ export default function App() {
     // mount before Login.tsx wrote mc_has_upsell (cross-origin funnel redirect
     // path), so we must explicitly re-read the flag here. The loadUserData
     // Supabase check remains the authoritative validation fallback.
-    if (localStorage.getItem('mc_has_upsell') === '1') setHasUpsellAccess(true);
+    if (localStorage.getItem('mc_has_upsell') === '1') setUpsellAccess(true);
   };
 
   const handleLogout = async () => {
