@@ -37,7 +37,7 @@ const PRICE_LABEL_MAP = {
 // event within seconds). Only fires on initial subscription purchases, not
 // renewals, to avoid inflating Meta's purchase count.
 // ---------------------------------------------------------------------------
-async function fireCapiPurchase({ email, amountCents, currency, contentId }) {
+async function fireCapiPurchase({ email, amountCents, currency, contentId, eventId }) {
     const pixelId = process.env.META_PIXEL_ID;
     const token   = process.env.META_CAPI_TOKEN;
     if (!pixelId || !token) return;
@@ -50,6 +50,9 @@ async function fireCapiPurchase({ email, amountCents, currency, contentId }) {
         data: [{
             event_name:       'Purchase',
             event_time:       Math.floor(Date.now() / 1000),
+            // event_id lets Meta deduplicate this server event against the
+            // matching browser pixel Purchase (same event_name + event_id).
+            ...(eventId && { event_id: eventId }),
             action_source:    'website',
             event_source_url: 'https://ai-dopamine-addict.vercel.app/funnel-v2/',
             user_data: {
@@ -196,6 +199,8 @@ export default async function handler(req, res) {
             amountCents: invoice.amount_paid,
             currency:    invoice.currency,
             contentId:   planLabel || priceId || 'subscription',
+            // Must match the browser eventID: `purchase_${subscriptionId}` (app.js).
+            eventId:     `purchase_${subscriptionId}`,
         });
     }
 
@@ -234,11 +239,14 @@ async function handleUpsellPayment(pi, res) {
         console.error('[webhook] Unexpected error in handleUpsellPayment:', err.message);
     }
 
+    // Upsell fires only server-side (no browser Purchase), so a unique
+    // event_id is enough to prevent double-counting on webhook retries.
     await fireCapiPurchase({
         email:       pi.metadata?.user_email,
         amountCents: pi.amount,
         currency:    pi.currency,
         contentId:   'ai_companion',
+        eventId:     `purchase_${pi.id}`,
     });
 
     return res.status(200).json({ received: true });

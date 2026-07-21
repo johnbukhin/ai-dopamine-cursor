@@ -46,8 +46,12 @@ const MetaPixel = {
         return parseFloat(raw.replace(/[^0-9.]/g, '')) || 14.99;
     },
 
-    track(event, params) {
-        if (typeof fbq === 'function') fbq('track', event, params);
+    // eventId (optional) sets fbq's eventID so this browser event can be
+    // deduplicated against the matching server-side CAPI event.
+    track(event, params, eventId) {
+        if (typeof fbq !== 'function') return;
+        if (eventId) fbq('track', event, params, { eventID: eventId });
+        else fbq('track', event, params);
     },
 
     viewContent() {
@@ -67,13 +71,16 @@ const MetaPixel = {
         });
     },
 
-    purchase(tierId, currency) {
+    // subscriptionId, when provided, produces a deterministic eventID shared
+    // with the server-side CAPI Purchase (webhook.js) so Meta dedupes the two.
+    purchase(tierId, currency, subscriptionId) {
+        const eventId = subscriptionId ? `purchase_${subscriptionId}` : undefined;
         this.track('Purchase', {
             value:        this._getValue(tierId, currency),
             currency:     (currency || 'USD').toUpperCase(),
             content_ids:  [tierId],
             content_type: 'product',
-        });
+        }, eventId);
     },
 };
 
@@ -5618,7 +5625,9 @@ const App = {
                     // Payment succeeded — store currency so the upsell screen can charge
                     // in the same currency without re-detecting.
                     State.set('checkoutCurrency', currency);
-                    MetaPixel.purchase(State.data.selectedTier, currency);
+                    // Pass subscriptionId so the browser Purchase shares an eventID
+                    // with the server CAPI Purchase (webhook.js) for deduplication.
+                    MetaPixel.purchase(State.data.selectedTier, currency, data.subscriptionId);
                     log.info('[Checkout] Payment confirmed — provisioning Supabase account');
 
                     // Fire-and-forget provision: create the auth user + profile immediately
