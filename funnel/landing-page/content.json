@@ -20,11 +20,24 @@
     "rating": "4.8",
     "ratingLabel": "average rating",
     "stats": [
-      { "value": "200,000+", "label": "people rebuilding their habits" },
-      { "value": "83%", "label": "report better control within 6 weeks" },
-      { "value": "30-day", "label": "money-back guarantee" }
+      {
+        "value": "200,000+",
+        "label": "people rebuilding their habits"
+      },
+      {
+        "value": "83%",
+        "label": "report better control within 6 weeks"
+      },
+      {
+        "value": "30-day",
+        "label": "money-back guarantee"
+      }
     ],
-    "featuredIn": ["Grounded in neuroscience", "Built on CBT", "WHO-recognized condition"]
+    "featuredIn": [
+      "Grounded in neuroscience",
+      "Built on CBT",
+      "WHO-recognized condition"
+    ]
   },
   "problem": {
     "eyebrow": "You're not broken",
@@ -62,34 +75,90 @@
     "eyebrow": "Everything you need to quit",
     "headline": "Your complete recovery toolkit",
     "items": [
-      { "icon": "🧭", "title": "Personalized plan", "body": "A recovery plan built around your triggers, goals and pace — not a one-size-fits-all program." },
-      { "icon": "🆘", "title": "Urge button", "body": "One tap when a craving hits turns the automatic impulse into a conscious choice, with a science-backed way through it." },
-      { "icon": "🔥", "title": "Streak tracking", "body": "Watch your progress build day by day. Visible momentum is one of the strongest reasons people don't relapse." },
-      { "icon": "🧠", "title": "CBT lessons", "body": "Bite-sized, evidence-based lessons that retrain the thoughts and habits keeping you stuck." },
-      { "icon": "💬", "title": "AI recovery coach", "body": "Judgment-free support any time you need it — no waitlist, no appointment, no awkward conversation." },
-      { "icon": "📈", "title": "Progress insights", "body": "Clear analytics reveal your patterns and prove how far you've come, so you stay motivated." }
+      {
+        "icon": "🧭",
+        "title": "Personalized plan",
+        "body": "A recovery plan built around your triggers, goals and pace — not a one-size-fits-all program."
+      },
+      {
+        "icon": "🆘",
+        "title": "Urge button",
+        "body": "One tap when a craving hits turns the automatic impulse into a conscious choice, with a science-backed way through it."
+      },
+      {
+        "icon": "🔥",
+        "title": "Streak tracking",
+        "body": "Watch your progress build day by day. Visible momentum is one of the strongest reasons people don't relapse."
+      },
+      {
+        "icon": "🧠",
+        "title": "CBT lessons",
+        "body": "Bite-sized, evidence-based lessons that retrain the thoughts and habits keeping you stuck."
+      },
+      {
+        "icon": "💬",
+        "title": "AI recovery coach",
+        "body": "Judgment-free support any time you need it — no waitlist, no appointment, no awkward conversation."
+      },
+      {
+        "icon": "📈",
+        "title": "Progress insights",
+        "body": "Clear analytics reveal your patterns and prove how far you've come, so you stay motivated."
+      }
     ]
   },
-  "beforeAfter": {
-    "eyebrow": "Where this takes you",
-    "headline": "From hijacked to in control",
-    "nowLabel": "Now",
-    "goalLabel": "Your goal",
-    "metrics": [
-      { "label": "Dopamine system", "nowState": "Dysregulated", "goalState": "Balanced", "nowFill": 0.2, "goalFill": 0.9 },
-      { "label": "Self-control", "nowState": "Hijacked", "goalState": "Restored", "nowFill": 0.2, "goalFill": 0.9 },
-      { "label": "Mental clarity", "nowState": "Foggy", "goalState": "Sharp", "nowFill": 0.25, "goalFill": 0.9 },
-      { "label": "Energy & drive", "nowState": "Drained", "goalState": "Recharged", "nowFill": 0.3, "goalFill": 0.85 }
-    ]
+  "loop": {
+    "eyebrow": "Why willpower alone keeps failing",
+    "headline": "The loop that keeps you stuck",
+    "intro": "Compulsive use isn't a character flaw — it's a loop your brain runs on autopilot. Once you can see it, you can start to break it.",
+    "stages": [
+      {
+        "icon": "⚡",
+        "title": "Trigger",
+        "body": "Stress, boredom, loneliness or a late-night scroll. Your brain flags an easy escape."
+      },
+      {
+        "icon": "🔥",
+        "title": "Craving",
+        "body": "Dopamine spikes in anticipation. The urge suddenly feels louder than any plan."
+      },
+      {
+        "icon": "🌀",
+        "title": "The binge",
+        "body": "You give in — a flood of stimulation your brain was never built to handle."
+      },
+      {
+        "icon": "🌫️",
+        "title": "The crash",
+        "body": "Guilt, low mood and foggy focus set in… which quietly becomes the next trigger."
+      }
+    ],
+    "loopNote": "…and round it goes again",
+    "breakout": {
+      "label": "Where Mind Compass cuts in",
+      "body": "Right between the craving and the binge, your urge button and in-the-moment plan open a gap. Use it once and you get through the wave. Use it again and again, and the loop itself gets weaker — until staying in control becomes your default."
+    }
   },
   "whoItHelps": {
     "eyebrow": "Who it's for",
     "headline": "If any of this sounds familiar, you're exactly who we built this for",
     "personas": [
-      { "title": "The relapse cycle", "body": "You've tried to quit on willpower alone and keep landing back where you started. You need a method, not more shame." },
-      { "title": "The focus seeker", "body": "You feel foggy and unmotivated and suspect your habits are quietly draining your drive. You want your edge back." },
-      { "title": "The partner", "body": "It's affecting your relationship and real intimacy. You want to be present with the person you love again." },
-      { "title": "The high performer", "body": "Things look fine on the outside, but the private habit is costing you energy, confidence and time you'll never get back." }
+      {
+        "title": "The relapse cycle",
+        "body": "You've tried to quit on willpower alone and keep landing back where you started. You need a method, not more shame."
+      },
+      {
+        "title": "The focus seeker",
+        "body": "You feel foggy and unmotivated and suspect your habits are quietly draining your drive. You want your edge back."
+      },
+      {
+        "title": "The partner",
+        "body": "It's affecting your relationship and real intimacy. You want to be present with the person you love again."
+      },
+      {
+        "title": "The high performer",
+        "body": "Things look fine on the outside, but the private habit is costing you energy, confidence and time you'll never get back."
+      }
     ]
   },
   "expectations": {
@@ -97,25 +166,94 @@
     "headline": "Real change, on a realistic timeline",
     "body": "We won't promise a magic 21-day fix. Research suggests new habits take on average around two months to stick — so Mind Compass is built for durable change, with early wins along the way.",
     "timeline": [
-      { "when": "Week 1", "what": "Your first wins. You learn your triggers and get an in-the-moment plan for cravings." },
-      { "when": "Weeks 2–4", "what": "Urges lose their grip. New routines start replacing the old automatic reach." },
-      { "when": "Weeks 6+", "what": "Many people report better control, clearer focus and more energy as the new pattern sets in." }
+      {
+        "when": "Week 1",
+        "what": "Your first wins. You learn your triggers and get an in-the-moment plan for cravings."
+      },
+      {
+        "when": "Weeks 2–4",
+        "what": "Urges lose their grip. New routines start replacing the old automatic reach."
+      },
+      {
+        "when": "Weeks 6+",
+        "what": "Many people report better control, clearer focus and more energy as the new pattern sets in."
+      }
     ]
   },
   "testimonials": {
     "eyebrow": "Real stories",
     "headline": "People just like you, taking back control",
     "items": [
-      { "rating": 5, "title": "Finally something that sticks", "content": "Concise and easy — exactly what you need when you're trying to break a dopamine habit. It's the first thing that's actually helped me stay consistent.", "author": "skrupert", "handle": "@skrupert" },
-      { "rating": 5, "title": "Got my focus back", "content": "Before this I procrastinated for hours every day. Now I finally feel like I'm breaking away from the compulsive habit — and my head is so much clearer.", "author": "qzi", "handle": "@qzi" },
-      { "rating": 5, "title": "Like a coach in my pocket", "content": "Mind Compass is like a personal wellbeing coach. Everything's in one place and it makes you think twice before ruining your progress.", "author": "Paul Vizer", "handle": "@Paul Vizer" },
-      { "rating": 5, "title": "90 days and counting", "content": "I never made it past a weekend before. The streak tracker turned quitting into something I actually look forward to protecting each morning.", "author": "mattr", "handle": "@mattr" },
-      { "rating": 5, "title": "The urge button actually works", "content": "When a craving hits I tap the button and follow the steps instead of reaching for my phone. That one pause has saved me more times than I can count.", "author": "dev_null", "handle": "@dev_null" },
-      { "rating": 5, "title": "My relationship came back", "content": "I didn't realize how checked-out I'd become until I stopped. Being fully present with my partner again is worth more than anything I paid for this.", "author": "J. Rivera", "handle": "@jrivera" },
-      { "rating": 5, "title": "No more shame spiral", "content": "The biggest shift was learning I'm not broken. Once the shame lifted, the urges got so much easier to sit with and let pass.", "author": "quietstorm", "handle": "@quietstorm" },
-      { "rating": 5, "title": "Energy I forgot I had", "content": "Two weeks in and I'm waking up motivated instead of foggy. The daily lessons are short enough that I actually keep up with them.", "author": "t_okafor", "handle": "@t_okafor" },
-      { "rating": 5, "title": "Private and judgment-free", "content": "Nothing about the app announces what it's for, and there's zero lecturing. It just quietly helps. That's exactly what I needed.", "author": "anon_user", "handle": "@anon_user" },
-      { "rating": 5, "title": "Wish I'd found this sooner", "content": "I'd tried blockers and cold turkey for years. Having an actual plan built around my triggers is the difference between hoping and knowing it'll work.", "author": "Sam K.", "handle": "@samk" }
+      {
+        "rating": 5,
+        "title": "Finally something that sticks",
+        "content": "Concise and easy — exactly what you need when you're trying to break a dopamine habit. It's the first thing that's actually helped me stay consistent.",
+        "author": "skrupert",
+        "handle": "@skrupert"
+      },
+      {
+        "rating": 5,
+        "title": "Got my focus back",
+        "content": "Before this I procrastinated for hours every day. Now I finally feel like I'm breaking away from the compulsive habit — and my head is so much clearer.",
+        "author": "qzi",
+        "handle": "@qzi"
+      },
+      {
+        "rating": 5,
+        "title": "Like a coach in my pocket",
+        "content": "Mind Compass is like a personal wellbeing coach. Everything's in one place and it makes you think twice before ruining your progress.",
+        "author": "Paul Vizer",
+        "handle": "@Paul Vizer"
+      },
+      {
+        "rating": 5,
+        "title": "90 days and counting",
+        "content": "I never made it past a weekend before. The streak tracker turned quitting into something I actually look forward to protecting each morning.",
+        "author": "mattr",
+        "handle": "@mattr"
+      },
+      {
+        "rating": 5,
+        "title": "The urge button actually works",
+        "content": "When a craving hits I tap the button and follow the steps instead of reaching for my phone. That one pause has saved me more times than I can count.",
+        "author": "dev_null",
+        "handle": "@dev_null"
+      },
+      {
+        "rating": 5,
+        "title": "My relationship came back",
+        "content": "I didn't realize how checked-out I'd become until I stopped. Being fully present with my partner again is worth more than anything I paid for this.",
+        "author": "J. Rivera",
+        "handle": "@jrivera"
+      },
+      {
+        "rating": 5,
+        "title": "No more shame spiral",
+        "content": "The biggest shift was learning I'm not broken. Once the shame lifted, the urges got so much easier to sit with and let pass.",
+        "author": "quietstorm",
+        "handle": "@quietstorm"
+      },
+      {
+        "rating": 5,
+        "title": "Energy I forgot I had",
+        "content": "Two weeks in and I'm waking up motivated instead of foggy. The daily lessons are short enough that I actually keep up with them.",
+        "author": "t_okafor",
+        "handle": "@t_okafor"
+      },
+      {
+        "rating": 5,
+        "title": "Private and judgment-free",
+        "content": "Nothing about the app announces what it's for, and there's zero lecturing. It just quietly helps. That's exactly what I needed.",
+        "author": "anon_user",
+        "handle": "@anon_user"
+      },
+      {
+        "rating": 5,
+        "title": "Wish I'd found this sooner",
+        "content": "I'd tried blockers and cold turkey for years. Having an actual plan built around my triggers is the difference between hoping and knowing it'll work.",
+        "author": "Sam K.",
+        "handle": "@samk"
+      }
     ]
   },
   "science": {
@@ -123,10 +261,26 @@
     "headline": "Built on real science — not hype",
     "body": "Mind Compass uses methods drawn from neuroscience and cognitive behavioral therapy, the same principles clinicians use to help people change compulsive behavior.",
     "points": [
-      { "claim": "Your brain adapts — and can re-adapt", "detail": "Brain-imaging studies show compulsive sexual behavior involves reward and cue-reactivity patterns similar to other addictions.", "source": "Voon et al., PLoS ONE (2014)" },
-      { "claim": "A recognized condition", "detail": "Compulsive sexual behavior is recognized by the World Health Organization in the ICD-11 — you're dealing with something real.", "source": "WHO ICD-11 (6C72)" },
-      { "claim": "CBT is proven for compulsive behavior", "detail": "Cognitive behavioral therapy is one of the most evidence-based approaches for changing compulsive habits.", "source": "Antons et al., J. Behavioral Addictions (2022)" },
-      { "claim": "Lasting change takes ~66 days", "detail": "Habits become automatic in about two months on average — which is why a steady, guided plan beats a willpower sprint.", "source": "Lally et al., Eur. J. Social Psychology (2010)" }
+      {
+        "claim": "Your brain adapts — and can re-adapt",
+        "detail": "Brain-imaging studies show compulsive sexual behavior involves reward and cue-reactivity patterns similar to other addictions.",
+        "source": "Voon et al., PLoS ONE (2014)"
+      },
+      {
+        "claim": "A recognized condition",
+        "detail": "Compulsive sexual behavior is recognized by the World Health Organization in the ICD-11 — you're dealing with something real.",
+        "source": "WHO ICD-11 (6C72)"
+      },
+      {
+        "claim": "CBT is proven for compulsive behavior",
+        "detail": "Cognitive behavioral therapy is one of the most evidence-based approaches for changing compulsive habits.",
+        "source": "Antons et al., J. Behavioral Addictions (2022)"
+      },
+      {
+        "claim": "Lasting change takes ~66 days",
+        "detail": "Habits become automatic in about two months on average — which is why a steady, guided plan beats a willpower sprint.",
+        "source": "Lally et al., Eur. J. Social Psychology (2010)"
+      }
     ],
     "disclaimer": "Mind Compass is a self-improvement and educational program, not a medical device or a substitute for professional care. Individual results vary."
   },
@@ -136,9 +290,34 @@
     "subheadline": "Your personalized recovery plan is ready. Pick the option that fits you — every plan is backed by our 30-day money-back guarantee.",
     "cta": "Get my plan",
     "tiers": [
-      { "id": "7_day",   "name": "7-DAY PLAN",   "originalPrice": "€49.99", "discountedPrice": "€10.50", "pricePerDay": "€1.50/day", "recommended": false, "savings": "79% OFF" },
-      { "id": "1_month", "name": "1-MONTH PLAN", "badge": "MOST POPULAR", "originalPrice": "€49.99", "discountedPrice": "€19.99", "pricePerDay": "€0.66/day", "recommended": true, "savings": "60% OFF" },
-      { "id": "3_month", "name": "3-MONTH PLAN", "originalPrice": "€99.99", "discountedPrice": "€34.99", "pricePerDay": "€0.38/day", "recommended": false, "savings": "65% OFF" }
+      {
+        "id": "7_day",
+        "name": "7-DAY PLAN",
+        "originalPrice": "€49.99",
+        "discountedPrice": "€10.50",
+        "pricePerDay": "€1.50/day",
+        "recommended": false,
+        "savings": "79% OFF"
+      },
+      {
+        "id": "1_month",
+        "name": "1-MONTH PLAN",
+        "badge": "MOST POPULAR",
+        "originalPrice": "€49.99",
+        "discountedPrice": "€19.99",
+        "pricePerDay": "€0.66/day",
+        "recommended": true,
+        "savings": "60% OFF"
+      },
+      {
+        "id": "3_month",
+        "name": "3-MONTH PLAN",
+        "originalPrice": "€99.99",
+        "discountedPrice": "€34.99",
+        "pricePerDay": "€0.38/day",
+        "recommended": false,
+        "savings": "65% OFF"
+      }
     ],
     "goalsList": [
       "Build a healthier relationship with sexual desire",
@@ -167,17 +346,40 @@
   },
   "paymentSecurity": {
     "headline": "Pay safe & secure",
-    "icons": ["PayPal", "Apple Pay", "Visa", "Mastercard", "Maestro", "Discover", "Amex"]
+    "icons": [
+      "PayPal",
+      "Apple Pay",
+      "Visa",
+      "Mastercard",
+      "Maestro",
+      "Discover",
+      "Amex"
+    ]
   },
   "faq": {
     "eyebrow": "Questions?",
     "headline": "People often ask",
     "questions": [
-      { "question": "What if my willpower is gone? I've tried to quit before and failed.", "answer": "This plan isn't another test of willpower. It teaches you the skills to manage urges and rebuild your brain's reward system from the ground up, building new patterns gradually so you don't have to rely on willpower alone." },
-      { "question": "Is this really private?", "answer": "Yes. Mind Compass is built to be discreet and judgment-free. Your data is private and secure, and nothing about your account announces what it's for." },
-      { "question": "What if my triggers are everywhere and I can't escape them?", "answer": "The goal isn't to eliminate triggers — it's to take away their power. You'll learn practical, in-the-moment strategies to spot triggers, ride out cravings and redirect your focus without feeling overwhelmed." },
-      { "question": "How is this different from just using a blocker app?", "answer": "Blockers fight the symptom. Mind Compass addresses the cause — retraining the reward system and thought patterns behind the habit — with a personalized plan, CBT lessons, an urge button and progress tracking." },
-      { "question": "What if it doesn't work for me?", "answer": "Every plan is backed by a 30-day money-back guarantee. Follow your plan as directed and if you don't see visible progress, we'll refund you in full." }
+      {
+        "question": "What if my willpower is gone? I've tried to quit before and failed.",
+        "answer": "This plan isn't another test of willpower. It teaches you the skills to manage urges and rebuild your brain's reward system from the ground up, building new patterns gradually so you don't have to rely on willpower alone."
+      },
+      {
+        "question": "Is this really private?",
+        "answer": "Yes. Mind Compass is built to be discreet and judgment-free. Your data is private and secure, and nothing about your account announces what it's for."
+      },
+      {
+        "question": "What if my triggers are everywhere and I can't escape them?",
+        "answer": "The goal isn't to eliminate triggers — it's to take away their power. You'll learn practical, in-the-moment strategies to spot triggers, ride out cravings and redirect your focus without feeling overwhelmed."
+      },
+      {
+        "question": "How is this different from just using a blocker app?",
+        "answer": "Blockers fight the symptom. Mind Compass addresses the cause — retraining the reward system and thought patterns behind the habit — with a personalized plan, CBT lessons, an urge button and progress tracking."
+      },
+      {
+        "question": "What if it doesn't work for me?",
+        "answer": "Every plan is backed by a 30-day money-back guarantee. Follow your plan as directed and if you don't see visible progress, we'll refund you in full."
+      }
     ]
   },
   "finalCta": {
@@ -189,10 +391,22 @@
     "company": "Mind Compass",
     "supportEmail": "aicompass.tech@gmail.com",
     "links": [
-      { "label": "Terms of Use", "href": "/legal/terms-of-use.html" },
-      { "label": "Privacy Policy", "href": "/legal/privacy-policy.html" },
-      { "label": "Subscription Policy", "href": "/legal/subscription-policy.html" },
-      { "label": "Cookie Policy", "href": "/legal/cookie-policy.html" }
+      {
+        "label": "Terms of Use",
+        "href": "/legal/terms-of-use.html"
+      },
+      {
+        "label": "Privacy Policy",
+        "href": "/legal/privacy-policy.html"
+      },
+      {
+        "label": "Subscription Policy",
+        "href": "/legal/subscription-policy.html"
+      },
+      {
+        "label": "Cookie Policy",
+        "href": "/legal/cookie-policy.html"
+      }
     ]
   }
 }

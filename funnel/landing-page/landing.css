@@ -305,26 +305,60 @@ a { color: inherit; }
 .feature__body { color: var(--color-text-secondary); margin: 0; }
 
 /* ============================================================================
-   BEFORE / AFTER
+   THE LOOP (schematic of the addiction cycle)
    ============================================================================ */
-.beforeafter__grid { display: grid; gap: 16px; }
-.ba-metric {
-  background: var(--color-background);
+.loop__intro { max-width: 620px; margin: 12px auto 0; color: var(--color-text-secondary); }
+.loop__cycle {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 32px;
+}
+.loop__stage {
+  flex: 1;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
 }
-.ba-metric__label { font-weight: 700; margin-bottom: 12px; }
-.ba-metric__row { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; margin-bottom: 8px; }
-.ba-metric__row:last-child { margin-bottom: 0; }
-.ba-metric__tag { font-size: 12px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.ba-bar { height: 10px; border-radius: var(--radius-pill); background: var(--color-border); overflow: hidden; }
-.ba-bar__fill { height: 100%; border-radius: var(--radius-pill); width: 0; transition: width 1s cubic-bezier(0.22, 1, 0.36, 1); }
-.ba-bar__fill--now { background: var(--color-danger); }
-.ba-bar__fill--goal { background: var(--color-success); }
-.ba-metric__state { font-size: 13px; font-weight: 600; min-width: 84px; text-align: right; }
-.ba-metric__state--now { color: var(--color-danger); }
-.ba-metric__state--goal { color: var(--color-success); }
+.loop__icon { font-size: 30px; line-height: 1; margin-bottom: 10px; }
+.loop__stage-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.loop__stage-body { color: var(--color-text-secondary); font-size: 14px; margin: 0; }
+.loop__arrow {
+  align-self: center;
+  color: var(--color-text-muted);
+  font-size: 24px;
+  line-height: 1;
+  transform: rotate(90deg); /* mobile: flow points down */
+}
+.loop__return {
+  text-align: center;
+  margin-top: 16px;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+.loop__return-icon { font-size: 18px; }
+.loop__break {
+  margin-top: 24px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+}
+.loop__break-label {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+.loop__break-body { margin: 0; color: var(--color-text-primary); max-width: 640px; margin-inline: auto; }
 
 /* ============================================================================
    WHO IT HELPS
@@ -377,28 +411,33 @@ a { color: inherit; }
 /* ============================================================================
    TESTIMONIALS
    ============================================================================ */
-/* Continuous auto-scrolling carousel (left → right, infinite loop). */
+/* Never-ending carousel. A native horizontal scroll container (so users can
+   swipe/flick at their own pace on any device — same horizontal layout on
+   mobile and desktop) that landing.js also auto-advances smoothly and wraps
+   seamlessly by rendering the full set twice. */
 .testimonials__marquee {
-  overflow: hidden;
   margin-top: 32px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x; /* let vertical gestures scroll the page, not the strip */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
   /* Fade the edges so cards slide in/out gracefully instead of hard-clipping. */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
+.testimonials__marquee::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 .testimonials__track {
   display: flex;
+  align-items: stretch; /* every card same height */
   gap: 16px;
   width: max-content;
-  animation: testimonials-scroll 60s linear infinite;
-  will-change: transform;
-}
-.testimonials__marquee:hover .testimonials__track { animation-play-state: paused; }
-@keyframes testimonials-scroll {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
 }
 .testimonial {
   flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -408,7 +447,7 @@ a { color: inherit; }
 .testimonial__stars { color: var(--color-star); letter-spacing: 2px; margin-bottom: 10px; }
 .testimonial__title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
 .testimonial__content { color: var(--color-text-secondary); margin-bottom: 14px; }
-.testimonial__author { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.testimonial__author { display: flex; align-items: center; gap: 10px; font-size: 14px; margin-top: auto; }
 .testimonial__avatar {
   width: 34px; height: 34px; border-radius: 50%;
   background: var(--color-primary); color: #fff;
@@ -732,7 +771,8 @@ a { color: inherit; }
 
   .how__steps { grid-template-columns: repeat(3, 1fr); }
   .features__grid { grid-template-columns: repeat(3, 1fr); }
-  .beforeafter__grid { grid-template-columns: repeat(2, 1fr); }
+  .loop__cycle { flex-direction: row; align-items: stretch; gap: 8px; }
+  .loop__arrow { transform: none; } /* desktop: flow points right */
   .personas__grid { grid-template-columns: repeat(2, 1fr); }
   .testimonial { flex-basis: 340px; }
   .science__grid { grid-template-columns: repeat(2, 1fr); }
@@ -754,8 +794,6 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .ba-bar__fill { transition: none; }
-  /* Stop auto-scroll; let users swipe through the cards manually instead. */
-  .testimonials__track { animation: none; }
-  .testimonials__marquee { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* Carousel auto-scroll is paused in JS under reduced-motion; users can still
+     swipe the cards manually since the track is a native scroll container. */
 }

@@ -270,28 +270,28 @@
       </div>`;
   }
 
-  function renderBeforeAfter(c) {
-    el('before-after').innerHTML = `
+  function renderLoop(c) {
+    // Schematic of the addiction loop — arrows point down on mobile, right on
+    // desktop (CSS-rotated). Rendered between stages so the cycle reads clearly.
+    const stages = c.stages.map((s, i) => `
+      ${i > 0 ? '<div class="loop__arrow" aria-hidden="true">→</div>' : ''}
+      <div class="loop__stage">
+        <div class="loop__icon" aria-hidden="true">${esc(s.icon)}</div>
+        <h3 class="loop__stage-title">${esc(s.title)}</h3>
+        <p class="loop__stage-body">${esc(s.body)}</p>
+      </div>`).join('');
+    el('the-loop').innerHTML = `
       <div class="container">
         <div class="section__head section__head--center reveal">
           <span class="section__eyebrow">${esc(c.eyebrow)}</span>
           <h2 class="section__title">${esc(c.headline)}</h2>
+          ${c.intro ? `<p class="loop__intro">${esc(c.intro)}</p>` : ''}
         </div>
-        <div class="beforeafter__grid">
-          ${c.metrics.map((m) => `
-            <div class="ba-metric reveal">
-              <div class="ba-metric__label">${esc(m.label)}</div>
-              <div class="ba-metric__row">
-                <span class="ba-metric__tag">${esc(c.nowLabel)}</span>
-                <div class="ba-bar"><div class="ba-bar__fill ba-bar__fill--now" data-fill="${m.nowFill}"></div></div>
-                <span class="ba-metric__state ba-metric__state--now">${esc(m.nowState)}</span>
-              </div>
-              <div class="ba-metric__row">
-                <span class="ba-metric__tag">${esc(c.goalLabel)}</span>
-                <div class="ba-bar"><div class="ba-bar__fill ba-bar__fill--goal" data-fill="${m.goalFill}"></div></div>
-                <span class="ba-metric__state ba-metric__state--goal">${esc(m.goalState)}</span>
-              </div>
-            </div>`).join('')}
+        <div class="loop__cycle reveal">${stages}</div>
+        ${c.loopNote ? `<div class="loop__return reveal"><span class="loop__return-icon" aria-hidden="true">↻</span> ${esc(c.loopNote)}</div>` : ''}
+        <div class="loop__break reveal">
+          <span class="loop__break-label">${esc(c.breakout.label)}</span>
+          <p class="loop__break-body">${esc(c.breakout.body)}</p>
         </div>
       </div>`;
   }
@@ -346,6 +346,8 @@
           <span class="testimonial__handle">${esc(t.handle)}</span>
         </div>
       </div>`;
+    // Three identical sets: the carousel lives in the middle one, so a hard
+    // swipe in either direction still lands on real cards before we wrap.
     const set = (dup) => c.items.map((t) => card(t, dup)).join('');
     el('testimonials').innerHTML = `
       <div class="container">
@@ -355,7 +357,7 @@
         </div>
       </div>
       <div class="testimonials__marquee reveal">
-        <div class="testimonials__track">${set(false)}${set(true)}</div>
+        <div class="testimonials__track">${set(false)}${set(true)}${set(true)}</div>
       </div>`;
   }
 
@@ -795,22 +797,77 @@
     onScroll();
   }
 
-  // Scroll reveal + before/after bar fill animation.
+  // Scroll reveal.
   function wireReveal() {
     if (!('IntersectionObserver' in window)) {
       document.querySelectorAll('.reveal').forEach((n) => n.classList.add('reveal--in'));
-      document.querySelectorAll('.ba-bar__fill').forEach((f) => { f.style.width = (f.dataset.fill * 100) + '%'; });
       return;
     }
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('reveal--in');
-        entry.target.querySelectorAll?.('.ba-bar__fill').forEach((f) => { f.style.width = (f.dataset.fill * 100) + '%'; });
         obs.unobserve(entry.target);
       });
     }, { threshold: 0.15 });
     document.querySelectorAll('.reveal').forEach((n) => obs.observe(n));
+  }
+
+  // Never-ending testimonials carousel.
+  // The track is a native horizontal scroll container (so the user can flick it
+  // faster/slower at will), which we also auto-advance a fraction of a pixel per
+  // frame. Content is rendered in 3 identical sets, so we can always wrap by one
+  // set-width — a shift the eye can't see because the cards line up exactly.
+  function initTestimonialsCarousel() {
+    const marquee = document.querySelector('.testimonials__marquee');
+    const track = marquee && marquee.querySelector('.testimonials__track');
+    if (!marquee || !track) return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SPEED = 0.5;      // px per frame — gentle, gradual left → right drift
+    const RESUME_MS = 1000; // let the user's flick fully settle before resuming
+
+    let setW = track.scrollWidth / 3; // width of one of the three sets
+    let pos = setW;                   // start in the middle set
+    let hovering = false;
+    let lastInteract = -Infinity;
+
+    // Keep the position inside the middle set; ± one set-width is seamless.
+    const wrap = (x) => {
+      if (setW <= 0) return x;
+      if (x < setW) return x + setW;
+      if (x >= setW * 2) return x - setW;
+      return x;
+    };
+
+    marquee.scrollLeft = pos;
+
+    const remeasure = () => { setW = track.scrollWidth / 3; };
+    window.addEventListener('resize', remeasure);
+    window.addEventListener('load', remeasure);
+
+    // Desktop: pause auto-advance while the pointer is over the strip.
+    marquee.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovering = true; });
+    marquee.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hovering = false; });
+
+    // Any real input (touch drag, mouse drag, wheel) takes over the pace.
+    const mark = () => { lastInteract = performance.now(); };
+    marquee.addEventListener('pointerdown', mark);
+    marquee.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse' || e.buttons) mark(); });
+    marquee.addEventListener('touchstart', mark, { passive: true });
+    marquee.addEventListener('touchmove', mark, { passive: true });
+    marquee.addEventListener('wheel', mark, { passive: true });
+
+    function frame() {
+      if (!reduce && !hovering && performance.now() - lastInteract >= RESUME_MS) {
+        pos = wrap(pos - SPEED);
+        marquee.scrollLeft = pos;
+      } else {
+        pos = marquee.scrollLeft; // follow wherever the user left it
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
   // =========================================================================
@@ -832,7 +889,7 @@
     renderProblem(CONTENT.problem);
     renderHow(CONTENT.howItWorks);
     renderFeatures(CONTENT.features);
-    renderBeforeAfter(CONTENT.beforeAfter);
+    renderLoop(CONTENT.loop);
     renderPersonas(CONTENT.whoItHelps);
     renderExpectations(CONTENT.expectations);
     renderTestimonials(CONTENT.testimonials);
@@ -846,6 +903,7 @@
     wireInteractions();
     wireStickyCta();
     wireReveal();
+    initTestimonialsCarousel();
     updateStickyPrice();
 
     // Live pricing — overwrite the static EUR fallback once loaded.
