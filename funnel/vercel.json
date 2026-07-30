@@ -2,7 +2,12 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/funnel-v2/",
+      "destination": "/landing-page/",
+      "permanent": false
+    },
+    {
+      "source": "/landing-page",
+      "destination": "/landing-page/",
       "permanent": false
     },
     {

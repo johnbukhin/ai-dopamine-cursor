@@ -62,6 +62,15 @@ else
   fail_critical "Funnel page — status=$FUNNEL_STATUS title=$FUNNEL_TITLE"
 fi
 
+# Landing page (second acquisition channel; homepage at / redirects here)
+LANDING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$FUNNEL_URL/landing-page/")
+LANDING_TITLE=$(curl -s "$FUNNEL_URL/landing-page/" | grep -o '<title>[^<]*</title>')
+if [ "$LANDING_STATUS" = "200" ] && echo "$LANDING_TITLE" | grep -q "Mind Compass"; then
+  pass "Landing page loads (HTTP 200, title contains 'Mind Compass')"
+else
+  fail_critical "Landing page — status=$LANDING_STATUS title=$LANDING_TITLE"
+fi
+
 WEBAPP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBAPP_URL/")
 if [ "$WEBAPP_STATUS" = "200" ]; then
   pass "Webapp page loads (HTTP 200)"
