@@ -333,25 +333,29 @@
   }
 
   function renderTestimonials(c) {
+    // Build one card; the track renders the full set twice so the CSS marquee
+    // can loop seamlessly (translate by -50% lands the copy exactly on the original).
+    const card = (t, dup) => `
+      <div class="testimonial"${dup ? ' aria-hidden="true"' : ''}>
+        <div class="testimonial__stars" aria-label="${t.rating} out of 5">${starRow(t.rating)}</div>
+        <h3 class="testimonial__title">${esc(t.title)}</h3>
+        <p class="testimonial__content">${esc(t.content)}</p>
+        <div class="testimonial__author">
+          <span class="testimonial__avatar">${esc((t.author || '?').charAt(0).toUpperCase())}</span>
+          <span class="testimonial__name">${esc(t.author)}</span>
+          <span class="testimonial__handle">${esc(t.handle)}</span>
+        </div>
+      </div>`;
+    const set = (dup) => c.items.map((t) => card(t, dup)).join('');
     el('testimonials').innerHTML = `
       <div class="container">
         <div class="section__head section__head--center reveal">
           <span class="section__eyebrow">${esc(c.eyebrow)}</span>
           <h2 class="section__title">${esc(c.headline)}</h2>
         </div>
-        <div class="testimonials__grid">
-          ${c.items.map((t) => `
-            <div class="testimonial reveal">
-              <div class="testimonial__stars" aria-label="${t.rating} out of 5">${starRow(t.rating)}</div>
-              <h3 class="testimonial__title">${esc(t.title)}</h3>
-              <p class="testimonial__content">${esc(t.content)}</p>
-              <div class="testimonial__author">
-                <span class="testimonial__avatar">${esc((t.author || '?').charAt(0).toUpperCase())}</span>
-                <span class="testimonial__name">${esc(t.author)}</span>
-                <span class="testimonial__handle">${esc(t.handle)}</span>
-              </div>
-            </div>`).join('')}
-        </div>
+      </div>
+      <div class="testimonials__marquee reveal">
+        <div class="testimonials__track">${set(false)}${set(true)}</div>
       </div>`;
   }
 

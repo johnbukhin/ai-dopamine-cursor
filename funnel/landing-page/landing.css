@@ -377,8 +377,28 @@ a { color: inherit; }
 /* ============================================================================
    TESTIMONIALS
    ============================================================================ */
-.testimonials__grid { display: grid; gap: 16px; }
+/* Continuous auto-scrolling carousel (left → right, infinite loop). */
+.testimonials__marquee {
+  overflow: hidden;
+  margin-top: 32px;
+  /* Fade the edges so cards slide in/out gracefully instead of hard-clipping. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.testimonials__track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  animation: testimonials-scroll 60s linear infinite;
+  will-change: transform;
+}
+.testimonials__marquee:hover .testimonials__track { animation-play-state: paused; }
+@keyframes testimonials-scroll {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
 .testimonial {
+  flex: 0 0 300px;
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -714,7 +734,7 @@ a { color: inherit; }
   .features__grid { grid-template-columns: repeat(3, 1fr); }
   .beforeafter__grid { grid-template-columns: repeat(2, 1fr); }
   .personas__grid { grid-template-columns: repeat(2, 1fr); }
-  .testimonials__grid { grid-template-columns: repeat(3, 1fr); }
+  .testimonial { flex-basis: 340px; }
   .science__grid { grid-template-columns: repeat(2, 1fr); }
   .guarantee__grid { grid-template-columns: 1fr 1fr; align-items: center; }
 
@@ -735,4 +755,7 @@ a { color: inherit; }
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .ba-bar__fill { transition: none; }
+  /* Stop auto-scroll; let users swipe through the cards manually instead. */
+  .testimonials__track { animation: none; }
+  .testimonials__marquee { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
