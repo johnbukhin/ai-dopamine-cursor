@@ -884,27 +884,32 @@
 
     if (CONTENT.brand?.name) { document.title = CONTENT.meta?.title || document.title; el('brand-name').textContent = CONTENT.brand.name; }
 
-    renderHero(CONTENT.hero);
-    renderProof(CONTENT.socialProof);
-    renderProblem(CONTENT.problem);
-    renderHow(CONTENT.howItWorks);
-    renderFeatures(CONTENT.features);
-    renderLoop(CONTENT.loop);
-    renderPersonas(CONTENT.whoItHelps);
-    renderExpectations(CONTENT.expectations);
-    renderTestimonials(CONTENT.testimonials);
-    renderScience(CONTENT.science);
-    renderPricing(CONTENT.pricing);
-    renderGuarantee(CONTENT.guarantee, CONTENT.privacy, CONTENT.paymentSecurity);
-    renderFaq(CONTENT.faq);
-    renderFinalCta(CONTENT.finalCta);
-    renderFooter(CONTENT.footer);
+    // Render each section in isolation. If a data key is missing (e.g. a browser
+    // holding a stale script paired with newer content.json after a deploy), that
+    // one section stays empty instead of an uncaught throw blanking the whole page.
+    const guard = (label, fn) => { try { fn(); } catch (err) { console.error('[landing] section failed:', label, err); } };
 
-    wireInteractions();
-    wireStickyCta();
-    wireReveal();
-    initTestimonialsCarousel();
-    updateStickyPrice();
+    guard('hero', () => renderHero(CONTENT.hero));
+    guard('proof', () => renderProof(CONTENT.socialProof));
+    guard('problem', () => renderProblem(CONTENT.problem));
+    guard('how', () => renderHow(CONTENT.howItWorks));
+    guard('features', () => renderFeatures(CONTENT.features));
+    guard('loop', () => renderLoop(CONTENT.loop));
+    guard('personas', () => renderPersonas(CONTENT.whoItHelps));
+    guard('expectations', () => renderExpectations(CONTENT.expectations));
+    guard('testimonials', () => renderTestimonials(CONTENT.testimonials));
+    guard('science', () => renderScience(CONTENT.science));
+    guard('pricing', () => renderPricing(CONTENT.pricing));
+    guard('guarantee', () => renderGuarantee(CONTENT.guarantee, CONTENT.privacy, CONTENT.paymentSecurity));
+    guard('faq', () => renderFaq(CONTENT.faq));
+    guard('finalCta', () => renderFinalCta(CONTENT.finalCta));
+    guard('footer', () => renderFooter(CONTENT.footer));
+
+    guard('interactions', wireInteractions);
+    guard('stickyCta', wireStickyCta);
+    guard('reveal', wireReveal);
+    guard('carousel', initTestimonialsCarousel);
+    guard('stickyPrice', updateStickyPrice);
 
     // Live pricing — overwrite the static EUR fallback once loaded.
     Currency.fetchPrices().then(updatePrices);
