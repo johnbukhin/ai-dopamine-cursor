@@ -356,7 +356,7 @@
           <h2 class="section__title">${esc(c.headline)}</h2>
         </div>
       </div>
-      <div class="testimonials__marquee reveal">
+      <div class="testimonials__marquee">
         <div class="testimonials__track">${set(false)}${set(true)}${set(true)}</div>
       </div>`;
   }
