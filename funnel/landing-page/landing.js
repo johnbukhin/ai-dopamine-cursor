@@ -875,7 +875,7 @@
   // =========================================================================
   async function init() {
     try {
-      const res = await fetch('content.json');
+      const res = await fetch('content.json?v=20260730');
       CONTENT = await res.json();
     } catch (err) {
       console.error('[landing] Failed to load content.json', err);

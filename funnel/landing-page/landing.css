@@ -438,12 +438,14 @@ a { color: inherit; }
   flex: 0 0 300px;
   display: flex;
   flex-direction: column;
-  background: var(--color-background);
+  /* White surface + soft shadow so each card stands clearly off the section
+     background instead of blending into it (base section bg == card bg). */
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   padding: 22px;
 }
-.section--alt .testimonial { background: var(--color-background); }
 .testimonial__stars { color: var(--color-star); letter-spacing: 2px; margin-bottom: 10px; }
 .testimonial__title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
 .testimonial__content { color: var(--color-text-secondary); margin-bottom: 14px; }
