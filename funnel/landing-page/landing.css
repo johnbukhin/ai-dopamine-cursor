@@ -417,22 +417,26 @@ a { color: inherit; }
    seamlessly by rendering the full set twice. */
 .testimonials__marquee {
   margin-top: 32px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x; /* let vertical gestures scroll the page, not the strip */
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
+  overflow: hidden; /* the track auto-scrolls itself; no manual scrollbar */
   /* Fade the edges so cards slide in/out gracefully instead of hard-clipping. */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
-.testimonials__marquee::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+/* Pause the drift while the pointer is over the strip so cards can be read. */
+.testimonials__marquee:hover .testimonials__track { animation-play-state: paused; }
 .testimonials__track {
   display: flex;
   align-items: stretch; /* every card same height */
   gap: 16px;
   width: max-content;
+  /* Continuous left → right drift. The track holds the 10 cards twice, so moving
+     from -50% (showing the copy) to 0 (showing the originals) loops seamlessly. */
+  animation: testimonials-scroll 60s linear infinite;
+  will-change: transform;
+}
+@keyframes testimonials-scroll {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
 }
 .testimonial {
   flex: 0 0 300px;
@@ -796,6 +800,7 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  /* Carousel auto-scroll is paused in JS under reduced-motion; users can still
-     swipe the cards manually since the track is a native scroll container. */
+  /* No auto-scroll: freeze the marquee and let users scroll the cards by hand. */
+  .testimonials__track { animation: none; transform: none; }
+  .testimonials__marquee { overflow-x: auto; }
 }

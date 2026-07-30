@@ -333,8 +333,10 @@
   }
 
   function renderTestimonials(c) {
-    // Build one card; the track renders the full set twice so the CSS marquee
-    // can loop seamlessly (translate by -50% lands the copy exactly on the original).
+    // Build one card. The 10 real testimonials are rendered once, then a second
+    // aria-hidden copy is appended so the pure-CSS marquee can loop seamlessly:
+    // animating the track from translateX(-50%) → 0 lands the copy exactly where
+    // the original started, so there is no visible jump when it wraps.
     const card = (t, dup) => `
       <div class="testimonial"${dup ? ' aria-hidden="true"' : ''}>
         <div class="testimonial__stars" aria-label="${t.rating} out of 5">${starRow(t.rating)}</div>
@@ -346,8 +348,6 @@
           <span class="testimonial__handle">${esc(t.handle)}</span>
         </div>
       </div>`;
-    // Three identical sets: the carousel lives in the middle one, so a hard
-    // swipe in either direction still lands on real cards before we wrap.
     const set = (dup) => c.items.map((t) => card(t, dup)).join('');
     el('testimonials').innerHTML = `
       <div class="container">
@@ -357,7 +357,7 @@
         </div>
       </div>
       <div class="testimonials__marquee">
-        <div class="testimonials__track">${set(false)}${set(true)}${set(true)}</div>
+        <div class="testimonials__track">${set(false)}${set(true)}</div>
       </div>`;
   }
 
@@ -818,57 +818,9 @@
   // faster/slower at will), which we also auto-advance a fraction of a pixel per
   // frame. Content is rendered in 3 identical sets, so we can always wrap by one
   // set-width — a shift the eye can't see because the cards line up exactly.
-  function initTestimonialsCarousel() {
-    const marquee = document.querySelector('.testimonials__marquee');
-    const track = marquee && marquee.querySelector('.testimonials__track');
-    if (!marquee || !track) return;
-
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const SPEED = 0.5;      // px per frame — gentle, gradual left → right drift
-    const RESUME_MS = 1000; // let the user's flick fully settle before resuming
-
-    let setW = track.scrollWidth / 3; // width of one of the three sets
-    let pos = setW;                   // start in the middle set
-    let hovering = false;
-    let lastInteract = -Infinity;
-
-    // Keep the position inside the middle set; ± one set-width is seamless.
-    const wrap = (x) => {
-      if (setW <= 0) return x;
-      if (x < setW) return x + setW;
-      if (x >= setW * 2) return x - setW;
-      return x;
-    };
-
-    marquee.scrollLeft = pos;
-
-    const remeasure = () => { setW = track.scrollWidth / 3; };
-    window.addEventListener('resize', remeasure);
-    window.addEventListener('load', remeasure);
-
-    // Desktop: pause auto-advance while the pointer is over the strip.
-    marquee.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovering = true; });
-    marquee.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hovering = false; });
-
-    // Any real input (touch drag, mouse drag, wheel) takes over the pace.
-    const mark = () => { lastInteract = performance.now(); };
-    marquee.addEventListener('pointerdown', mark);
-    marquee.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse' || e.buttons) mark(); });
-    marquee.addEventListener('touchstart', mark, { passive: true });
-    marquee.addEventListener('touchmove', mark, { passive: true });
-    marquee.addEventListener('wheel', mark, { passive: true });
-
-    function frame() {
-      if (!reduce && !hovering && performance.now() - lastInteract >= RESUME_MS) {
-        pos = wrap(pos - SPEED);
-        marquee.scrollLeft = pos;
-      } else {
-        pos = marquee.scrollLeft; // follow wherever the user left it
-      }
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  }
+  // Testimonials auto-scroll is a pure-CSS marquee (see .testimonials__track in
+  // landing.css) — no JS needed. It starts on paint, loops seamlessly, and pauses
+  // on hover; reduced-motion users get a static, manually-scrollable strip.
 
   // =========================================================================
   // Boot
@@ -908,7 +860,6 @@
     guard('interactions', wireInteractions);
     guard('stickyCta', wireStickyCta);
     guard('reveal', wireReveal);
-    guard('carousel', initTestimonialsCarousel);
     guard('stickyPrice', updateStickyPrice);
 
     // Live pricing — overwrite the static EUR fallback once loaded.
