@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mind Compass — Quit Porn for Good, Backed by Science</title>
+    <meta name="description" content="A personalized, science-based recovery program that helps you break the porn habit, rewire your reward system, and reclaim your focus, energy and confidence. Private and judgment-free.">
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+
+    <!-- Open Graph / social preview -->
+    <meta property="og:title" content="Mind Compass — Quit Porn for Good, Backed by Science">
+    <meta property="og:description" content="A personalized, science-based recovery program. Rewire your reward system and reclaim your focus, energy and confidence. Private and judgment-free.">
+    <meta property="og:type" content="website">
+
+    <link rel="stylesheet" href="landing.css">
+
+    <!-- Preload the hero image so the first paint feels instant -->
+    <link rel="preload" as="image" href="../assets/after_state_male.png" fetchpriority="high">
+
+    <!-- ── Meta Pixel (shared with the funnel — same pixel id) ─────────────── -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1530402652053089');
+      fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1530402652053089&ev=PageView&noscript=1"/></noscript>
+    <!-- ── End Meta Pixel ─────────────────────────────────────────────────── -->
+</head>
+<body>
+    <!-- Sticky top header -->
+    <header class="site-header" id="site-header">
+        <div class="container site-header__inner">
+            <a href="#top" class="site-header__brand" id="brand-name">Mind Compass</a>
+            <button class="btn btn--primary btn--sm" data-cta="header">Get my plan</button>
+        </div>
+    </header>
+
+    <main id="top">
+        <!-- Sections are rendered from content.json by landing.js -->
+        <section class="hero section" id="hero" aria-label="Introduction"></section>
+        <section class="proof section" id="social-proof" aria-label="Social proof"></section>
+        <section class="problem section" id="problem" aria-label="The problem"></section>
+        <section class="how section section--alt" id="how-it-works" aria-label="How it works"></section>
+        <section class="features section" id="features" aria-label="Features"></section>
+        <section class="beforeafter section section--alt" id="before-after" aria-label="Before and after"></section>
+        <section class="personas section" id="who-it-helps" aria-label="Who it helps"></section>
+        <section class="expectations section section--alt" id="expectations" aria-label="What to expect"></section>
+        <section class="testimonials section" id="testimonials" aria-label="Testimonials"></section>
+        <section class="science section section--alt" id="science" aria-label="The science"></section>
+        <section class="pricing section" id="pricing" aria-label="Pricing"></section>
+        <section class="guarantee section section--alt" id="guarantee" aria-label="Guarantee and privacy"></section>
+        <section class="faq section" id="faq" aria-label="Frequently asked questions"></section>
+        <section class="finalcta section" id="final-cta" aria-label="Get started"></section>
+    </main>
+
+    <footer class="site-footer" id="site-footer"></footer>
+
+    <!-- Sticky bottom CTA bar (mobile) -->
+    <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
+        <div class="sticky-cta__price" id="sticky-cta__price"></div>
+        <button class="btn btn--primary btn--block" data-cta="sticky">Get my plan</button>
+    </div>
+
+    <!-- Checkout modal (email + Stripe Payment Element) -->
+    <div class="modal" id="checkout-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+        <div class="modal__backdrop" data-close-modal></div>
+        <div class="modal__dialog" role="document">
+            <button class="modal__close" data-close-modal aria-label="Close">&times;</button>
+            <h2 class="modal__title" id="checkout-title">Complete your order</h2>
+            <div class="modal__summary" id="checkout-summary"></div>
+
+            <form id="checkout-form" novalidate>
+                <label class="field">
+                    <span class="field__label">Email address</span>
+                    <input type="email" id="checkout-email" class="field__input" autocomplete="email"
+                           placeholder="you@example.com" required>
+                    <span class="field__error" id="checkout-email-error"></span>
+                </label>
+
+                <div id="payment-element" class="checkout__payment">
+                    <p class="checkout__payment-loading">Loading secure payment form…</p>
+                </div>
+
+                <div class="checkout__error" id="checkout-error" role="alert"></div>
+
+                <button type="submit" class="btn btn--success btn--block btn--disabled" id="checkout-pay-btn" disabled>
+                    Enter your email to continue
+                </button>
+
+                <p class="checkout__legal" id="checkout-legal"></p>
+                <p class="checkout__secure">🔒 Secure payment powered by Stripe</p>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="landing.js"></script>
+</body>
+</html>
