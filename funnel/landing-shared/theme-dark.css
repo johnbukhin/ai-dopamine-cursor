@@ -1,0 +1,69 @@
+/* ============================================================================
+   Theme: DARK & BOLD
+   Near-black surface, acid accent, tight uppercase display.
+   Premium performance-product register (Whoop / Oura), high contrast.
+   ============================================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap");
+
+:root {
+  --c-bg: #0c0c11;
+  --c-bg-alt: #13131b;
+  --c-surface: #16161f;
+  --c-ink: #f4f4f7;
+  --c-ink-2: #a2a2b0;
+  --c-ink-3: #6f6f80;
+  --c-line: #24242e;
+  --c-line-strong: #3a3a48;
+
+  --c-brand: #8b7bff;
+  --c-brand-soft: rgba(139, 123, 255, 0.16);
+  --c-accent: #c9ff3d;
+  --c-accent-soft: rgba(201, 255, 61, 0.14);
+  --c-cta: #c9ff3d;
+  --c-cta-hover: #b4e830;
+  --c-cta-ink: #0c0c11;
+
+  /* Inverted bands must go *lighter* here, otherwise they vanish. */
+  --c-invert-bg: #1a1a24;
+  --c-invert-ink: #f4f4f7;
+  --c-invert-ink-2: rgba(244, 244, 247, 0.62);
+  --c-invert-line: rgba(244, 244, 247, 0.14);
+
+  --c-star: #ffc933;
+  --c-danger: #ff6b5e;
+
+  --font-display: "Archivo", -apple-system, BlinkMacSystemFont, sans-serif;
+  --display-weight: 800;
+  --display-tracking: -0.035em;
+  --display-case: uppercase;
+  --eyebrow-tracking: 0.16em;
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: none;
+  --shadow-2: 0 14px 36px rgba(0, 0, 0, 0.55);
+}
+
+/* Uppercase display needs looser leading and no orphan-tight tracking. */
+.hero__title, .final__title, .h2 { line-height: 1.02; }
+.hero__title { letter-spacing: -0.03em; }
+
+/* The lime CTA carries the page — nothing else may compete with it. */
+.btn--cta { box-shadow: 0 8px 26px rgba(201, 255, 61, 0.22); }
+.tier__badge { color: #0c0c11; }
+.tw__badge { color: var(--c-cta); }
+.tier__savings { color: var(--c-cta); }
+.pricing__guarantee svg { color: var(--c-cta); }
+
+/* Photography needs handling on dark: cool it down so it doesn't glow. */
+.hero__media img { filter: saturate(0.8) brightness(0.86) contrast(1.06); }
+.hero__blob { opacity: 0.2; }
+
+/* Hairlines read heavier on black — thin them out. */
+.problem__item, .persona, .faq__item, .sci__point { border-color: var(--c-line); }
+.how__step { border-top-color: var(--c-line-strong); }
+.mark::after { opacity: 0.85; height: 0.16em; bottom: 0.02em; border-radius: 2px; }
+
+/* Numerals are the bold part of "dark & bold". */
+.how__num { color: var(--c-accent); opacity: 0.55; }
+.proof__value { letter-spacing: -0.04em; }

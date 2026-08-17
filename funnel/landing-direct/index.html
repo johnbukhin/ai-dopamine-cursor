@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="warm">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mind Compass — Take back control</title>
+    <meta name="description" content="A private plan built around what actually triggers you. Two minutes to set up.">
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+
+    <meta property="og:title" content="Mind Compass — Take back control">
+    <meta property="og:description" content="A private plan built around what actually triggers you. Two minutes to set up.">
+    <meta property="og:type" content="website">
+
+    <link rel="stylesheet" href="../landing-shared/core.css?v=20260817">
+    <link id="theme-css" rel="stylesheet" href="../landing-shared/theme-warm.css?v=20260817">
+    <script>
+      /* Resolve the theme synchronously, before the parser reaches <body>, so
+         there is no flash of the wrong palette. ?theme= wins, then the last
+         choice, then warm. */
+      (function () {
+        var allowed = ['warm', 'dark', 'clean'];
+        var t = new URLSearchParams(location.search).get('theme');
+        if (!t) { try { t = localStorage.getItem('mc_theme'); } catch (e) {} }
+        if (allowed.indexOf(t) === -1) t = 'warm';
+        try { localStorage.setItem('mc_theme', t); } catch (e) {}
+        document.documentElement.setAttribute('data-theme', t);
+        if (t !== 'warm') {
+          document.getElementById('theme-css').href =
+            '../landing-shared/theme-' + t + '.css?v=20260817';
+        }
+      })();
+    </script>
+
+    <link rel="preload" as="image" href="../assets/after_state_male.png" fetchpriority="high">
+
+    <!-- ── Meta Pixel (shared with the funnel — same pixel id) ─────────────── -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1530402652053089');
+      fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1530402652053089&ev=PageView&noscript=1"/></noscript>
+</head>
+<body id="top">
+    <header class="hdr" id="hdr"></header>
+
+    <main>
+        <!-- Every section is rendered from ../landing-shared/content.json. -->
+        <section class="hero" id="hero" aria-label="Introduction"></section>
+        <section class="proof" id="proof" aria-label="Social proof"></section>
+        <section class="problem" id="problem" aria-label="The problem"></section>
+        <section class="loop band band--invert" id="loop" aria-label="The loop"></section>
+        <section class="personas band band--tint" id="personas" aria-label="Who this is for"></section>
+        <section class="how" id="how" aria-label="How it works"></section>
+        <section class="tw band band--tint" id="testimonials" aria-label="Member reviews"></section>
+        <section class="pricing" id="pricing" aria-label="Pricing"></section>
+        <section class="trust band band--tint" id="trust" aria-label="Privacy, payment and research"></section>
+        <section class="faq" id="faq" aria-label="Frequently asked questions"></section>
+        <section class="final band band--invert" id="final" aria-label="Get started"></section>
+    </main>
+
+    <footer class="ftr" id="ftr"></footer>
+
+    <!-- Sticky mobile CTA -->
+    <div class="sticky" id="sticky">
+        <div class="sticky__price" id="sticky-price"></div>
+        <button class="btn btn--cta" data-cta="sticky">Start today</button>
+    </div>
+
+    <!-- Micro-quiz sheet. Inert on this variant (flow: 'direct' never opens it);
+         kept so both variants share one DOM contract and one script. -->
+    <div class="quiz" id="quiz" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="quiz__scrim" data-quiz="close"></div>
+        <div class="quiz__sheet" role="document">
+            <button class="quiz__close" data-quiz="close" aria-label="Close">&times;</button>
+            <div class="quiz__bar"><div class="quiz__bar-fill" id="quiz-bar"></div></div>
+            <div id="quiz-body"></div>
+        </div>
+    </div>
+
+    <!-- Checkout modal (email + Stripe Payment Element) -->
+    <div class="modal" id="checkout" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+        <div class="modal__scrim" data-close-modal></div>
+        <div class="modal__dialog" role="document">
+            <button class="modal__close" data-close-modal aria-label="Close">&times;</button>
+            <h2 class="modal__title" id="pay-title">Complete your order</h2>
+            <div class="modal__summary" id="pay-summary"></div>
+
+            <form id="pay-form" novalidate>
+                <label class="field">
+                    <span class="field__label">Email address</span>
+                    <input type="email" id="email" class="field__input" autocomplete="email"
+                           placeholder="you@example.com" required>
+                    <span class="field__error" id="email-error"></span>
+                </label>
+
+                <div id="pay-mount" class="pay__mount">
+                    <p class="pay__loading">Loading secure payment form…</p>
+                </div>
+
+                <div class="pay__error" id="pay-error" role="alert"></div>
+
+                <button type="submit" class="btn btn--cta btn--block btn--off" id="pay-btn" disabled>
+                    Enter your email to continue
+                </button>
+
+                <p class="pay__legal" id="pay-legal"></p>
+                <p class="pay__secure">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                    Secure payment powered by Stripe
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Live theme comparison, enabled with ?themepicker=1 -->
+    <div class="themepicker" id="themepicker"></div>
+
+    <script>
+      window.LANDING_CONFIG = {
+        flow: 'direct',
+        funnelVersion: 'landing-direct',
+        pixelContentName: 'LandingDirect',
+      };
+    </script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="../landing-shared/landing.js?v=20260817"></script>
+</body>
+</html>
