@@ -95,6 +95,21 @@ async function fireCapiPurchase({ email, amountCents, currency, contentId, event
     }
 }
 
+// The browser identifiers were stashed on the Stripe customer by
+// create-checkout, which is the only party in this flow that ever had a
+// browser. Absent metadata simply means an older or non-Meta session — the
+// event still fires, just with email-only matching as before.
+async function browserMeta(stripe, customerId) {
+    if (!customerId) return {};
+    try {
+        const cust = await stripe.customers.retrieve(customerId);
+        return cust.deleted ? {} : (cust.metadata || {});
+    } catch (err) {
+        console.warn('[webhook] Customer metadata lookup failed:', err.message);
+        return {};
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Raw body reader — required because bodyParser: false
 // ---------------------------------------------------------------------------
@@ -129,7 +144,7 @@ export default async function handler(req, res) {
     }
 
     if (event.type === 'payment_intent.succeeded') {
-        return handleUpsellPayment(event.data.object, res);
+        return handleUpsellPayment(event.data.object, res, stripe);
     }
     if (event.type !== 'invoice.payment_succeeded') {
         return res.status(200).json({ received: true });
@@ -205,19 +220,7 @@ export default async function handler(req, res) {
     // Fire CAPI Purchase only on initial subscription payment, not renewals.
     const billingReason = invoice.billing_reason;
     if (billingReason === 'subscription_create' || !billingReason) {
-        // The browser identifiers were stashed on the Stripe customer by
-        // create-checkout, which is the only party in this flow that ever had a
-        // browser. Absent metadata simply means an older or non-Meta session —
-        // the event still fires, just with email-only matching as before.
-        let meta = {};
-        if (invoice.customer) {
-            try {
-                const cust = await stripe.customers.retrieve(invoice.customer);
-                if (!cust.deleted) meta = cust.metadata || {};
-            } catch (metaErr) {
-                console.warn('[webhook] Customer metadata lookup failed:', metaErr.message);
-            }
-        }
+        const meta = await browserMeta(stripe, invoice.customer);
 
         await fireCapiPurchase({
             email:       invoice.customer_email,
@@ -238,7 +241,7 @@ export default async function handler(req, res) {
 // ---------------------------------------------------------------------------
 // payment_intent.succeeded — one-time AI Companion upsell purchase
 // ---------------------------------------------------------------------------
-async function handleUpsellPayment(pi, res) {
+async function handleUpsellPayment(pi, res, stripe) {
     const upsellPriceId = process.env.STRIPE_PRICE_UPSELL;
     if (!upsellPriceId || pi.metadata?.upsell_price_id !== upsellPriceId) {
         return res.status(200).json({ received: true });
@@ -268,13 +271,21 @@ async function handleUpsellPayment(pi, res) {
     }
 
     // Upsell fires only server-side (no browser Purchase), so a unique
-    // event_id is enough to prevent double-counting on webhook retries.
+    // event_id is enough to prevent double-counting on webhook retries. It is
+    // the same customer as the subscription that preceded it, so it carries the
+    // same identifiers — otherwise add-on revenue would be the one part of the
+    // funnel Meta could not attribute to the ad that produced it.
+    const meta = await browserMeta(stripe, pi.customer);
+
     await fireCapiPurchase({
         email:       pi.metadata?.user_email,
         amountCents: pi.amount,
         currency:    pi.currency,
         contentId:   'ai_companion',
         eventId:     `purchase_${pi.id}`,
+        fbp:         meta.fbp || null,
+        fbc:         meta.fbc || null,
+        srcUrl:      meta.src_url || null,
     });
 
     return res.status(200).json({ received: true });

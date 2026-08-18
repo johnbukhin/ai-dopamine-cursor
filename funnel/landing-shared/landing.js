@@ -254,10 +254,12 @@
     lead(email) {
       if (this._lead) return;
       this._lead = true;
+      // identify() is what actually attaches the address, hashed by fbq. The
+      // engine additionally passes em as an event parameter, which is not a
+      // matching channel at all — it just puts a plaintext email in custom_data,
+      // which Meta asks senders not to do. Not copied.
       this.identify(email);
-      this.track('Lead', email
-        ? { content_name: CFG.pixelContentName, em: email }
-        : { content_name: CFG.pixelContentName });
+      this.track('Lead', { content_name: CFG.pixelContentName });
     },
     initiateCheckout(tierId, c) {
       this.track('InitiateCheckout', {
