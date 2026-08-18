@@ -11,7 +11,7 @@
     <meta property="og:description" content="Quit porn with a plan built around what actually triggers you. Not a blocker, not willpower. Private, judgment-free, two minutes to set up.">
     <meta property="og:type" content="website">
 
-    <link rel="stylesheet" href="../landing-shared/core.css?v=20260818b">
+    <link rel="stylesheet" href="../landing-shared/core.css?v=20260819">
     <link id="theme-css" rel="stylesheet" href="../landing-shared/theme-warm.css?v=20260818">
     <link id="hero-preload" rel="preload" as="image" href="../assets/hero/warm.jpg" fetchpriority="high">
     <script>
@@ -123,6 +123,48 @@
         </div>
     </div>
 
+    <!-- ── Post-payment step 2 — AI Companion add-on ──────────────────────────
+         Rendered by JS, and only when /api/prices returns a live upsell price.
+         No close affordance by design: the card is already charged, so the only
+         ways out are CONFIRM and SKIP, both of which continue to step 3. -->
+    <div class="modal modal--full" id="upsell" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Optional add-on">
+        <div class="modal__dialog modal__dialog--full" role="document" id="upsell-body"></div>
+    </div>
+
+    <!-- ── Post-payment step 3 — choose a password ────────────────────────────
+         provision-account.js sets a random UUID the buyer never sees, so
+         without this screen a landing buyer cannot log back in once the
+         handed-off session lapses. This is funnel-v2's create_account screen. -->
+    <div class="modal" id="account" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="acct-title">
+        <div class="modal__dialog" role="document">
+            <p class="acct__done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 12.5 5 5L20 6.5"/></svg> Payment confirmed</p>
+            <h2 class="modal__title" id="acct-title">Set your password</h2>
+            <p class="acct__sub">Last step — this is how you log back in.</p>
+
+            <form id="acct-form" novalidate>
+                <label class="field">
+                    <span class="field__label">Email address</span>
+                    <input type="email" id="acct-email" class="field__input" autocomplete="email" readonly>
+                </label>
+                <label class="field">
+                    <span class="field__label">Password</span>
+                    <input type="password" id="acct-password" class="field__input"
+                           autocomplete="new-password" placeholder="At least 8 characters" required>
+                </label>
+                <label class="field">
+                    <span class="field__label">Confirm password</span>
+                    <input type="password" id="acct-confirm" class="field__input"
+                           autocomplete="new-password" placeholder="Repeat your password" required>
+                </label>
+
+                <div class="pay__error" id="acct-error" role="alert"></div>
+
+                <button type="submit" class="btn btn--cta btn--block btn--lg" id="acct-btn">Create my account</button>
+                <p class="pay__legal">Your password is encrypted at rest. Your email is never shared.</p>
+            </form>
+        </div>
+    </div>
+
     <!-- Live theme comparison, enabled with ?themepicker=1 -->
     <div class="themepicker" id="themepicker"></div>
 
@@ -134,6 +176,6 @@
       };
     </script>
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="../landing-shared/landing.js?v=20260818"></script>
+    <script src="../landing-shared/landing.js?v=20260819"></script>
 </body>
 </html>

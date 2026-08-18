@@ -7,7 +7,6 @@ import Stripe from 'stripe';
 //   Phase 2 — full recurring price, ongoing
 //
 // All prices have multi-currency support via Stripe currency_options.
-// Display strings are resolved dynamically from CURRENCY_DISPLAY below.
 // ---------------------------------------------------------------------------
 const PLAN_MAP = {
     '7_day': {
@@ -27,38 +26,6 @@ const PLAN_MAP = {
     },
 };
 
-// Per-currency display strings for each plan tier.
-// Keys mirror the currency codes passed by the frontend detectCurrency() helper.
-// Must stay in sync with Currency.PRICES in funnel/engine/app.js — both drive
-// the same price display (paywall + checkout summary).
-const CURRENCY_DISPLAY = {
-    usd: {
-        '7_day':   { intro: '$6.99',    regular: '$49.99/mo after first week' },
-        '1_month': { intro: '$14.99',   regular: '$49.99/mo after first month' },
-        '3_month': { intro: '$29.99',   regular: '$79.99 every 3 months after first 3 months' },
-    },
-    eur: {
-        '7_day':   { intro: '€6.99',    regular: '€49.99/mo after first week' },
-        '1_month': { intro: '€14.99',   regular: '€49.99/mo after first month' },
-        '3_month': { intro: '€29.99',   regular: '€79.99 every 3 months after first 3 months' },
-    },
-    gbp: {
-        '7_day':   { intro: '£5.99',    regular: '£41.99/mo after first week' },
-        '1_month': { intro: '£12.99',   regular: '£41.99/mo after first month' },
-        '3_month': { intro: '£24.99',   regular: '£67.99 every 3 months after first 3 months' },
-    },
-    cad: {
-        '7_day':   { intro: 'CA$9.99',  regular: 'CA$67.99/mo after first week' },
-        '1_month': { intro: 'CA$19.99', regular: 'CA$67.99/mo after first month' },
-        '3_month': { intro: 'CA$39.99', regular: 'CA$109.99 every 3 months after first 3 months' },
-    },
-    aud: {
-        '7_day':   { intro: 'A$10.99',  regular: 'A$76.99/mo after first week' },
-        '1_month': { intro: 'A$22.99',  regular: 'A$76.99/mo after first month' },
-        '3_month': { intro: 'A$44.99',  regular: 'A$124.99 every 3 months after first 3 months' },
-    },
-};
-
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', 'https://ai-dopamine-addict.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -67,7 +34,7 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { tierId, email, currency: rawCurrency } = req.body;
+    const { tierId, email, currency: rawCurrency, fbp, fbc, srcUrl } = req.body;
     if (!tierId || !email) {
         return res.status(400).json({ error: 'tierId and email are required' });
     }
@@ -86,8 +53,22 @@ export default async function handler(req, res) {
         ? rawCurrency.toLowerCase()
         : 'eur';
 
-    // Resolve human-readable display strings for the detected currency
-    const display = CURRENCY_DISPLAY[currency]?.[tierId] || CURRENCY_DISPLAY.eur[tierId];
+    // Meta browser identifiers, carried through to the server-side CAPI Purchase.
+    // The webhook runs from Stripe's request, not the buyer's browser, so it has
+    // no cookies and no referring URL of its own — without stashing them here it
+    // can only report a hashed email, and it reports every purchase as coming
+    // from the funnel's hardcoded URL. Stripe metadata values must be strings and
+    // are capped at 500 chars; anything longer is dropped rather than truncated,
+    // since a clipped click id is worse than no click id.
+    //
+    // Every key is always written, empty string included. Stripe merges a
+    // metadata update into what is already there rather than replacing it, so
+    // omitting a key leaves the previous session's value in place — a buyer who
+    // first arrived from an ad and later returned organically would have that
+    // months-old click id attributed to the purchase. An empty string clears it.
+    const fit = (v) => (typeof v === 'string' && v && v.length <= 500 ? v : '');
+    const pixelMeta = { fbp: fit(fbp), fbc: fit(fbc), src_url: fit(srcUrl) };
+    const hasPixelMeta = Object.values(pixelMeta).some(Boolean);
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
@@ -98,7 +79,13 @@ export default async function handler(req, res) {
         const existing = await stripe.customers.list({ email, limit: 1 });
         const customer = existing.data.length > 0
             ? existing.data[0]
-            : await stripe.customers.create({ email });
+            : await stripe.customers.create({ email, metadata: pixelMeta });
+
+        // A returning customer keeps whatever identifiers this session supplies —
+        // the newest click is the one that earned the purchase.
+        if (existing.data.length > 0 && hasPixelMeta) {
+            await stripe.customers.update(customer.id, { metadata: pixelMeta });
+        }
 
         // 1b. Cancel any open subscription schedules for this customer so that
         //     prefetch calls (which fire on paywall load and on tier change) do not
@@ -192,8 +179,6 @@ export default async function handler(req, res) {
             scheduleId:     schedule.id,
             planLabel:      plan.label,
             currency,
-            introDisplay:   display.intro,
-            regularDisplay: display.regular,
         });
 
     } catch (error) {

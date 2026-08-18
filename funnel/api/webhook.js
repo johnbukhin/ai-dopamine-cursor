@@ -37,7 +37,9 @@ const PRICE_LABEL_MAP = {
 // event within seconds). Only fires on initial subscription purchases, not
 // renewals, to avoid inflating Meta's purchase count.
 // ---------------------------------------------------------------------------
-async function fireCapiPurchase({ email, amountCents, currency, contentId, eventId }) {
+const DEFAULT_SOURCE_URL = 'https://ai-dopamine-addict.vercel.app/funnel-v2/';
+
+async function fireCapiPurchase({ email, amountCents, currency, contentId, eventId, fbp, fbc, srcUrl }) {
     const pixelId = process.env.META_PIXEL_ID;
     const token   = process.env.META_CAPI_TOKEN;
     if (!pixelId || !token) return;
@@ -54,9 +56,18 @@ async function fireCapiPurchase({ email, amountCents, currency, contentId, event
             // matching browser pixel Purchase (same event_name + event_id).
             ...(eventId && { event_id: eventId }),
             action_source:    'website',
-            event_source_url: 'https://ai-dopamine-addict.vercel.app/funnel-v2/',
+            // Which page the buyer actually paid on. Purchases used to be
+            // reported under the funnel URL regardless of origin, so landing
+            // conversions were indistinguishable from funnel conversions in
+            // Ads Manager. create-checkout stores the real one on the customer.
+            event_source_url: srcUrl || DEFAULT_SOURCE_URL,
             user_data: {
                 ...(hashedEmail && { em: [hashedEmail] }),
+                // fbp/fbc are Meta's own identifiers and are sent raw by
+                // design — they are already pseudonymous, and hashing them
+                // makes them unmatchable.
+                ...(fbp && { fbp }),
+                ...(fbc && { fbc }),
             },
             custom_data: {
                 value:        amountCents / 100,
@@ -81,6 +92,21 @@ async function fireCapiPurchase({ email, amountCents, currency, contentId, event
         }
     } catch (err) {
         console.error('[CAPI] Failed to send event:', err.message);
+    }
+}
+
+// The browser identifiers were stashed on the Stripe customer by
+// create-checkout, which is the only party in this flow that ever had a
+// browser. Absent metadata simply means an older or non-Meta session — the
+// event still fires, just with email-only matching as before.
+async function browserMeta(stripe, customerId) {
+    if (!customerId) return {};
+    try {
+        const cust = await stripe.customers.retrieve(customerId);
+        return cust.deleted ? {} : (cust.metadata || {});
+    } catch (err) {
+        console.warn('[webhook] Customer metadata lookup failed:', err.message);
+        return {};
     }
 }
 
@@ -118,7 +144,7 @@ export default async function handler(req, res) {
     }
 
     if (event.type === 'payment_intent.succeeded') {
-        return handleUpsellPayment(event.data.object, res);
+        return handleUpsellPayment(event.data.object, res, stripe);
     }
     if (event.type !== 'invoice.payment_succeeded') {
         return res.status(200).json({ received: true });
@@ -194,6 +220,8 @@ export default async function handler(req, res) {
     // Fire CAPI Purchase only on initial subscription payment, not renewals.
     const billingReason = invoice.billing_reason;
     if (billingReason === 'subscription_create' || !billingReason) {
+        const meta = await browserMeta(stripe, invoice.customer);
+
         await fireCapiPurchase({
             email:       invoice.customer_email,
             amountCents: invoice.amount_paid,
@@ -201,6 +229,9 @@ export default async function handler(req, res) {
             contentId:   planLabel || priceId || 'subscription',
             // Must match the browser eventID: `purchase_${subscriptionId}` (app.js).
             eventId:     `purchase_${subscriptionId}`,
+            fbp:         meta.fbp || null,
+            fbc:         meta.fbc || null,
+            srcUrl:      meta.src_url || null,
         });
     }
 
@@ -210,7 +241,7 @@ export default async function handler(req, res) {
 // ---------------------------------------------------------------------------
 // payment_intent.succeeded — one-time AI Companion upsell purchase
 // ---------------------------------------------------------------------------
-async function handleUpsellPayment(pi, res) {
+async function handleUpsellPayment(pi, res, stripe) {
     const upsellPriceId = process.env.STRIPE_PRICE_UPSELL;
     if (!upsellPriceId || pi.metadata?.upsell_price_id !== upsellPriceId) {
         return res.status(200).json({ received: true });
@@ -240,13 +271,21 @@ async function handleUpsellPayment(pi, res) {
     }
 
     // Upsell fires only server-side (no browser Purchase), so a unique
-    // event_id is enough to prevent double-counting on webhook retries.
+    // event_id is enough to prevent double-counting on webhook retries. It is
+    // the same customer as the subscription that preceded it, so it carries the
+    // same identifiers — otherwise add-on revenue would be the one part of the
+    // funnel Meta could not attribute to the ad that produced it.
+    const meta = await browserMeta(stripe, pi.customer);
+
     await fireCapiPurchase({
         email:       pi.metadata?.user_email,
         amountCents: pi.amount,
         currency:    pi.currency,
         contentId:   'ai_companion',
         eventId:     `purchase_${pi.id}`,
+        fbp:         meta.fbp || null,
+        fbc:         meta.fbc || null,
+        srcUrl:      meta.src_url || null,
     });
 
     return res.status(200).json({ received: true });

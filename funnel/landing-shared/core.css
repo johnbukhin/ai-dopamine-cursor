@@ -954,6 +954,173 @@ h1, h2, h3 {
 .pay__secure { color: var(--c-ink-3); font-size: 12.5px; text-align: center; margin: 9px 0 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .pay__secure svg { width: 13px; height: 13px; }
 
+/* ============================================================================
+   POST-PAYMENT — upsell takeover + password step
+
+   Both live in the same .modal shell as checkout but neither can be dismissed:
+   the card is already charged, so a scrim click that emptied the screen would
+   leave a paying buyer with no account and no route back.
+   ============================================================================ */
+.modal--full { align-items: stretch; }
+/* Descendant selector, not the bare class: the RESPONSIVE section further down
+   restyles .modal__dialog at the same specificity and would otherwise win on
+   source order and put a 4vh gap under a full-height sheet. */
+.modal .modal__dialog--full {
+  max-width: 620px;
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  animation: none;
+}
+
+.ups { display: flex; flex-direction: column; min-height: 100%; }
+
+/* Progress stepper. The buyer has just been charged, and the single most
+   useful thing this screen can say is "you are not being asked to pay again,
+   there is one step left". */
+.ups__bar {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--c-bg);
+  border-bottom: 1px solid var(--c-line);
+  padding: 12px 18px 10px;
+}
+.ups__bar-row { display: flex; align-items: center; justify-content: space-between; }
+.ups__brand { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 14px; }
+.ups__brand svg { width: 17px; height: 17px; color: var(--c-brand); }
+.ups__skip {
+  background: none; border: none; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: .04em;
+  color: var(--c-ink-3); padding: 6px 2px;
+}
+.ups__skip:hover { color: var(--c-ink); }
+.ups__steps { display: flex; align-items: center; gap: 6px; margin-top: 11px; }
+.ups__step { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.ups__step-dot {
+  width: 19px; height: 19px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 800;
+  background: var(--c-bg-alt); color: var(--c-ink-3); border: 1.5px solid var(--c-line-strong);
+}
+.ups__step-dot--done { background: var(--c-brand); border-color: var(--c-brand); color: #fff; }
+.ups__step-dot--now { background: var(--c-cta); border-color: var(--c-cta); color: var(--c-cta-ink); }
+.ups__step-label { font-size: 11.5px; color: var(--c-ink-3); }
+.ups__step-label--done, .ups__step-label--now { color: var(--c-ink); font-weight: 700; }
+.ups__step-line { flex: 1 1 auto; height: 1.5px; background: var(--c-line-strong); }
+.ups__step-line--done { background: var(--c-brand); }
+
+.ups__body { flex: 1 1 auto; padding: 24px 18px 20px; }
+.ups__intro { text-align: center; }
+.ups__headline {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  font-size: 28px; line-height: 1.12; margin: 6px 0 10px;
+}
+.ups__sub { color: var(--c-ink-2); font-size: 15.5px; margin-bottom: 18px; }
+.ups__sub strong { color: var(--c-ink); white-space: nowrap; }
+.ups__hero { border-radius: var(--radius-lg); overflow: hidden; background: var(--c-bg-alt); }
+.ups__hero img { display: block; width: 100%; height: auto; }
+.ups__legal { color: var(--c-ink-3); font-size: 11.5px; margin-top: 12px; text-wrap: pretty; }
+
+.ups__feature {
+  margin-top: 22px; padding: 22px 18px;
+  border: 1px solid var(--c-line); border-radius: var(--radius-lg);
+  background: var(--c-surface);
+}
+.ups__feature--dark {
+  background: var(--c-invert-bg); color: var(--c-invert-ink);
+  border-color: transparent;
+}
+.ups__feature--dark .ups__tag { background: var(--c-invert-line); color: var(--c-accent); }
+.ups__feature--dark .ups__list li { color: var(--c-invert-ink); }
+.ups__tag {
+  display: inline-block; padding: 4px 11px; border-radius: var(--radius-pill);
+  background: var(--c-brand-soft); color: var(--c-brand);
+  font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+}
+.ups__feature-title {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  font-size: 21px; line-height: 1.2; margin: 10px 0 14px;
+}
+.ups__feature-img {
+  display: block; width: 100%; height: auto;
+  border-radius: var(--radius); margin-bottom: 14px;
+}
+.ups__list { list-style: none; display: grid; gap: 9px; }
+.ups__list li { display: flex; gap: 9px; align-items: flex-start; font-size: 14.5px; line-height: 1.45; }
+.ups__list svg { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 2px; color: var(--c-brand); }
+.ups__feature--dark .ups__list svg { color: var(--c-accent); }
+
+.ups__map { text-align: center; margin-top: 26px; }
+.ups__map img { width: 100%; max-width: 380px; height: auto; opacity: .7; }
+.ups__map p { font-size: 14px; color: var(--c-ink-2); margin-top: 6px; }
+
+.ups__reviews { margin-top: 26px; }
+.ups__reviews-title { font-size: 17px; margin-bottom: 12px; }
+.ups__reviews-scroll {
+  display: flex; gap: 12px; overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin: 0 -18px; padding: 2px 18px 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.ups__review {
+  flex: 0 0 78%; max-width: 300px; scroll-snap-align: start;
+  border: 1px solid var(--c-line); border-radius: var(--radius-lg);
+  background: var(--c-surface); padding: 16px;
+}
+.ups__stars { display: flex; gap: 2px; margin-bottom: 8px; }
+.ups__stars svg { width: 14px; height: 14px; color: var(--c-star); }
+.ups__review-text { font-size: 14px; line-height: 1.5; }
+.ups__review-by { display: flex; align-items: center; gap: 9px; margin-top: 12px; }
+.ups__avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--c-brand-soft); color: var(--c-brand);
+  font-weight: 800; font-size: 13px;
+}
+.ups__review-name { display: block; font-weight: 700; font-size: 13.5px; }
+.ups__review-meta { display: block; color: var(--c-ink-3); font-size: 12px; }
+
+.ups__final { margin-top: 26px; text-align: center; }
+.ups__final img { display: block; width: 100%; height: auto; border-radius: var(--radius-lg); }
+
+/* Sticky so the price and the accept/decline pair are reachable at any scroll
+   depth — the offer above is long enough that a footer button would be missed. */
+.ups__act {
+  position: sticky; bottom: 0; z-index: 2;
+  background: var(--c-bg);
+  border-top: 1px solid var(--c-line);
+  padding: 13px 18px calc(13px + env(safe-area-inset-bottom));
+}
+.ups__decline {
+  display: block; width: 100%; margin-top: 9px;
+  background: none; border: none; cursor: pointer;
+  font: inherit; font-size: 13.5px; color: var(--c-ink-3); text-decoration: underline;
+}
+.ups__decline:hover { color: var(--c-ink); }
+
+/* ---- Password step -------------------------------------------------------- */
+.acct__done {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: var(--radius-pill);
+  background: var(--c-brand-soft); color: var(--c-brand);
+  font-size: 12.5px; font-weight: 800; margin-bottom: 12px;
+}
+.acct__done svg { width: 14px; height: 14px; }
+.acct__sub { color: var(--c-ink-2); font-size: 14.5px; margin-bottom: 18px; }
+#acct-email { background: var(--c-bg-alt); color: var(--c-ink-3); }
+
+@media (min-width: 700px) {
+  .modal--full { align-items: center; }
+  .modal .modal__dialog--full { height: 92vh; border-radius: var(--radius-lg); margin-bottom: 0; }
+  .ups__headline { font-size: 32px; }
+  .ups__body { padding: 30px 28px 24px; }
+  .ups__reviews-scroll { margin: 0 -28px; padding: 2px 28px 10px; }
+  .ups__act { padding: 15px 28px; }
+  .ups__bar { padding: 14px 28px 12px; }
+}
+
 /* ---- Scroll reveal -------------------------------------------------------- */
 .rv { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
 .rv--in { opacity: 1; transform: none; }
