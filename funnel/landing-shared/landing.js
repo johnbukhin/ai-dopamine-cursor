@@ -217,11 +217,12 @@
       </div>`;
   }
 
-  // The quiz variant promises a plan, so the button has to say so. The direct
-  // variant has no plan to give — v1's "Get my plan" scrolling to a price table
-  // was a promise with no payoff, which is a conversion leak, not a win.
+  // Before the quiz the button promises the plan, because that is what the
+  // click delivers. Once the plan exists the promise is spent: "See my plan"
+  // would send a decided buyer back to a card they have already read, so from
+  // here on every CTA carries the buying label and lands on the tiers.
   function primaryCtaLabel() {
-    if (CFG.flow === 'quiz') return quizResult ? 'See my plan' : (CONTENT.quiz?.openCta || 'Build my plan');
+    if (CFG.flow === 'quiz' && !quizResult) return CONTENT.quiz?.openCta || 'Build my plan';
     return CONTENT.pricing.cta;
   }
 
@@ -603,8 +604,8 @@
     answers: {},
 
     open() {
-      if (CFG.flow !== 'quiz') { scrollToPricing(); return; }
-      if (quizResult) { scrollToPricing(); return; }
+      if (CFG.flow !== 'quiz') { scrollToOffer(); return; }
+      if (quizResult) { scrollToOffer(); return; }
       this.step = 0;
       this.answers = {};
       const node = el('quiz');
@@ -696,6 +697,9 @@
       renderPlanSlot();
       refreshCtaLabels();
       wireReveal();
+      // Deliberately the top of #pricing, not scrollToOffer(): this is the one
+      // moment the personalized plan card has to be seen — it is the payoff for
+      // answering. Every later CTA click skips straight to the tiers.
       scrollToPricing();
     },
   };
@@ -900,6 +904,16 @@
     el('pricing').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // Where a "Start today" click lands. Once the quiz has produced a plan the
+  // buyer has already read the plan card and the value copy above the tiers, so
+  // aiming at the top of #pricing makes them scroll past all of it a second
+  // time to reach the prices. Aim at the tier list instead — html has
+  // scroll-padding-top for the sticky header, so nothing hides under it.
+  function scrollToOffer() {
+    const tiers = CFG.flow === 'quiz' && quizResult && document.querySelector('.tiers');
+    (tiers || el('pricing')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function refreshCtaLabels() {
     const label = primaryCtaLabel();
     document.querySelectorAll('[data-cta]').forEach((b) => {
@@ -911,7 +925,7 @@
 
   function onPrimaryCta() {
     if (CFG.flow === 'quiz' && !quizResult) Quiz.open();
-    else scrollToPricing();
+    else scrollToOffer();
   }
 
   function wireInteractions() {
