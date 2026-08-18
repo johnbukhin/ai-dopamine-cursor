@@ -11,8 +11,9 @@
     <meta property="og:description" content="Quit porn with a plan built around what actually triggers you. Not a blocker, not willpower. Private, judgment-free, two minutes to set up.">
     <meta property="og:type" content="website">
 
-    <link rel="stylesheet" href="../landing-shared/core.css?v=20260817">
-    <link id="theme-css" rel="stylesheet" href="../landing-shared/theme-warm.css?v=20260817">
+    <link rel="stylesheet" href="../landing-shared/core.css?v=20260818">
+    <link id="theme-css" rel="stylesheet" href="../landing-shared/theme-warm.css?v=20260818">
+    <link id="hero-preload" rel="preload" as="image" href="../assets/hero/warm.jpg" fetchpriority="high">
     <script>
       /* Resolve the theme synchronously, before the parser reaches <body>, so
          there is no flash of the wrong palette. ?theme= wins, then the last
@@ -26,12 +27,14 @@
         document.documentElement.setAttribute('data-theme', t);
         if (t !== 'warm') {
           document.getElementById('theme-css').href =
-            '../landing-shared/theme-' + t + '.css?v=20260817';
+            '../landing-shared/theme-' + t + '.css?v=20260818';
         }
+        /* Each theme has its own hero art, so the preload has to follow the
+           theme too — a fixed href would warm the cache for a file this
+           render never uses and leave the real LCP image unfetched. */
+        document.getElementById('hero-preload').href = '../assets/hero/' + t + '.jpg';
       })();
     </script>
-
-    <link rel="preload" as="image" href="../assets/after_state_male.png" fetchpriority="high">
 
     <!-- ── Meta Pixel (shared with the funnel — same pixel id) ─────────────── -->
     <script>

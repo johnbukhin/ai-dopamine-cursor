@@ -285,15 +285,18 @@ h1, h2, h3 {
   position: relative;
   /* Same reason as .mark — contains the blob's negative z-index. */
   z-index: 0;
-  margin: 4px calc(var(--gutter) * -1) 0;
+  margin: 4px 0 0;
 }
 .hero__media img {
+  display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 10;
+  /* The theme hero art is a finished 16:9 card with its own frame and headline
+     baked in. Any crop eats one or the other, so match the file ratio exactly
+     and keep it inside the gutter instead of bleeding it to the screen edge. */
+  aspect-ratio: 1672 / 941;
   object-fit: cover;
-  object-position: 50% 22%;
-  border-radius: 0;
+  border-radius: var(--radius-lg);
 }
 /* Off-grid accent blob — breaks the perfect rectangle. */
 .hero__blob {
@@ -954,7 +957,6 @@ h1, h2, h3 {
   .hero__grid { grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center; }
   .hero__actions { flex-direction: row; align-items: center; }
   .hero__media { margin: 0; }
-  .hero__media img { border-radius: var(--radius-lg); aspect-ratio: 4 / 5; }
   .hero__blob { top: -30px; right: -30px; width: 230px; height: 230px; }
 
   .proof__value { font-size: 28px; }

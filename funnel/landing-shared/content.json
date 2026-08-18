@@ -14,8 +14,13 @@
     "headlineAccent": "real",
     "subheadline": "A plan built around what actually triggers you — not a blocker, not willpower. Two minutes to set up.",
     "reassurance": "100% private · Cancel anytime · 30-day refund",
-    "image": "../assets/after_state_male.png",
-    "imageAlt": "Mind Compass member"
+    "image": "../assets/hero/warm.jpg",
+    "images": {
+      "warm": "../assets/hero/warm.jpg",
+      "dark": "../assets/hero/dark.jpg",
+      "clean": "../assets/hero/clean.jpg"
+    },
+    "imageAlt": "This ends now."
   },
 
   "proof": {

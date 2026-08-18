@@ -226,6 +226,14 @@
     return CONTENT.pricing.cta;
   }
 
+  // Each theme ships its own hero art, so the three palettes don't all lead with
+  // the same photo. The picker reloads the page when it switches themes, so
+  // resolving the src once at render time is enough — no live swap needed.
+  function heroImage(h) {
+    const t = document.documentElement.getAttribute('data-theme');
+    return h.images?.[t] || h.images?.warm || h.image;
+  }
+
   function renderHero(c) {
     const h = c.hero;
     let title = esc(h.headline);
@@ -247,7 +255,7 @@
           </div>
           <div class="hero__media rv">
             <span class="hero__blob" aria-hidden="true"></span>
-            <img src="${esc(h.image)}" alt="${esc(h.imageAlt)}" width="1406" height="768" fetchpriority="high">
+            <img src="${esc(heroImage(h))}" alt="${esc(h.imageAlt)}" width="1672" height="941" fetchpriority="high">
           </div>
         </div>
       </div>`;
