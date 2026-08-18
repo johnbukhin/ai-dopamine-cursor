@@ -170,6 +170,11 @@ h1, h2, h3 {
   transition: transform .12s ease, background .16s ease, box-shadow .16s ease, opacity .16s ease;
 }
 .btn:active { transform: translateY(1px); }
+/* Icons ship as a bare <svg viewBox> with no width/height, so without an
+   explicit size they fall back to the 300x150 replaced-element default, eat the
+   flex line and break the label onto two rows. Every other icon context sizes
+   its svg; buttons were missing theirs. */
+.btn svg { width: 20px; height: 20px; flex: 0 0 auto; }
 .btn--cta {
   background: var(--c-cta);
   color: var(--c-cta-ink);
@@ -251,9 +256,11 @@ h1, h2, h3 {
 .themepicker button[aria-current="true"] { background: var(--c-ink); color: var(--c-bg); }
 
 /* ============================================================================
-   HERO — asymmetric: copy left, portrait right, portrait bleeds past the grid
+   HERO — stacked: copy, then the theme art at full container width. The art is
+   a finished 16:9 card carrying its own headline, so it gets the whole column
+   rather than half of a split grid.
    ============================================================================ */
-.hero { padding: 34px 0 0; overflow: hidden; }
+.hero { padding: 34px 0 30px; overflow: hidden; }
 .hero__grid { display: grid; gap: 26px; }
 .hero__badge {
   display: inline-flex;
@@ -298,8 +305,12 @@ h1, h2, h3 {
   object-fit: cover;
   border-radius: var(--radius-lg);
 }
-/* Off-grid accent blob — breaks the perfect rectangle. */
+/* Off-grid accent blob. Existed to break the rectangle of a plain stock photo;
+   the theme art now brings its own frame and glow, so against a full-width card
+   the blob just reads as a smudge leaking out of the corner. Kept (not deleted)
+   so swapping back to a plain photo only means flipping this line. */
 .hero__blob {
+  display: none;
   position: absolute;
   width: 190px;
   height: 190px;
@@ -953,9 +964,17 @@ h1, h2, h3 {
 @media (min-width: 700px) {
   body { font-size: 18px; }
   .h2 { font-size: 33px; }
-  .hero { padding: 56px 0 0; }
-  .hero__grid { grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center; }
-  .hero__actions { flex-direction: row; align-items: center; }
+  /* Desktop stacks rather than splitting. A 48% column shrank the art and set
+     its baked-in "THIS ENDS NOW." against the h1 at similar size; at full
+     container width the two read as headline then image instead of competing.
+     Copy is centred over it — text-wrap:balance keeps the h1 from breaking one
+     word onto its own line, which is the usual way a centred hero goes ugly. */
+  .hero { padding: 56px 0 44px; }
+  .hero__grid { gap: 34px; }
+  .hero__copy { text-align: center; }
+  .hero__title { max-width: 24ch; margin-inline: auto; text-wrap: balance; }
+  .hero__sub { margin-inline: auto; text-wrap: pretty; }
+  .hero__actions { flex-direction: row; justify-content: center; align-items: center; }
   .hero__media { margin: 0; }
   .hero__blob { top: -30px; right: -30px; width: 230px; height: 230px; }
 
