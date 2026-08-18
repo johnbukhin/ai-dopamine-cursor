@@ -21,6 +21,10 @@
     pixelContentName: 'LandingDirect',
     webappUrl: 'https://mind-compass-webapp.vercel.app',
     stripePk: 'pk_live_51RGn19EIAGyjtjbOlAiSpPQ3NnuzFCSg7ReDs1bE1zYzCuNkmZC1HvdT5tsbLu1vzMOLMwYluxHJy6TBbP38rWML00rdVcYbRg',
+    // Same pixel as the funnel — the two are one account, separated by
+    // content_name. Needed here (not just in the inline snippet) so advanced
+    // matching can re-init with the buyer's email.
+    pixelId: '1530402652053089',
     contentUrl: '../landing-shared/content.json',
   }, window.LANDING_CONFIG || {});
 
@@ -66,6 +70,8 @@
   const Currency = {
     _META: { usd: { symbol: '$' }, eur: { symbol: '€' }, gbp: { symbol: '£' }, cad: { symbol: 'CA$' }, aud: { symbol: 'A$' } },
     PRICES: {},
+    UPSELL: {},
+    upsellAvailable: false,
     _fetched: false,
     _detected: null,
 
@@ -95,6 +101,17 @@
         }
         this.PRICES[c] = t;
       }
+
+      // The AI Companion add-on is optional infrastructure: prices.js drops the
+      // key when STRIPE_PRICE_UPSELL is unset, and an add-on advertised at
+      // €0.00 whose CTA then 500s is worse than no add-on at all. An empty
+      // UPSELL map is the signal for PostPay to skip that step entirely — the
+      // step reappears by itself the moment the env var is configured.
+      if (raw.upsell) {
+        for (const c of SUPPORTED) this.UPSELL[c] = this._fmt(amt('upsell', c), c);
+        this.upsellAvailable = true;
+      }
+
       this._fetched = true;
     },
 
@@ -135,6 +152,11 @@
 
     live(tierId, code) { return this.PRICES[code || this.detect()]?.[tierId] || null; },
 
+    upsell(code) {
+      const c = code || this.detect();
+      return this.UPSELL[c] || this.UPSELL.eur || null;
+    },
+
     disclaimer(tierId, code) {
       let c = code || this.detect();
       let t = this.PRICES[c]?.[tierId];
@@ -159,7 +181,10 @@
   };
 
   // ==========================================================================
-  // Meta Pixel — content_name carries the variant so the A/B is measurable
+  // Meta Pixel — content_name carries the variant so the A/B is measurable.
+  // Event positions mirror engine/app.js so funnel and landing are comparable
+  // in Ads Manager: ViewContent+AddToCart on the offer, InitiateCheckout when
+  // the checkout opens, Lead on email, Purchase on confirmation.
   // ==========================================================================
   const Pixel = {
     _value(tierId, c) {
@@ -172,8 +197,68 @@
       if (eventId) fbq('track', ev, params, { eventID: eventId });
       else fbq('track', ev, params);
     },
-    viewContent() { this.track('ViewContent', { content_name: CFG.pixelContentName, content_type: 'product' }); },
-    lead() { this.track('Lead', { content_name: CFG.pixelContentName }); },
+
+    // Advanced matching. Re-initialising the same pixel id with user data is
+    // Meta's documented way to attach it mid-session; fbq hashes em in the
+    // browser, so the raw address never leaves the page.
+    _matched: false,
+    identify(email) {
+      if (this._matched || !email || typeof fbq !== 'function' || !CFG.pixelId) return;
+      fbq('init', CFG.pixelId, { em: email.trim().toLowerCase() });
+      this._matched = true;
+    },
+
+    // Click id. Meta only writes the _fbc cookie when landing traffic carries
+    // ?fbclid=, and only on that first pageview — a buyer who returns later
+    // from a bookmark has the click id nowhere. Persist it ourselves and
+    // synthesize the cookie format so CAPI can still attribute the purchase.
+    _clickKey: 'mc_fbclid_v1',
+    captureClickId() {
+      const id = new URLSearchParams(location.search).get('fbclid');
+      if (!id) return;
+      try { localStorage.setItem(this._clickKey, JSON.stringify({ id, ts: Date.now() })); } catch (_) {}
+    },
+    cookie(name) {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    },
+    fbp() { return this.cookie('_fbp'); },
+    fbc() {
+      const live = this.cookie('_fbc');
+      if (live) return live;
+      try {
+        const saved = JSON.parse(localStorage.getItem(this._clickKey) || 'null');
+        if (saved?.id) return `fb.1.${saved.ts}.${saved.id}`;
+      } catch (_) {}
+      return null;
+    },
+
+    // engine/app.js:6083-6084 fires both the moment the paywall renders. The
+    // landing equivalent is the pricing section entering the viewport, not the
+    // checkout modal opening — firing them there would have meant the two
+    // surfaces reported ViewContent at different funnel depths and neither
+    // number could be compared to the other.
+    _offerSeen: false,
+    offerSeen() {
+      if (this._offerSeen) return;
+      this._offerSeen = true;
+      this.track('ViewContent', { content_name: CFG.pixelContentName, content_type: 'product' });
+      this.track('AddToCart', { content_name: CFG.pixelContentName, content_type: 'product' });
+    },
+
+    // One Lead per session, at email capture, on both variants — the same point
+    // engine/app.js:4913 fires it. Previously this fired on quiz completion
+    // only, so landing-direct never reported a Lead at all and the two variants
+    // could not be compared against each other or against the funnel.
+    _lead: false,
+    lead(email) {
+      if (this._lead) return;
+      this._lead = true;
+      this.identify(email);
+      this.track('Lead', email
+        ? { content_name: CFG.pixelContentName, em: email }
+        : { content_name: CFG.pixelContentName });
+    },
     initiateCheckout(tierId, c) {
       this.track('InitiateCheckout', {
         value: this._value(tierId, c), currency: (c || 'USD').toUpperCase(),
@@ -602,6 +687,8 @@
     updateLegal();
     updateSticky();
     Checkout.refreshSummary();
+    // The PaymentIntent is tier-bound, so a tier change invalidates the warm one.
+    Checkout.prefetch();
   }
 
   // ==========================================================================
@@ -700,7 +787,6 @@
         },
       };
       saveQuiz(quizResult);
-      Pixel.lead();
       this.close();
       renderPlanSlot();
       refreshCtaLabels();
@@ -711,6 +797,57 @@
       scrollToPricing();
     },
   };
+
+  // ==========================================================================
+  // Overlays — checkout, upsell and password share one shell, and only one of
+  // them may hold the scroll lock at a time.
+  // ==========================================================================
+  function openOverlay(id) {
+    const m = el(id);
+    if (!m) return;
+    m.classList.add('modal--open');
+    m.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeOverlay(id) {
+    const m = el(id);
+    if (!m) return;
+    m.classList.remove('modal--open');
+    m.setAttribute('aria-hidden', 'true');
+    if (!document.querySelector('.modal--open')) document.body.style.overflow = '';
+  }
+
+  // The address survives a reload so a buyer who leaves and comes back gets the
+  // prefetched checkout too, not just the one who types it this session.
+  const EMAIL_KEY = 'mc_landing_email_v1';
+  function rememberEmail(e) { try { localStorage.setItem(EMAIL_KEY, e); } catch (_) {} }
+  function rememberedEmail() {
+    const live = el('email')?.value.trim();
+    if (live && EMAIL_RE.test(live)) return live;
+    try {
+      const saved = localStorage.getItem(EMAIL_KEY);
+      return saved && EMAIL_RE.test(saved) ? saved : '';
+    } catch (_) { return ''; }
+  }
+
+  // fbp/fbc/src_url ride along with the payment so webhook.js can put them in
+  // the server-side CAPI Purchase. The webhook has no browser context of its
+  // own — without this the landing's purchases reach Meta with a hashed email
+  // and nothing else, and are attributed to the funnel's URL.
+  function checkoutPayload(tierId, email) {
+    const p = {
+      tierId,
+      email,
+      currency: Currency.detect(),
+      srcUrl: location.origin + location.pathname,
+    };
+    const fbp = Pixel.fbp();
+    const fbc = Pixel.fbc();
+    if (fbp) p.fbp = fbp;
+    if (fbc) p.fbc = fbc;
+    return p;
+  }
 
   // ==========================================================================
   // Checkout — embedded Stripe (mirrors engine initStripe)
@@ -730,12 +867,8 @@
       el('pay-error').textContent = '';
       el('email-error').textContent = '';
 
-      const m = el('checkout');
-      m.classList.add('modal--open');
-      m.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
+      openOverlay('checkout');
 
-      Pixel.viewContent();
       if (!this.initiated) { Pixel.initiateCheckout(selectedTier, Currency.detect()); this.initiated = true; }
 
       const email = el('email').value.trim();
@@ -743,12 +876,7 @@
       setTimeout(() => el('email').focus(), 120);
     },
 
-    close() {
-      const m = el('checkout');
-      m.classList.remove('modal--open');
-      m.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-    },
+    close() { closeOverlay('checkout'); },
 
     refreshSummary() {
       const tier = CONTENT?.pricing?.tiers.find((t) => t.id === selectedTier);
@@ -771,8 +899,44 @@
       const email = el('email').value.trim();
       el('email-error').textContent = '';
       if (!EMAIL_RE.test(email)) return;
+      Pixel.lead(email);
+      rememberEmail(email);
       const key = `${selectedTier}|${email}`;
       if (key !== this.mountedKey && !this.building) this.build(email);
+    },
+
+    // Warm the PaymentIntent before the buyer asks for it. The intent is bound
+    // to a tier and an email, so it can only be prefetched once both are known:
+    // a returning buyer whose address is remembered, on every tier change.
+    // Without this the buyer stares at "Loading secure payment form…" for the
+    // full Stripe round trip, which is where funnel-v2 got its head start.
+    prefetch() {
+      const email = rememberedEmail();
+      if (!email || isDev() || typeof window.Stripe === 'undefined') return;
+      const tierId = selectedTier;
+      const key = `${tierId}|${email}`;
+      if (this._pf?.key === key || this.mountedKey === key) return;
+
+      if (this._pfAbort) this._pfAbort.abort();
+      this._pfAbort = new AbortController();
+      const signal = this._pfAbort.signal;
+
+      this._pf = {
+        key,
+        promise: fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(checkoutPayload(tierId, email)),
+          signal,
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (!data?.clientSecret) return null;
+            const stripe = window.Stripe(CFG.stripePk);
+            return { data, stripe, elements: stripe.elements({ clientSecret: data.clientSecret }) };
+          })
+          .catch(() => null),
+      };
     },
 
     setBtn(disabled, text) {
@@ -788,7 +952,6 @@
     async build(email) {
       this.building = true;
       const tierId = selectedTier;
-      const currency = Currency.detect();
       const mount = el('pay-mount');
       this.err('');
       this.setBtn(true, 'Preparing secure checkout…');
@@ -803,30 +966,40 @@
       }
 
       try {
-        const res = await fetch('/api/create-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tierId, email, currency }),
-        });
-        const raw = await res.text();
-        let data = {};
-        try { data = raw ? JSON.parse(raw) : {}; } catch (_) {}
-        if (!res.ok || !data.clientSecret) {
-          this.err(data.error || 'Payment setup failed. Please try again.');
-          this.setBtn(true, 'Enter your email to continue');
-          this.building = false;
-          return;
+        const key = `${tierId}|${email}`;
+
+        // A matching prefetch is already a resolved (or nearly resolved)
+        // PaymentIntent with elements attached — reuse it rather than paying
+        // for a second round trip and a second intent.
+        let pre = null;
+        if (this._pf?.key === key) pre = await this._pf.promise;
+
+        let data = pre?.data || null;
+        if (!data) {
+          const res = await fetch('/api/create-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(checkoutPayload(tierId, email)),
+          });
+          const raw = await res.text();
+          try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
+          if (!res.ok || !data.clientSecret) {
+            this.err(data.error || 'Payment setup failed. Please try again.');
+            this.setBtn(true, 'Enter your email to continue');
+            this.building = false;
+            return;
+          }
         }
         this.data = data;
 
-        if (typeof window.Stripe === 'undefined') {
+        if (!pre && typeof window.Stripe === 'undefined') {
           this.err('Payment provider failed to load. Please refresh.');
           this.building = false;
           return;
         }
 
-        this.stripe = window.Stripe(CFG.stripePk);
-        this.elements = this.stripe.elements({ clientSecret: data.clientSecret });
+        this.stripe = pre?.stripe || window.Stripe(CFG.stripePk);
+        this.elements = pre?.elements || this.stripe.elements({ clientSecret: data.clientSecret });
         const pe = this.elements.create('payment');
         mount.innerHTML = '';
         pe.mount('#pay-mount');
@@ -850,7 +1023,7 @@
 
       if (isDev()) {
         Pixel.purchase(selectedTier, currency, null);
-        location.href = CFG.webappUrl;
+        PostPay.start(email, null);
         return;
       }
 
@@ -873,6 +1046,7 @@
       }
 
       Pixel.purchase(selectedTier, currency, this.data?.subscriptionId);
+      this.setBtn(true, 'Payment confirmed');
 
       // Forward the micro-quiz answers so the webapp personalizes on day one
       // using the same vocabulary the full funnel produces.
@@ -895,11 +1069,274 @@
         });
         const d = await res.json();
         if (d.provisioned) tokens = { access_token: d.access_token, refresh_token: d.refresh_token };
-      } catch (_) { /* non-fatal — the account exists, the buyer can log in */ }
+      } catch (_) { /* non-fatal — the buyer still gets the password step */ }
 
-      const hash = tokens
-        ? '#access_token=' + encodeURIComponent(tokens.access_token) +
-          '&refresh_token=' + encodeURIComponent(tokens.refresh_token)
+      PostPay.start(email, tokens);
+    },
+  };
+
+  // ==========================================================================
+  // Upsell markup — the offer from engine/app.js Screens.upsell(), rebuilt on
+  // landing theme tokens. It is deliberately long: this is a full takeover, not
+  // a dialog, because the same offer squeezed into a 460px sheet reads as an
+  // interstitial to dismiss rather than a product to consider.
+  // ==========================================================================
+  const UPSELL_FEATURES = [
+    {
+      tag: 'AI Coach', title: 'Your 24/7 recovery coach', img: 'coach.jpg', dark: true,
+      points: [
+        'Understands exactly where you are in your journey',
+        "Checks in on hard days so you don't face them alone",
+        'Keeps you on track without relying on willpower',
+      ],
+    },
+    {
+      tag: 'AI Help', title: 'Instant answers when urges hit', img: 'help.jpg', dark: false,
+      points: [
+        'Explains why you feel what you feel, in plain language',
+        'Gives you actionable steps mid-craving, not generic advice',
+        'Available inside the app the moment you need it',
+      ],
+    },
+    {
+      tag: 'Daily Progress', title: 'Stay consistent every single day', img: 'progress.jpg', dark: true,
+      points: [
+        'Daily check-ins that keep you accountable',
+        'Progress insights that show how far you have come',
+        'Celebrate milestones that make recovery feel real',
+      ],
+    },
+  ];
+
+  const UPSELL_REVIEWS = [
+    { name: 'Marcus D.', meta: 'Completed Day 28', text: 'Day 12 hit like a wall. I almost gave up. The AI Coach helped me understand what was happening and what to do. I finished the whole plan.' },
+    { name: 'Sophie K.', meta: 'Day 41', text: "I used to spiral when I slipped. AI Help showed me exactly what to do instead of giving up. I'm now on day 41 — never thought I'd get here." },
+    { name: 'James R.', meta: 'Week 8', text: "Having the AI check in on me every morning changed everything. I'm not fighting this alone anymore. Completely worth it." },
+  ];
+
+  function upsellMarkup(price) {
+    const p = esc(price);
+    const A = '../assets/upsell/';
+    const step = (n, label, state) => `
+      <div class="ups__step">
+        <span class="ups__step-dot ups__step-dot--${state}">${state === 'done' ? '✓' : n}</span>
+        <span class="ups__step-label ups__step-label--${state}">${label}</span>
+      </div>`;
+
+    return `
+      <div class="ups">
+        <div class="ups__bar">
+          <div class="ups__bar-row">
+            <span class="ups__brand">${ic('compass')}Mind Compass</span>
+            <button class="ups__skip" data-upsell="skip">SKIP &rarr;</button>
+          </div>
+          <div class="ups__steps">
+            ${step(1, 'Payment', 'done')}<span class="ups__step-line ups__step-line--done"></span>
+            ${step(2, 'Bonus', 'now')}<span class="ups__step-line"></span>
+            ${step(3, 'Access plan', 'next')}
+          </div>
+        </div>
+
+        <div class="ups__body">
+          <div class="ups__intro">
+            <span class="eyebrow">Special one-time offer</span>
+            <h2 class="ups__headline">Supercharge your recovery with AI</h2>
+            <p class="ups__sub">Add your personal AI Companion and get support exactly when you need it.
+              One-time unlock — yours forever for just <strong>${p}</strong>.</p>
+            <div class="ups__hero"><img src="${A}hero.jpg" alt="" loading="lazy"></div>
+            <p class="ups__legal">By clicking "Confirm payment", you authorize a one-time charge of ${p}
+              using your saved payment method.</p>
+          </div>
+
+          ${UPSELL_FEATURES.map((f) => `
+            <div class="ups__feature ${f.dark ? 'ups__feature--dark' : ''}">
+              <span class="ups__tag">${esc(f.tag)}</span>
+              <h3 class="ups__feature-title">${esc(f.title)}</h3>
+              <img class="ups__feature-img" src="${A}${f.img}" alt="${esc(f.tag)}" loading="lazy">
+              <ul class="ups__list">
+                ${f.points.map((x) => `<li>${ic('check')}<span>${esc(x)}</span></li>`).join('')}
+              </ul>
+            </div>`).join('')}
+
+          <div class="ups__map">
+            <img src="../assets/world-map-dots.svg" alt="" loading="lazy">
+            <p><strong>50,000+</strong> people worldwide are recovering with Mind Compass</p>
+          </div>
+
+          <div class="ups__reviews">
+            <h3 class="ups__reviews-title">What people are saying</h3>
+            <div class="ups__reviews-scroll">
+              ${UPSELL_REVIEWS.map((r) => `
+                <div class="ups__review">
+                  <div class="ups__stars">${ic('star').repeat(5)}</div>
+                  <p class="ups__review-text">${esc(r.text)}</p>
+                  <div class="ups__review-by">
+                    <span class="ups__avatar">${esc(r.name.charAt(0))}</span>
+                    <span>
+                      <span class="ups__review-name">${esc(r.name)}</span>
+                      <span class="ups__review-meta">${esc(r.meta)}</span>
+                    </span>
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>
+
+          <div class="ups__final">
+            <img src="${A}showcase.jpg" alt="Mind Compass app" loading="lazy">
+            <p class="ups__legal">By clicking "Confirm payment", you authorize a one-time charge of ${p}.
+              No recurring payments, no subscription — access is yours forever.</p>
+          </div>
+        </div>
+
+        <div class="ups__act">
+          <button class="btn btn--cta btn--block btn--lg" data-upsell="confirm">Confirm payment — ${p}</button>
+          <button class="ups__decline" data-upsell="skip">No thanks, take me to my plan</button>
+        </div>
+      </div>`;
+  }
+
+  // ==========================================================================
+  // Post-payment — the two screens funnel-v2 shows after the card is charged.
+  //
+  // The landing used to jump straight from confirmPayment() to the webapp on a
+  // provisioned session. provision-account.js sets a random UUID as the
+  // password and never returns it, so that buyer could use the app until the
+  // session lapsed and then had no way back in. funnel-v2 avoids this by
+  // overwriting the password on its create_account screen; this is that screen.
+  //
+  // Money has already changed hands here, so nothing in this file may dead-end:
+  // every failure path still lands the buyer in the webapp with whatever
+  // session exists.
+  // ==========================================================================
+  const PostPay = {
+    email: '',
+    tokens: null,
+    hasUpsell: false,
+
+    start(email, tokens) {
+      this.email = email;
+      this.tokens = tokens;
+      Checkout.close();
+      if (Currency.upsellAvailable) this.openUpsell();
+      else this.openAccount();
+    },
+
+    // ---- Step 2: AI Companion add-on -------------------------------------
+    openUpsell() {
+      const price = Currency.upsell();
+      if (!price) { this.openAccount(); return; }
+      el('upsell-body').innerHTML = upsellMarkup(price);
+      openOverlay('upsell');
+      el('upsell')?.scrollTo?.(0, 0);
+    },
+
+    async confirmUpsell(button) {
+      if (button?.disabled) return;
+      document.querySelectorAll('[data-upsell="confirm"]').forEach((b) => {
+        b.disabled = true;
+        b.classList.add('btn--off');
+        b.textContent = 'Processing…';
+      });
+
+      if (!isDev() && this.email) {
+        try {
+          const res = await fetch('/api/create-upsell', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: this.email, currency: Currency.detect() }),
+          });
+          const d = await res.json();
+          // A declined or misconfigured add-on is not the buyer's problem and
+          // not worth an error screen between them and the app they just paid
+          // for — treat any non-success exactly like a skip.
+          if (d?.success) this.hasUpsell = true;
+        } catch (_) { /* treated as a skip */ }
+      } else if (isDev()) {
+        this.hasUpsell = true;
+      }
+
+      this.skipUpsell();
+    },
+
+    skipUpsell() {
+      closeOverlay('upsell');
+      this.openAccount();
+    },
+
+    // ---- Step 3: password -------------------------------------------------
+    openAccount() {
+      const mail = el('acct-email');
+      if (mail) mail.value = this.email;
+      const err = el('acct-error');
+      if (err) err.textContent = '';
+      openOverlay('account');
+      setTimeout(() => el('acct-password')?.focus(), 120);
+    },
+
+    async submitAccount() {
+      const pw = el('acct-password').value;
+      const confirm = el('acct-confirm').value;
+      const err = el('acct-error');
+      const btn = el('acct-btn');
+
+      // Mirrors engine/app.js:5064-5077 and create-user.js:44, which rejects
+      // anything shorter than 8 server-side.
+      if (!pw || !confirm) { err.textContent = 'Please fill in both fields.'; return; }
+      if (pw !== confirm) { err.textContent = 'Passwords do not match.'; return; }
+      if (pw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return; }
+
+      err.textContent = '';
+      btn.disabled = true;
+      btn.classList.add('btn--off');
+      btn.textContent = 'Creating your account…';
+
+      if (isDev()) { this.toWebapp(); return; }
+
+      try {
+        const payload = {
+          email: this.email,
+          password: pw,
+          selectedPlan: selectedTier,
+          funnelVersion: CFG.funnelVersion,
+        };
+        if (quizResult) {
+          payload.mainChallenge = quizResult.challenge;
+          payload.goal = quizResult.goal;
+          payload.quizAnswers = quizResult.answers;
+        }
+        const res = await fetch('/api/create-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to set your password');
+
+        // Prefer these over the provision tokens: that session predates the
+        // password the buyer just chose.
+        if (d.access_token && d.refresh_token) {
+          this.tokens = { access_token: d.access_token, refresh_token: d.refresh_token };
+        }
+      } catch (e) {
+        // provision-account already created the account, so "already
+        // registered" here means the password simply did not stick. Say so
+        // plainly and send them on with the session they have rather than
+        // trapping them on a form that will keep failing.
+        err.textContent = 'We could not save that password. Opening your account — you can set a password from the app.';
+        btn.textContent = 'Opening your account…';
+        setTimeout(() => this.toWebapp(), 2200);
+        return;
+      }
+
+      this.toWebapp();
+    },
+
+    toWebapp() {
+      const t = this.tokens;
+      const hash = t?.access_token && t?.refresh_token
+        ? '#access_token=' + encodeURIComponent(t.access_token) +
+          '&refresh_token=' + encodeURIComponent(t.refresh_token) +
+          (this.hasUpsell ? '&upsell=1' : '')
         : '';
       location.href = CFG.webappUrl + hash;
     },
@@ -953,6 +1390,13 @@
       if (e.target.closest('[data-action="checkout"]')) { Checkout.open(); return; }
       if (e.target.closest('[data-close-modal]')) { Checkout.close(); return; }
 
+      const ups = e.target.closest('[data-upsell]');
+      if (ups) {
+        if (ups.getAttribute('data-upsell') === 'confirm') PostPay.confirmUpsell(ups);
+        else PostPay.skipUpsell();
+        return;
+      }
+
       const tier = e.target.closest('.tier');
       if (tier) { selectTier(tier.getAttribute('data-tier')); return; }
 
@@ -977,6 +1421,9 @@
     });
 
     document.addEventListener('keydown', (e) => {
+      // Only the pre-payment surfaces are dismissible. Escaping out of the
+      // upsell or the password step would leave a paying buyer on a landing
+      // page with no account and no way back to either screen.
       if (e.key === 'Escape') { Checkout.close(); Quiz.close(); }
       if ((e.key === 'Enter' || e.key === ' ') && document.activeElement?.classList.contains('tier')) {
         e.preventDefault();
@@ -986,6 +1433,22 @@
 
     el('email').addEventListener('input', () => Checkout.onEmailInput());
     el('pay-form').addEventListener('submit', (e) => { e.preventDefault(); Checkout.pay(); });
+    el('acct-form')?.addEventListener('submit', (e) => { e.preventDefault(); PostPay.submitAccount(); });
+  }
+
+  // ViewContent + AddToCart fire when the offer is actually on screen, and the
+  // same moment is the earliest point a prefetch is worth spending.
+  function wireOffer() {
+    const pricing = el('pricing');
+    if (!pricing) return;
+    if (!('IntersectionObserver' in window)) { Pixel.offerSeen(); Checkout.prefetch(); return; }
+    const obs = new IntersectionObserver((entries) => {
+      if (!entries.some((en) => en.isIntersecting)) return;
+      obs.disconnect();
+      Pixel.offerSeen();
+      Checkout.prefetch();
+    }, { threshold: 0.25 });
+    obs.observe(pricing);
   }
 
   function wireSticky() {
@@ -1041,6 +1504,9 @@
   // Boot
   // ==========================================================================
   async function init() {
+    // Before anything can navigate away from the ad's landing URL.
+    Pixel.captureClickId();
+
     try {
       CONTENT = await (await fetch(CFG.contentUrl)).json();
     } catch (err) {
@@ -1076,6 +1542,7 @@
     guard('reveal', wireReveal);
     guard('themepicker', wireThemePicker);
     guard('stickyPrice', updateSticky);
+    guard('offer', wireOffer);
 
     Currency.fetch().then(updatePrices);
   }
