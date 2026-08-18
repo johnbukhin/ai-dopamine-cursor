@@ -60,11 +60,15 @@ export default async function handler(req, res) {
     // from the funnel's hardcoded URL. Stripe metadata values must be strings and
     // are capped at 500 chars; anything longer is dropped rather than truncated,
     // since a clipped click id is worse than no click id.
-    const fit = (v) => (typeof v === 'string' && v && v.length <= 500 ? v : null);
-    const pixelMeta = {};
-    if (fit(fbp)) pixelMeta.fbp = fbp;
-    if (fit(fbc)) pixelMeta.fbc = fbc;
-    if (fit(srcUrl)) pixelMeta.src_url = srcUrl;
+    //
+    // Every key is always written, empty string included. Stripe merges a
+    // metadata update into what is already there rather than replacing it, so
+    // omitting a key leaves the previous session's value in place — a buyer who
+    // first arrived from an ad and later returned organically would have that
+    // months-old click id attributed to the purchase. An empty string clears it.
+    const fit = (v) => (typeof v === 'string' && v && v.length <= 500 ? v : '');
+    const pixelMeta = { fbp: fit(fbp), fbc: fit(fbc), src_url: fit(srcUrl) };
+    const hasPixelMeta = Object.values(pixelMeta).some(Boolean);
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
 
@@ -79,7 +83,7 @@ export default async function handler(req, res) {
 
         // A returning customer keeps whatever identifiers this session supplies —
         // the newest click is the one that earned the purchase.
-        if (existing.data.length > 0 && Object.keys(pixelMeta).length > 0) {
+        if (existing.data.length > 0 && hasPixelMeta) {
             await stripe.customers.update(customer.id, { metadata: pixelMeta });
         }
 

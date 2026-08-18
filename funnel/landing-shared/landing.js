@@ -917,7 +917,16 @@
       if (!email || isDev() || typeof window.Stripe === 'undefined') return;
       const tierId = selectedTier;
       const key = `${tierId}|${email}`;
-      if (this._pf?.key === key || this.mountedKey === key) return;
+      if (this._pf?.key === key) return;
+
+      // create-checkout cancels this customer's open subscription schedules
+      // before opening a new one, so issuing an intent invalidates whatever is
+      // already mounted — including an intent for this very key. Forget the
+      // mount so the next open() rebuilds instead of asking Stripe to confirm a
+      // PaymentIntent that was voided behind the buyer's back. Without this,
+      // comparing tiers and going back to the first one (A -> B -> A) leaves
+      // open() thinking its cached mount is still good, and the card declines.
+      this.mountedKey = null;
 
       if (this._pfAbort) this._pfAbort.abort();
       this._pfAbort = new AbortController();
@@ -1214,6 +1223,7 @@
     email: '',
     tokens: null,
     hasUpsell: false,
+    _charging: false,
 
     start(email, tokens) {
       this.email = email;
@@ -1233,10 +1243,16 @@
     },
 
     async confirmUpsell(button) {
-      if (button?.disabled) return;
-      document.querySelectorAll('[data-upsell="confirm"]').forEach((b) => {
+      if (button?.disabled || this._charging) return;
+      // Skip is disabled too, not just confirm. Leaving it live means a buyer
+      // who gets impatient mid-charge can advance to step 3 while the card is
+      // being charged anyway, then be told nothing about the add-on they now own.
+      this._charging = true;
+      document.querySelectorAll('[data-upsell]').forEach((b) => {
         b.disabled = true;
         b.classList.add('btn--off');
+      });
+      document.querySelectorAll('[data-upsell="confirm"]').forEach((b) => {
         b.textContent = 'Processing…';
       });
 
@@ -1394,6 +1410,7 @@
 
       const ups = e.target.closest('[data-upsell]');
       if (ups) {
+        if (ups.disabled) return;
         if (ups.getAttribute('data-upsell') === 'confirm') PostPay.confirmUpsell(ups);
         else PostPay.skipUpsell();
         return;
