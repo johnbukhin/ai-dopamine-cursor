@@ -1,0 +1,71 @@
+/* ============================================================================
+   Theme: WARM EDITORIAL
+   Sand paper, ink, coral. Serif display against a system sans body.
+   Reads like a magazine feature rather than a SaaS template.
+   ============================================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap");
+
+:root {
+  --c-bg: #fbf7f2;
+  --c-bg-alt: #f3ebe0;
+  --c-surface: #ffffff;
+  --c-ink: #1f1b16;
+  --c-ink-2: #62594f;
+  --c-ink-3: #9a9082;
+  --c-line: #e8ded1;
+  --c-line-strong: #d3c5b3;
+
+  --c-brand: #2f5d62;
+  --c-brand-soft: #e2eded;
+  --c-accent: #e2603c;
+  --c-accent-soft: #fdeee9;
+  --c-cta: #1f7a4c;
+  --c-cta-hover: #186139;
+  --c-cta-ink: #ffffff;
+
+  --c-invert-bg: #24201a;
+  --c-invert-ink: #f8f3ec;
+  --c-invert-ink-2: rgba(248, 243, 236, 0.66);
+  --c-invert-line: rgba(248, 243, 236, 0.16);
+
+  --c-star: #d9962b;
+  --c-danger: #c0432c;
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --display-weight: 700;
+  --display-tracking: -0.015em;
+  --display-case: none;
+  --eyebrow-tracking: 0.13em;
+
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-1: 0 1px 2px rgba(60, 45, 30, 0.05);
+  --shadow-2: 0 12px 28px rgba(60, 45, 30, 0.10);
+}
+
+/* Fraunces has a lot of presence — let the headline breathe. */
+.hero__title, .final__title { line-height: 1.02; }
+.h2 { line-height: 1.1; }
+
+/* Editorial detail: the eyebrow gets a rule instead of shouting in caps only. */
+.eyebrow::after {
+  content: "";
+  display: inline-block;
+  width: 26px;
+  height: 1px;
+  background: currentColor;
+  vertical-align: middle;
+  margin-left: 10px;
+  opacity: 0.5;
+}
+
+/* Paper, not plastic: flatter cards, hairline borders, no glossy shadow. */
+.tw__card { box-shadow: none; border-color: var(--c-line-strong); }
+/* A degree of hand-pinned imperfection on the review wall. */
+.tw__card:nth-child(3n+1) { transform: rotate(-0.45deg); }
+.tw__card:nth-child(3n+2) { transform: rotate(0.3deg); }
+.tw__card:nth-child(3n)   { transform: rotate(0.6deg); }
+@media (max-width: 767px) { .tw__card { transform: none !important; } }
+
+.hero__media img { filter: saturate(0.92) contrast(1.03); }
+.mark::after { opacity: 0.28; height: 0.4em; }

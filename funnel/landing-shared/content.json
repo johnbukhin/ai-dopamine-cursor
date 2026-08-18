@@ -1,0 +1,322 @@
+{
+  "brand": {
+    "name": "Mind Compass",
+    "tagline": "Take back control"
+  },
+  "meta": {
+    "title": "Mind Compass — Quit Porn for Good",
+    "description": "Quit porn with a plan built around what actually triggers you. Not a blocker, not willpower. Private, judgment-free, two minutes to set up."
+  },
+
+  "hero": {
+    "eyebrow": "Private · Nobody has to know",
+    "headline": "Quit porn. For real this time.",
+    "headlineAccent": "real",
+    "subheadline": "A plan built around what actually triggers you — not a blocker, not willpower. Two minutes to set up.",
+    "reassurance": "100% private · Cancel anytime · 30-day refund",
+    "image": "../assets/after_state_male.png",
+    "imageAlt": "Mind Compass member"
+  },
+
+  "proof": {
+    "stats": [
+      { "value": "200,000+", "label": "have started quitting porn" },
+      { "value": "4.8", "label": "average rating", "isRating": true },
+      { "value": "83%", "label": "feel more in control" }
+    ]
+  },
+
+  "problem": {
+    "eyebrow": "You're not broken",
+    "headline": "It was never willpower. Porn rewired your reward system.",
+    "body": "Your brain learned a shortcut: infinite novelty, zero effort. Next to that, real life feels flat. What got wired can get rewired.",
+    "painPoints": [
+      "\"Never again\" — and then it's Friday night.",
+      "Foggy, flat and unmotivated by 2pm.",
+      "Porn got easier than intimacy. You noticed.",
+      "The shame makes the urge louder, not quieter."
+    ],
+    "loopLabel": "The loop running underneath",
+    "loop": [
+      { "icon": "spark",  "title": "Trigger", "body": "Stress, boredom, a late scroll." },
+      { "icon": "flame",  "title": "Craving", "body": "Dopamine spikes before you decide." },
+      { "icon": "swirl",  "title": "Binge",   "body": "Tabs open. An hour gone." },
+      { "icon": "fog",    "title": "Crash",   "body": "Guilt and fog — the next trigger." }
+    ],
+    "loopNote": "…and round it goes.",
+    "breakout": {
+      "label": "Where we cut in",
+      "body": "One tap, right between the craving and the binge. That gap is all you need — and it widens every single time you use it."
+    }
+  },
+
+  "personas": {
+    "eyebrow": "Sound familiar?",
+    "headline": "You'll recognize yourself in one of these",
+    "items": [
+      { "title": "The relapse cycle", "body": "You've quit a hundred times. You need a method, not more shame." },
+      { "title": "The foggy one",     "body": "Flat and unfocused. You already know porn is part of it." },
+      { "title": "Checked out",       "body": "You want to be present again with the person you love." },
+      { "title": "The high performer", "body": "Career's fine. Gym's fine. The tab you close at 1am isn't." }
+    ]
+  },
+
+  "how": {
+    "eyebrow": "How it works",
+    "headline": "Three steps. That's the whole thing.",
+    "steps": [
+      { "title": "Answer 3 questions", "body": "We map what actually sets you off." },
+      { "title": "Get your plan",      "body": "Built around your triggers, not a generic program." },
+      { "title": "Tap when it hits",   "body": "One button turns the impulse into a choice." }
+    ],
+    "chips": ["Urge button", "Streak tracking", "24/7 coach", "Private by default"]
+  },
+
+  "testimonials": {
+    "eyebrow": "Members",
+    "headline": "People who actually quit",
+    "note": "Reviews from Mind Compass members. Some names shortened for privacy.",
+    "moreLabel": "Read more reviews",
+    "lessLabel": "Show fewer",
+    "items": [
+      {
+        "rating": 5,
+        "title": "Finally something that sticks",
+        "content": "Concise and easy — exactly what you need when you're trying to break a dopamine habit. It's the first thing that's actually helped me stay consistent.",
+        "author": "S. Krupert"
+      },
+      {
+        "rating": 5,
+        "title": "90 days and counting",
+        "content": "I never made it past a weekend before. The streak tracker turned quitting into something I actually look forward to protecting each morning.",
+        "author": "Matt R.",
+        "badge": "Day 90"
+      },
+      {
+        "rating": 5,
+        "title": "The urge button actually works",
+        "content": "When a craving hits I tap the button and follow the steps instead of reaching for my phone. That one pause has saved me more times than I can count.",
+        "author": "Danny N."
+      },
+      {
+        "rating": 5,
+        "title": "Got my focus back",
+        "content": "Before this I procrastinated for hours every day. Now I finally feel like I'm breaking away from the compulsive habit — and my head is so much clearer.",
+        "author": "Q. Zhao"
+      },
+      {
+        "rating": 5,
+        "title": "My relationship came back",
+        "content": "I didn't realize how checked-out I'd become until I stopped. Being fully present with my partner again is worth more than anything I paid for this.",
+        "author": "J. Rivera"
+      },
+      {
+        "rating": 5,
+        "title": "No more shame spiral",
+        "content": "The biggest shift was learning I'm not broken. Once the shame lifted, the urges got so much easier to sit with and let pass.",
+        "author": "Chris M."
+      },
+      {
+        "rating": 5,
+        "title": "Like a coach in my pocket",
+        "content": "Mind Compass is like a personal wellbeing coach. Everything's in one place and it makes you think twice before ruining your progress.",
+        "author": "Paul V."
+      },
+      {
+        "rating": 5,
+        "title": "Energy I forgot I had",
+        "content": "Two weeks in and I'm waking up motivated instead of foggy. The daily lessons are short enough that I actually keep up with them.",
+        "author": "T. Okafor",
+        "badge": "Day 14"
+      },
+      {
+        "rating": 5,
+        "title": "Private and judgment-free",
+        "content": "Nothing about the app announces what it's for, and there's zero lecturing. It just quietly helps. That's exactly what I needed.",
+        "author": "Anonymous"
+      },
+      {
+        "rating": 5,
+        "title": "Wish I'd found this sooner",
+        "content": "I'd tried blockers and cold turkey for years. Having an actual plan built around my triggers is the difference between hoping and knowing it'll work.",
+        "author": "Sam K."
+      }
+    ]
+  },
+
+  "pricing": {
+    "eyebrow": "Start today",
+    "headline": "Your plan is ready",
+    "anchor": "One therapy session costs about €80. One month of Mind Compass costs less than a coffee a week.",
+    "goals": [
+      "Quit porn without relying on willpower",
+      "Know exactly what to do when an urge hits",
+      "Get your focus and energy back",
+      "Be present again with the people who matter"
+    ],
+    "reasonWhy": "Introductory pricing on your first term.",
+    "cta": "Start today",
+    "guaranteeLine": "30 days. Not for you? Full refund.",
+    "tiers": [
+      {
+        "id": "7_day",
+        "name": "7-DAY PLAN",
+        "originalPrice": "€49.99",
+        "discountedPrice": "€10.50",
+        "pricePerDay": "€1.50/day",
+        "recommended": false,
+        "savings": "79% OFF"
+      },
+      {
+        "id": "1_month",
+        "name": "1-MONTH PLAN",
+        "badge": "MOST POPULAR",
+        "originalPrice": "€49.99",
+        "discountedPrice": "€19.99",
+        "pricePerDay": "€0.66/day",
+        "recommended": true,
+        "savings": "60% OFF"
+      },
+      {
+        "id": "3_month",
+        "name": "3-MONTH PLAN",
+        "originalPrice": "€99.99",
+        "discountedPrice": "€34.99",
+        "pricePerDay": "€0.38/day",
+        "recommended": false,
+        "savings": "65% OFF"
+      }
+    ],
+    "legalDisclaimer": "By clicking \"Start today\", you agree to automatic subscription renewal at the rate shown above. Cancel anytime via aicompass.tech@gmail.com. See our Subscription Policy for details."
+  },
+
+  "trust": {
+    "privacy": {
+      "headline": "Completely private",
+      "points": [
+        "Nothing on your device announces what this is for.",
+        "Your data stays yours — private and secure.",
+        "No lecturing, no judgment. Ever."
+      ]
+    },
+    "payment": {
+      "headline": "Pay safe & secure",
+      "icons": ["PayPal", "Apple Pay", "Visa", "Mastercard", "Maestro", "Amex"]
+    },
+    "science": {
+      "headline": "The method isn't guesswork",
+      "summary": "Mind Compass is built on cognitive behavioral therapy — the same approach clinicians use for compulsive porn use — and on how the brain's reward system actually adapts.",
+      "toggleLabel": "See the research",
+      "points": [
+        {
+          "claim": "A recognized condition",
+          "detail": "Compulsive sexual behavior is recognized by the World Health Organization in the ICD-11. You're dealing with something real.",
+          "source": "WHO ICD-11 (6C72)"
+        },
+        {
+          "claim": "CBT is proven for compulsive behavior",
+          "detail": "Cognitive behavioral therapy is one of the most evidence-based approaches for changing compulsive habits.",
+          "source": "Antons et al., J. Behavioral Addictions (2022)"
+        },
+        {
+          "claim": "Your brain adapts — and can re-adapt",
+          "detail": "Brain-imaging studies show compulsive sexual behavior involves reward and cue-reactivity patterns similar to other addictions.",
+          "source": "Voon et al., PLoS ONE (2014)"
+        }
+      ],
+      "disclaimer": "Mind Compass is a self-improvement and educational program, not a medical device or a substitute for professional care. Individual results vary."
+    }
+  },
+
+  "faq": {
+    "eyebrow": "Before you start",
+    "headline": "People often ask",
+    "questions": [
+      {
+        "question": "Is this really private?",
+        "answer": "Yes. Nothing about the app or your account announces what it's for, and your data is private and secure. No one sees it but you."
+      },
+      {
+        "question": "What if it doesn't work for me?",
+        "answer": "30 days. If it's not for you, we refund you in full — see our money-back policy for the details."
+      },
+      {
+        "question": "I've tried to quit porn before and failed.",
+        "answer": "Everyone here has. Willpower isn't what this runs on — you get a plan for the exact moment the urge hits, so you're not relying on gritting your teeth at 1am."
+      },
+      {
+        "question": "My triggers are everywhere. I can't escape them.",
+        "answer": "You don't have to. The goal is taking their power away, not removing them. You'll learn what to do in the ten seconds that matter."
+      },
+      {
+        "question": "How is this different from a blocker app?",
+        "answer": "A blocker hides porn from you and you route around it by week two. This works on the pattern underneath — what sets you off, and what to do instead. You stop wanting it rather than fighting to reach it."
+      }
+    ]
+  },
+
+  "finalCta": {
+    "headline": "Quit porn. Starting tonight.",
+    "subheadline": "Two minutes now. A different tomorrow.",
+    "cta": "Start today"
+  },
+
+  "footer": {
+    "company": "Mind Compass",
+    "supportEmail": "aicompass.tech@gmail.com",
+    "links": [
+      { "label": "Terms of Use", "href": "/legal/terms-of-use.html" },
+      { "label": "Privacy Policy", "href": "/legal/privacy-policy.html" },
+      { "label": "Subscription Policy", "href": "/legal/subscription-policy.html" },
+      { "label": "Cookie Policy", "href": "/legal/cookie-policy.html" }
+    ]
+  },
+
+  "quiz": {
+    "openCta": "Build my plan — 2 min",
+    "title": "Three questions.",
+    "subtitle": "That's all we need to build your plan.",
+    "buildingLabel": "Building your plan",
+    "buildingSteps": [
+      "Reading your triggers",
+      "Matching your recovery track",
+      "Setting your first-week targets"
+    ],
+    "questions": [
+      {
+        "id": "trigger",
+        "prompt": "What usually pulls you back to porn?",
+        "options": [
+          { "label": "Stress or anxiety",    "challenge": "Worrier" },
+          { "label": "Boredom and brain fog", "challenge": "Foggy Thinker" },
+          { "label": "No energy or drive",   "challenge": "Low Drive" },
+          { "label": "Beating myself up",    "challenge": "Inner Critic" }
+        ]
+      },
+      {
+        "id": "duration",
+        "prompt": "How long has this been going on?",
+        "options": [
+          { "label": "Under a year", "stage": "Emerging" },
+          { "label": "1–3 years",    "stage": "Recent" },
+          { "label": "3–5 years",    "stage": "Established" },
+          { "label": "5+ years",     "stage": "Deeply Rooted" }
+        ]
+      },
+      {
+        "id": "want",
+        "prompt": "What do you most want back?",
+        "options": [
+          { "label": "My focus",              "goal": "Focus levels" },
+          { "label": "My confidence",         "goal": "Self-confidence" },
+          { "label": "My relationship",       "goal": "Relationships" },
+          { "label": "Control over my time",  "goal": "Self-control" }
+        ]
+      }
+    ],
+    "resultEyebrow": "Your plan is ready",
+    "resultHeadline": "The {goal} track",
+    "resultBody": "Built for {challenge} triggers, at a {stage} stage. Your first week focuses on the moments that catch you out — not on white-knuckling through the rest.",
+    "resultTags": ["Personalized", "{stage} stage", "{goal}"]
+  }
+}

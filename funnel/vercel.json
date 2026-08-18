@@ -39,6 +39,16 @@
       "source": "/funnel-v2/cookie-policy.html",
       "destination": "/legal/cookie-policy.html",
       "permanent": true
+    },
+    {
+      "source": "/landing-quiz",
+      "destination": "/landing-quiz/",
+      "permanent": false
+    },
+    {
+      "source": "/landing-direct",
+      "destination": "/landing-direct/",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -68,6 +78,33 @@
     },
     {
       "source": "/landing-page/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/landing-quiz/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/landing-direct/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/landing-shared/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
