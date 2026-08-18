@@ -4,15 +4,15 @@
     "tagline": "Take back control"
   },
   "meta": {
-    "title": "Mind Compass — Take back control",
-    "description": "A private plan built around what actually triggers you. Two minutes to set up. Nobody has to know."
+    "title": "Mind Compass — Quit Porn for Good",
+    "description": "Quit porn with a plan built around what actually triggers you. Not a blocker, not willpower. Private, judgment-free, two minutes to set up."
   },
 
   "hero": {
     "eyebrow": "Private · Nobody has to know",
-    "headline": "Someday starts today.",
-    "headlineAccent": "today",
-    "subheadline": "A private plan built around what actually triggers you. Two minutes to set up.",
+    "headline": "Quit porn. For real this time.",
+    "headlineAccent": "real",
+    "subheadline": "A plan built around what actually triggers you — not a blocker, not willpower. Two minutes to set up.",
     "reassurance": "100% private · Cancel anytime · 30-day refund",
     "image": "../assets/after_state_male.png",
     "imageAlt": "Mind Compass member"
@@ -20,7 +20,7 @@
 
   "proof": {
     "stats": [
-      { "value": "200,000+", "label": "have started their reset" },
+      { "value": "200,000+", "label": "have started quitting porn" },
       { "value": "4.8", "label": "average rating", "isRating": true },
       { "value": "83%", "label": "feel more in control" }
     ]
@@ -28,19 +28,19 @@
 
   "problem": {
     "eyebrow": "You're not broken",
-    "headline": "It's not willpower. It's a hijacked reward system.",
-    "body": "Your brain learned a shortcut. Now everything slower than a screen feels flat. What got wired can get rewired.",
+    "headline": "It was never willpower. Porn rewired your reward system.",
+    "body": "Your brain learned a shortcut: infinite novelty, zero effort. Next to that, real life feels flat. What got wired can get rewired.",
     "painPoints": [
       "\"Never again\" — and then it's Friday night.",
       "Foggy, flat and unmotivated by 2pm.",
-      "Real intimacy can't compete with a screen.",
+      "Porn got easier than intimacy. You noticed.",
       "The shame makes the urge louder, not quieter."
     ],
     "loopLabel": "The loop running underneath",
     "loop": [
       { "icon": "spark",  "title": "Trigger", "body": "Stress, boredom, a late scroll." },
       { "icon": "flame",  "title": "Craving", "body": "Dopamine spikes before you decide." },
-      { "icon": "swirl",  "title": "Binge",   "body": "More stimulation than you were built for." },
+      { "icon": "swirl",  "title": "Binge",   "body": "Tabs open. An hour gone." },
       { "icon": "fog",    "title": "Crash",   "body": "Guilt and fog — the next trigger." }
     ],
     "loopNote": "…and round it goes.",
@@ -52,12 +52,12 @@
 
   "personas": {
     "eyebrow": "Sound familiar?",
-    "headline": "You'll recognise yourself in one of these",
+    "headline": "You'll recognize yourself in one of these",
     "items": [
       { "title": "The relapse cycle", "body": "You've quit a hundred times. You need a method, not more shame." },
-      { "title": "The foggy one",     "body": "Flat and unfocused — and you already suspect why." },
+      { "title": "The foggy one",     "body": "Flat and unfocused. You already know porn is part of it." },
       { "title": "Checked out",       "body": "You want to be present again with the person you love." },
-      { "title": "The high performer", "body": "Everything looks fine. Privately, it's costing you." }
+      { "title": "The high performer", "body": "Career's fine. Gym's fine. The tab you close at 1am isn't." }
     ]
   },
 
@@ -74,7 +74,7 @@
 
   "testimonials": {
     "eyebrow": "Members",
-    "headline": "People who stopped white-knuckling it",
+    "headline": "People who actually quit",
     "note": "Reviews from Mind Compass members. Some names shortened for privacy.",
     "moreLabel": "Read more reviews",
     "lessLabel": "Show fewer",
@@ -149,8 +149,8 @@
     "headline": "Your plan is ready",
     "anchor": "One therapy session costs about €80. One month of Mind Compass costs less than a coffee a week.",
     "goals": [
-      "Understand what actually triggers you",
-      "Get through urges without white-knuckling",
+      "Quit porn without relying on willpower",
+      "Know exactly what to do when an urge hits",
       "Get your focus and energy back",
       "Be present again with the people who matter"
     ],
@@ -205,7 +205,7 @@
     },
     "science": {
       "headline": "The method isn't guesswork",
-      "summary": "Mind Compass is built on cognitive behavioral therapy — the same approach clinicians use for compulsive behavior — and on how the brain's reward system actually adapts.",
+      "summary": "Mind Compass is built on cognitive behavioral therapy — the same approach clinicians use for compulsive porn use — and on how the brain's reward system actually adapts.",
       "toggleLabel": "See the research",
       "points": [
         {
@@ -241,8 +241,8 @@
         "answer": "30 days. If it's not for you, we refund you in full — see our money-back policy for the details."
       },
       {
-        "question": "My willpower is gone. I've failed before.",
-        "answer": "Good — willpower isn't what this runs on. You get a plan for the exact moment the urge hits, so you're not relying on gritting your teeth."
+        "question": "I've tried to quit porn before and failed.",
+        "answer": "Everyone here has. Willpower isn't what this runs on — you get a plan for the exact moment the urge hits, so you're not relying on gritting your teeth at 1am."
       },
       {
         "question": "My triggers are everywhere. I can't escape them.",
@@ -250,13 +250,13 @@
       },
       {
         "question": "How is this different from a blocker app?",
-        "answer": "Blockers fight the symptom and you route around them by week two. This works on the pattern underneath — what sets you off, and what to do instead."
+        "answer": "A blocker hides porn from you and you route around it by week two. This works on the pattern underneath — what sets you off, and what to do instead. You stop wanting it rather than fighting to reach it."
       }
     ]
   },
 
   "finalCta": {
-    "headline": "Start tonight.",
+    "headline": "Quit porn. Starting tonight.",
     "subheadline": "Two minutes now. A different tomorrow.",
     "cta": "Start today"
   },
@@ -285,7 +285,7 @@
     "questions": [
       {
         "id": "trigger",
-        "prompt": "What usually pulls you in?",
+        "prompt": "What usually pulls you back to porn?",
         "options": [
           { "label": "Stress or anxiety",    "challenge": "Worrier" },
           { "label": "Boredom and brain fog", "challenge": "Foggy Thinker" },
