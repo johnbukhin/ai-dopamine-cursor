@@ -873,8 +873,10 @@
 
       if (!this.initiated) { Pixel.initiateCheckout(selectedTier, Currency.detect()); this.initiated = true; }
 
-      const email = el('email').value.trim();
-      if (EMAIL_RE.test(email)) this.build(email);
+      // commitEmail rather than build: a remembered address whose intent is
+      // still mounted needs no second round trip, and a prefetch that cleared
+      // mountedKey is picked up here anyway.
+      this.commitEmail();
       setTimeout(() => el('email').focus(), 120);
     },
 
@@ -897,9 +899,28 @@
       if (legal) legal.textContent = Currency.disclaimer(selectedTier);
     },
 
+    // EMAIL_RE matches long before the buyer is done typing: "oleksandr@gmail.c"
+    // is already a valid address as far as the pattern is concerned. Building on
+    // that keystroke opened the PaymentIntent against a truncated address, and
+    // because build() holds `building` for the whole round trip the remaining
+    // "om" was swallowed by the guard below and never rebuilt. The buyer then
+    // paid as oleksandr@gmail.c while PostPay provisioned their account under
+    // the full address, so the webapp found no subscription for them.
+    //
+    // So: wait for a pause in typing, and treat leaving the field as "done".
+    EMAIL_SETTLE_MS: 650,
+
     onEmailInput() {
-      const email = el('email').value.trim();
       el('email-error').textContent = '';
+      clearTimeout(this._settle);
+      this._settle = setTimeout(() => this.commitEmail(), this.EMAIL_SETTLE_MS);
+    },
+
+    // Blur, change and submit mean the address is final — no reason to wait out
+    // the debounce and make the buyer watch a spinner they could have skipped.
+    commitEmail() {
+      clearTimeout(this._settle);
+      const email = el('email').value.trim();
       if (!EMAIL_RE.test(email)) return;
       Pixel.lead(email);
       rememberEmail(email);
@@ -1020,6 +1041,16 @@
         this.err('An unexpected error occurred. Please refresh and try again.');
       } finally {
         this.building = false;
+        // Everything typed while this build was in flight was dropped by the
+        // `!this.building` guard, and no further input event is coming if the
+        // buyer has stopped typing. Re-read the field: if the address moved on,
+        // this is the only chance to notice. The key comparison terminates the
+        // recursion — a rebuild for the same address cannot re-enter.
+        const live = el('email')?.value.trim() || '';
+        if (EMAIL_RE.test(live) && `${selectedTier}|${live}` !== this.mountedKey) {
+          rememberEmail(live);
+          this.build(live);
+        }
       }
     },
 
@@ -1040,6 +1071,19 @@
 
       if (this.building) return;
       if (!this.stripe || !this.elements) { this.build(email); return; }
+
+      // Last line of defence. The mounted PaymentIntent is bound to one address
+      // and one tier; confirming it while the field says something else charges
+      // a Stripe customer the buyer will never be able to log in as. Whatever
+      // race got us here — a swallowed keystroke, a prefetch that cancelled the
+      // schedule underneath us, a tier switched in another tab — rebuild rather
+      // than take the money against the wrong record.
+      if (this.mountedKey !== `${selectedTier}|${email}`) {
+        // build() clears the error box on entry, so the notice goes up after it.
+        this.build(email);
+        this.err('Your details changed — we refreshed the form. Please re-enter your card and try again.');
+        return;
+      }
 
       this.setBtn(true, 'Processing…');
       this.err('');
@@ -1451,7 +1495,15 @@
     });
 
     el('email').addEventListener('input', () => Checkout.onEmailInput());
-    el('pay-form').addEventListener('submit', (e) => { e.preventDefault(); Checkout.pay(); });
+    el('email').addEventListener('blur', () => Checkout.commitEmail());
+    el('email').addEventListener('change', () => Checkout.commitEmail());
+    el('pay-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // A buyer who types and hits Enter straight away must not outrun the
+      // debounce and reach pay() before the intent for that address exists.
+      Checkout.commitEmail();
+      Checkout.pay();
+    });
     el('acct-form')?.addEventListener('submit', (e) => { e.preventDefault(); PostPay.submitAccount(); });
   }
 
