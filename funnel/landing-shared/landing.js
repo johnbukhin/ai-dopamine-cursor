@@ -1044,10 +1044,16 @@
         // Everything typed while this build was in flight was dropped by the
         // `!this.building` guard, and no further input event is coming if the
         // buyer has stopped typing. Re-read the field: if the address moved on,
-        // this is the only chance to notice. The key comparison terminates the
-        // recursion — a rebuild for the same address cannot re-enter.
+        // this is the only chance to notice.
+        //
+        // The comparison is against the address this build was for, NOT against
+        // mountedKey. A failed create-checkout leaves mountedKey unset, so a
+        // mountedKey test would retry forever — hammering Stripe on every lap
+        // and holding the buyer on a spinner whose error message each new build
+        // wipes before they can read it. Comparing addresses retries only when
+        // the buyer actually typed something new, which cannot repeat on its own.
         const live = el('email')?.value.trim() || '';
-        if (EMAIL_RE.test(live) && `${selectedTier}|${live}` !== this.mountedKey) {
+        if (live !== email && EMAIL_RE.test(live)) {
           rememberEmail(live);
           this.build(live);
         }
