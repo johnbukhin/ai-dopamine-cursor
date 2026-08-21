@@ -3,5 +3,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2",
     "stripe": "^14"
+  },
+  "scripts": {
+    "test": "node --experimental-test-module-mocks --no-warnings tests/create-checkout.test.mjs"
   }
 }

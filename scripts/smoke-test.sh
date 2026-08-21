@@ -256,6 +256,28 @@ fi
 echo ""
 
 # ---------------------------------------------------------------------------
+# 6. create-checkout call sequence
+#
+# There is no Stripe key in most environments, so the handler's Stripe calls
+# are asserted against a mocked SDK instead: what is called, in what order,
+# and what overlaps. Catches a re-serialised cancel loop or a schedule scan
+# creeping back in front of first-time buyers (Issue #98).
+# ---------------------------------------------------------------------------
+echo "── 6. create-checkout Call Sequence ────────"
+
+UNIT_DIR="$(dirname "$0")/../funnel"
+if [ ! -d "$UNIT_DIR/node_modules" ]; then
+  info "funnel/node_modules missing — run 'npm install' in funnel/ to enable this check"
+elif (cd "$UNIT_DIR" && npm test --silent >/tmp/smoke-unit.log 2>&1); then
+  pass "create-checkout issues the expected Stripe calls, concurrently where they are independent"
+else
+  fail_critical "create-checkout call-sequence test failed — see /tmp/smoke-unit.log"
+  tail -20 /tmp/smoke-unit.log
+fi
+
+echo ""
+
+# ---------------------------------------------------------------------------
 # SUMMARY
 # ---------------------------------------------------------------------------
 echo "============================================"

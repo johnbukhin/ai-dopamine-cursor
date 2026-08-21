@@ -77,25 +77,40 @@ export default async function handler(req, res) {
         //    create a new one only if none exists. This prevents orphaned
         //    customers + invoices when the user navigates back and re-submits.
         const existing = await stripe.customers.list({ email, limit: 1 });
-        const customer = existing.data.length > 0
+        const returning = existing.data.length > 0;
+        const customer = returning
             ? existing.data[0]
             : await stripe.customers.create({ email, metadata: pixelMeta });
-
-        // A returning customer keeps whatever identifiers this session supplies —
-        // the newest click is the one that earned the purchase.
-        if (existing.data.length > 0 && hasPixelMeta) {
-            await stripe.customers.update(customer.id, { metadata: pixelMeta });
-        }
 
         // 1b. Cancel any open subscription schedules for this customer so that
         //     prefetch calls (which fire on paywall load and on tier change) do not
         //     accumulate dangling schedules in Stripe. Only active/not_started
         //     schedules are cancelled; completed/released ones are left alone.
-        const openSchedules = await stripe.subscriptionSchedules.list({ customer: customer.id, limit: 10 });
-        for (const s of openSchedules.data) {
-            if (s.status === 'active' || s.status === 'not_started') {
-                await stripe.subscriptionSchedules.cancel(s.id);
-            }
+        //
+        //     A customer created on the line above cannot have any, so asking is a
+        //     round trip whose answer is known in advance — and it is first-time
+        //     buyers, the ones we have not converted yet, who wait for it.
+        //
+        //     The metadata refresh below is a returning customer keeping whatever
+        //     identifiers this session supplies, since the newest click is the one
+        //     that earned the purchase. It touches a different resource than the
+        //     schedule scan and neither gates the other, so they overlap.
+        if (returning) {
+            const [openSchedules] = await Promise.all([
+                stripe.subscriptionSchedules.list({ customer: customer.id, limit: 10 }),
+                hasPixelMeta
+                    ? stripe.customers.update(customer.id, { metadata: pixelMeta })
+                    : Promise.resolve(null),
+            ]);
+
+            // The cancels are independent of one another. Awaiting them in
+            // sequence charged N round trips for work that costs one, and a buyer
+            // who had compared a few tiers paid for every comparison.
+            await Promise.all(
+                openSchedules.data
+                    .filter((s) => s.status === 'active' || s.status === 'not_started')
+                    .map((s) => stripe.subscriptionSchedules.cancel(s.id))
+            );
         }
 
         // 2. Create a 2-phase Subscription Schedule:
