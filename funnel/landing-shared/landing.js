@@ -74,6 +74,10 @@
     upsellAvailable: false,
     _fetched: false,
     _detected: null,
+    // Currencies Stripe will genuinely bill in, and the one it falls back to.
+    // Populated from /api/prices; see effective().
+    _live: [],
+    _base: 'eur',
 
     _fmt(cents, c) { return `${this._META[c]?.symbol || c.toUpperCase()}${(cents / 100).toFixed(2)}`; },
     _perDay(cents, days, c) { return `${this._META[c]?.symbol || ''}${(cents / days / 100).toFixed(2)}/day`; },
@@ -90,7 +94,28 @@
         if (!p) return 0;
         return p.currency_amounts?.[c] ?? p.currency_amounts?.[p.base_currency] ?? 0;
       };
-      for (const c of SUPPORTED) {
+
+      // A price only bills in a currency that has an explicit Stripe
+      // currency_option. The amt() fallback above hands back the base-currency
+      // AMOUNT for anything else, which is fine as a number and a lie as a
+      // price: _fmt would stamp the requested SYMBOL onto it, so an Australian
+      // was shown "A$19.99" for a charge of €19.99 — about A$33, 66% over the
+      // advertised figure. Canada saw 48% over, the US 9%.
+      //
+      // So a currency counts as live only when every price the checkout can
+      // touch carries an explicit amount in it. Anything short of that and the
+      // page quotes the base currency, symbol and amount together, which is
+      // exactly what Stripe will take. The moment currency_options are
+      // configured, the local prices light up on their own.
+      const keys = ['intro_7day', 'intro_1month', 'intro_3month', 'regular_monthly', 'regular_quarterly']
+        .filter((k) => raw[k]);
+      if (raw.upsell) keys.push('upsell');
+      this._base = raw.intro_1month?.base_currency || raw[keys[0]]?.base_currency || 'eur';
+      this._live = SUPPORTED.filter((c) =>
+        keys.length > 0 && keys.every((k) => raw[k].currency_amounts?.[c] != null));
+      if (!this._live.includes(this._base)) this._live.push(this._base);
+
+      for (const c of this._live) {
         const t = {};
         for (const tier of TIERS) {
           t[tier.id] = {
@@ -108,7 +133,7 @@
       // UPSELL map is the signal for PostPay to skip that step entirely — the
       // step reappears by itself the moment the env var is configured.
       if (raw.upsell) {
-        for (const c of SUPPORTED) this.UPSELL[c] = this._fmt(amt('upsell', c), c);
+        for (const c of this._live) this.UPSELL[c] = this._fmt(amt('upsell', c), c);
         this.upsellAvailable = true;
       }
 
@@ -150,15 +175,24 @@
       return (this._detected = 'eur');
     },
 
-    live(tierId, code) { return this.PRICES[code || this.detect()]?.[tierId] || null; },
+    // detect() is a guess about where the buyer is. effective() is the currency
+    // Stripe will actually bill in, which is the only one the page may quote or
+    // report. Before /api/prices lands, _live is empty and everything resolves
+    // to the base currency — the same figures content.json carries statically.
+    effective() {
+      const c = this.detect();
+      return this._live.includes(c) ? c : this._base;
+    },
+
+    live(tierId, code) { return this.PRICES[code || this.effective()]?.[tierId] || null; },
 
     upsell(code) {
-      const c = code || this.detect();
-      return this.UPSELL[c] || this.UPSELL.eur || null;
+      const c = code || this.effective();
+      return this.UPSELL[c] || this.UPSELL[this._base] || null;
     },
 
     disclaimer(tierId, code) {
-      let c = code || this.detect();
+      let c = code || this.effective();
       let t = this.PRICES[c]?.[tierId];
       const tail = 'Cancel anytime via aicompass.tech@gmail.com. See our Subscription Policy for details.';
       // If /api/prices never landed, fall back to the static EUR figures rather
@@ -187,9 +221,14 @@
   // the checkout opens, Lead on email, Purchase on confirmation.
   // ==========================================================================
   const Pixel = {
+    // Ads Manager revenue is only as honest as the page. Both fallbacks used to
+    // name usd outright, which was a guess even when it was right and is simply
+    // absent now that PRICES only carries currencies Stripe will bill in — a
+    // EUR-only account would have reported every conversion as blank-value USD.
     _value(tierId, c) {
-      const cc = (c || 'usd').toLowerCase();
-      const raw = Currency.PRICES[cc]?.[tierId]?.discounted || Currency.PRICES.usd?.[tierId]?.discounted || '';
+      const cc = (c || Currency.effective()).toLowerCase();
+      const raw = Currency.PRICES[cc]?.[tierId]?.discounted
+        || Currency.PRICES[Currency._base]?.[tierId]?.discounted || '';
       return parseFloat(raw.replace(/[^0-9.]/g, '')) || 19.99;
     },
     track(ev, params, eventId) {
@@ -263,13 +302,13 @@
     },
     initiateCheckout(tierId, c) {
       this.track('InitiateCheckout', {
-        value: this._value(tierId, c), currency: (c || 'USD').toUpperCase(),
+        value: this._value(tierId, c), currency: (c || Currency.effective()).toUpperCase(),
         content_ids: [tierId], content_name: CFG.pixelContentName, num_items: 1,
       });
     },
     purchase(tierId, c, subId) {
       this.track('Purchase', {
-        value: this._value(tierId, c), currency: (c || 'USD').toUpperCase(),
+        value: this._value(tierId, c), currency: (c || Currency.effective()).toUpperCase(),
         content_ids: [tierId], content_name: CFG.pixelContentName, content_type: 'product',
       }, subId ? `purchase_${subId}` : undefined);
     },
@@ -841,7 +880,7 @@
     const p = {
       tierId,
       email,
-      currency: Currency.detect(),
+      currency: Currency.effective(),
       srcUrl: location.origin + location.pathname,
     };
     const fbp = Pixel.fbp();
@@ -871,7 +910,7 @@
 
       openOverlay('checkout');
 
-      if (!this.initiated) { Pixel.initiateCheckout(selectedTier, Currency.detect()); this.initiated = true; }
+      if (!this.initiated) { Pixel.initiateCheckout(selectedTier, Currency.effective()); this.initiated = true; }
 
       // commitEmail rather than build: a remembered address whose intent is
       // still mounted needs no second round trip, and a prefetch that cleared
@@ -1067,7 +1106,7 @@
         el('email').focus();
         return;
       }
-      const currency = Currency.detect();
+      const currency = Currency.effective();
 
       if (isDev()) {
         Pixel.purchase(selectedTier, currency, null);
@@ -1311,7 +1350,7 @@
           const res = await fetch('/api/create-upsell', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: this.email, currency: Currency.detect() }),
+            body: JSON.stringify({ email: this.email, currency: Currency.effective() }),
           });
           const d = await res.json();
           // A declined or misconfigured add-on is not the buyer's problem and
