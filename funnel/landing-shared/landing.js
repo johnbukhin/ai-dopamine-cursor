@@ -1010,6 +1010,23 @@
       };
     },
 
+    // Long enough that a slow phone on a bad connection is not accused of being
+    // blocked, short enough that nobody sits in front of a dead button wondering.
+    ELEMENT_STALL_MS: 9000,
+
+    // A dead end needs a way out, even when we cannot fix what caused it.
+    // Leaves the button live so there is something to press, but pointing at a
+    // rebuild rather than at confirming an element that never rendered.
+    retry: false,
+    stuck(msg) {
+      this.retry = true;
+      // Nothing is mounted, whatever the key says. Leaving it set would tell
+      // every downstream guard a working form is already on screen.
+      this.mountedKey = null;
+      this.err(msg);
+      this.setBtn(false, 'Try again');
+    },
+
     setBtn(disabled, text) {
       const b = el('pay-btn');
       if (!b) return;
@@ -1022,6 +1039,7 @@
 
     async build(email) {
       this.building = true;
+      this.retry = false;
       const tierId = selectedTier;
       const mount = el('pay-mount');
       this.err('');
@@ -1074,7 +1092,39 @@
         const pe = this.elements.create('payment');
         mount.innerHTML = '';
         pe.mount('#pay-mount');
-        pe.on('ready', () => this.setBtn(false, 'Complete Payment'));
+
+        // Stripe's `ready` was the only thing that had ever enabled this button,
+        // and it is not guaranteed to arrive: a privacy extension blocking the
+        // Stripe iframe, a network dropping m.stripe.network, third-party
+        // storage restrictions, or an element with no renderable payment method
+        // all leave it silent. The buyer was then left with a disabled button,
+        // no message and nothing to click — a dead end indistinguishable from
+        // the product being broken, and invisible to us because it produces no
+        // signal anywhere. Whatever triggers the silence, the dead end is ours.
+        let settled = false;
+        const stall = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          this.stuck('The card form did not load. An ad blocker or privacy extension can block Stripe — switch it off for this page, or try another browser.');
+        }, this.ELEMENT_STALL_MS);
+
+        pe.on('ready', () => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(stall);
+          this.setBtn(false, 'Complete Payment');
+        });
+
+        // Stripe's own signal that the element could not render — precise and
+        // immediate, where the timeout above is only a backstop for the case
+        // where neither event fires at all.
+        pe.on('loaderror', (ev) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(stall);
+          this.stuck(ev?.error?.message || 'The card form failed to load. Please try again.');
+        });
+
         this.mountedKey = `${tierId}|${email}`;
       } catch (_) {
         this.err('An unexpected error occurred. Please refresh and try again.');
@@ -1115,6 +1165,11 @@
       }
 
       if (this.building) return;
+
+      // The button says "Try again" because the element never rendered. There is
+      // nothing to confirm — pressing it means start over, not take the money.
+      if (this.retry) { this.build(email); return; }
+
       if (!this.stripe || !this.elements) { this.build(email); return; }
 
       // Last line of defence. The mounted PaymentIntent is bound to one address

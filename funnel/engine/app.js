@@ -5479,13 +5479,30 @@ const App = {
     async initStripe(screenData) {
         if (this._stripeInitializing) return;
         this._stripeInitializing = true;
+        this._stripeRetry = false;
         const tierId   = State.data.selectedTier || '1_month';
         const email    = State.getAnswer('email_capture') || '';
         const currency = Currency.detect();
 
+        // The click listener is wired further down, inside this function. A
+        // "Try again" press re-enters it, so without dropping the old node the
+        // listeners would stack and the next press would confirm the payment
+        // twice. Replacing the button with a clone strips them; the fresh node
+        // then gets exactly one handler, closed over this run's stripe/elements.
+        const staleBtn = document.getElementById('checkout-pay-btn');
+        if (staleBtn && staleBtn.parentNode) {
+            staleBtn.parentNode.replaceChild(staleBtn.cloneNode(true), staleBtn);
+        }
+
         const payBtn  = document.getElementById('checkout-pay-btn');
         const errorEl = document.getElementById('checkout-error');
         const mountEl = document.getElementById('payment-element');
+
+        // Remember the screen's own label before anything can overwrite it, so a
+        // successful retry can put it back — otherwise a form that failed once
+        // and then loaded fine still asks the buyer to "Try again". Stashed on
+        // the node so the clone above carries it into the next run.
+        if (payBtn && !payBtn.dataset.payLabel) payBtn.dataset.payLabel = payBtn.textContent;
 
         // Helper: surface an inline error below the payment form
         const showCheckoutError = (msg) => {
@@ -5577,11 +5594,47 @@ const App = {
 
             paymentEl.mount('#payment-element');
 
+            // `ready` was the only thing that had ever enabled this button, and
+            // it is not guaranteed to arrive: a privacy extension blocking the
+            // Stripe iframe, a network dropping m.stripe.network, third-party
+            // storage restrictions, or an element with no renderable payment
+            // method all leave it silent. The buyer was then left with a
+            // disabled button, no message and nothing to click — a dead end
+            // indistinguishable from the product being broken, and invisible to
+            // us because it produces no signal anywhere. Whatever triggers the
+            // silence, the dead end is ours.
+            let elementSettled = false;
+
+            // Hands the buyer a live button again and points it at a rebuild —
+            // there is nothing to confirm when the element never rendered.
+            const elementFailed = (msg) => {
+                if (elementSettled) return;
+                elementSettled = true;
+                clearTimeout(stallTimer);
+                this._stripeRetry = true;
+                this._stripeInitializing = false;
+                showCheckoutError(msg);
+                if (payBtn) payBtn.textContent = 'Try again';
+            };
+
+            // Long enough that a slow phone on a bad connection is not accused
+            // of being blocked, short enough that nobody sits in front of a dead
+            // button wondering. Only a backstop — loaderror below is the precise
+            // signal, when Stripe manages to send one.
+            const stallTimer = setTimeout(
+                () => elementFailed('The card form did not load. An ad blocker or privacy extension can block Stripe — switch it off for this page, or try another browser.'),
+                9000
+            );
+
             // Enable pay button once Payment Element is ready
             paymentEl.on('ready', () => {
+                if (elementSettled) return;
+                elementSettled = true;
+                clearTimeout(stallTimer);
                 if (payBtn) {
                     payBtn.disabled = false;
                     payBtn.classList.remove('cta-button--disabled');
+                    if (payBtn.dataset.payLabel) payBtn.textContent = payBtn.dataset.payLabel;
                 }
                 // Clear the "Loading payment form…" placeholder
                 if (mountEl) {
@@ -5590,11 +5643,24 @@ const App = {
                 }
             });
 
+            // Stripe's own signal that the element could not render.
+            paymentEl.on('loaderror', (ev) => {
+                elementFailed(ev?.error?.message || 'The card form failed to load. Please try again.');
+            });
+
             // ── Step 3: wire up submit button ───────────────────────────────
             // Guard against double-click via payBtn.disabled check.
             if (payBtn) {
                 payBtn.addEventListener('click', async () => {
                     if (payBtn.disabled) return;
+
+                    // The button says "Try again" because the element never
+                    // rendered. Start over rather than confirm nothing.
+                    if (this._stripeRetry) {
+                        this._stripeRetry = false;
+                        this.initStripe(screenData);
+                        return;
+                    }
 
                     payBtn.disabled = true;
                     payBtn.classList.add('cta-button--disabled');
